@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VehicleFlow - Owner Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#643e14",
+                      "on-secondary-fixed": "#0b1c30",
+                      "tertiary-container": "#623d13",
+                      "inverse-primary": "#9acee1",
+                      "surface-container-highest": "#e1e2e4",
+                      "on-primary-fixed": "#001f28",
+                      "secondary": "#505f76",
+                      "tertiary-fixed-dim": "#f3bc87",
+                      "background": "#f9f9fa",
+                      "on-primary-fixed-variant": "#114d5d",
+                      "on-secondary-container": "#54647a",
+                      "surface-dim": "#d9dadb",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e1e2e4",
+                      "primary": "#003441",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e7e8e9",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c0c8cb",
+                      "primary-fixed-dim": "#9acee1",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "surface-container": "#edeeef",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "surface": "#f9f9fa",
+                      "tertiary-fixed": "#ffdcbe",
+                      "on-tertiary-container": "#dda975",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#191c1d",
+                      "tertiary": "#482700",
+                      "outline": "#70787c",
+                      "on-primary-container": "#87bbce",
+                      "on-surface": "#191c1d",
+                      "surface-container-low": "#f3f4f5",
+                      "surface-bright": "#f9f9fa",
+                      "inverse-on-surface": "#f0f1f2",
+                      "inverse-surface": "#2e3132",
+                      "primary-container": "#0f4c5c",
+                      "primary-fixed": "#b6ebfe",
+                      "surface-tint": "#306576",
+                      "secondary-fixed": "#d3e4fe",
+                      "on-tertiary-fixed": "#2c1600",
+                      "secondary-container": "#d0e1fb",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#40484b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "base": "4px",
+                      "2xl": "48px",
+                      "container-margin": "24px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "3xl": "64px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-sm": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        body { background-color: #f9f9fa; }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.02), 0px 1px 3px rgba(0, 0, 0, 0.05);
+        }
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
+        }
+        .bento-col-4 { grid-column: span 4; }
+        .bento-col-8 { grid-column: span 8; }
+        .bento-col-6 { grid-column: span 6; }
+        .bento-col-12 { grid-column: span 12; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased overflow-x-hidden">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-lg w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant dark:border-outline shadow-sm bg-surface dark:bg-inverse-surface z-50">
+<div class="px-lg mb-xl flex items-center gap-md">
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold">
+                VF
+            </div>
+<div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim">VehicleFlow</h1>
+<p class="font-caption text-caption text-on-surface-variant">Fleet Management</p>
+</div>
+</div>
+<nav class="flex-1 px-sm space-y-xs">
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim bg-secondary-container dark:bg-primary-container border-l-4 border-primary dark:border-primary-fixed-dim font-bold rounded-r-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">directions_car</span>
+<span>Vehicles</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">route</span>
+<span>Rides</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">local_gas_station</span>
+<span>Fuel</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">build</span>
+<span>Maintenance</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span>Bills</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">analytics</span>
+<span>Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">loyalty</span>
+<span>Subscriptions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors rounded-lg active:scale-95 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<div class="px-md mt-auto pt-lg border-t border-outline-variant">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span>Robin</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-0 md:ml-[280px] min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center h-16 px-lg sticky top-0 z-40 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-md border-b border-outline-variant dark:border-outline">
+<div class="flex-1 flex items-center">
+<!-- Search Bar Placeholder -->
+<div class="relative w-64 hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border border-outline-variant rounded-full text-body-sm font-body-sm focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" placeholder="Search..." type="text"/>
+</div>
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden p-2 text-on-surface-variant">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="md:hidden ml-2 text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed-dim">VehicleFlow</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 cursor-pointer transition-all">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 cursor-pointer transition-all md:hidden">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-lg flex-1">
+<!-- Page Header -->
+<div class="mb-lg">
+<h2 class="text-headline-lg font-headline-lg text-on-surface">Good morning, Robin.</h2>
+<p class="text-body-lg font-body-lg text-on-surface-variant mt-1">Here's what's happening with your vehicles.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="bento-grid">
+<!-- Summary Cards Row (4 Columns on wide, 2 on medium) -->
+<div class="bento-col-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<!-- Total Vehicles -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-32 relative overflow-hidden group hover:border-primary transition-colors cursor-pointer">
+<div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-primary/5 rounded-full group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start z-10">
+<span class="text-on-surface-variant font-body-sm text-body-sm">Total Vehicles</span>
+<span class="material-symbols-outlined text-primary bg-primary-container p-1.5 rounded-lg text-[20px]">directions_car</span>
+</div>
+<div class="z-10">
+<span class="text-display-sm font-display-sm text-on-surface">3</span>
+</div>
+</div>
+<!-- Today's Distance -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-32 relative overflow-hidden group hover:border-primary transition-colors cursor-pointer">
+<div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-primary/5 rounded-full group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start z-10">
+<span class="text-on-surface-variant font-body-sm text-body-sm">Today's Distance</span>
+<span class="material-symbols-outlined text-primary bg-primary-container p-1.5 rounded-lg text-[20px]">route</span>
+</div>
+<div class="z-10 flex items-baseline gap-1">
+<span class="text-display-sm font-display-sm text-on-surface">84</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">km</span>
+</div>
+</div>
+<!-- Fuel Cost -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-32 relative overflow-hidden group hover:border-error transition-colors cursor-pointer">
+<div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-error/5 rounded-full group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start z-10">
+<span class="text-on-surface-variant font-body-sm text-body-sm">Fuel Cost Today</span>
+<span class="material-symbols-outlined text-error bg-error-container p-1.5 rounded-lg text-[20px]">local_gas_station</span>
+</div>
+<div class="z-10 flex items-baseline gap-1">
+<span class="text-body-md font-body-md text-on-surface">₹</span>
+<span class="text-display-sm font-display-sm text-on-surface">218.40</span>
+</div>
+</div>
+<!-- Pending Collections -->
+<div class="glass-card rounded-xl p-md flex flex-col justify-between h-32 relative overflow-hidden group hover:border-tertiary transition-colors cursor-pointer">
+<div class="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-tertiary/5 rounded-full group-hover:scale-110 transition-transform"></div>
+<div class="flex justify-between items-start z-10">
+<span class="text-on-surface-variant font-body-sm text-body-sm">Pending Collections</span>
+<span class="material-symbols-outlined text-tertiary bg-tertiary-container p-1.5 rounded-lg text-[20px] text-on-tertiary-container">receipt_long</span>
+</div>
+<div class="z-10 flex items-baseline gap-1">
+<span class="text-body-md font-body-md text-on-surface">₹</span>
+<span class="text-display-sm font-display-sm text-on-surface">340.00</span>
+</div>
+</div>
+</div>
+<!-- Main Content Row -->
+<div class="bento-col-12 lg:bento-col-8 flex flex-col gap-md">
+<!-- Recent Activity List -->
+<div class="glass-card rounded-xl p-0 overflow-hidden flex-1 flex flex-col">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Recent Rides</h3>
+<button class="text-primary font-label-md text-label-md hover:underline">View All</button>
+</div>
+<div class="flex-1 overflow-auto bg-surface-container-lowest">
+<ul class="divide-y divide-outline-variant">
+<!-- Ride Item 1 -->
+<li class="p-md hover:bg-surface-container-low transition-colors flex justify-between items-center group cursor-pointer">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-surface font-semibold">KL 16 P 78</p>
+<p class="text-caption font-caption text-on-surface-variant">Calicut Beach → NIT Campus</p>
+</div>
+</div>
+<div class="text-right flex items-center gap-md">
+<div>
+<p class="text-body-md font-body-md text-on-surface">₹450</p>
+<p class="text-caption font-caption text-on-surface-variant">22km • 45m</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-label-md font-label-md bg-[#D1FAE5] text-[#065F46]">Paid</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</li>
+<!-- Ride Item 2 -->
+<li class="p-md hover:bg-surface-container-low transition-colors flex justify-between items-center group cursor-pointer">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-surface font-semibold">KL 08 AB 4521</p>
+<p class="text-caption font-caption text-on-surface-variant">Railway Station → Mavoor Rd</p>
+</div>
+</div>
+<div class="text-right flex items-center gap-md">
+<div>
+<p class="text-body-md font-body-md text-on-surface">₹340</p>
+<p class="text-caption font-caption text-on-surface-variant">12km • 25m</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-label-md font-label-md bg-[#FEF3C7] text-[#92400E]">Pending</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</li>
+<!-- Ride Item 3 -->
+<li class="p-md hover:bg-surface-container-low transition-colors flex justify-between items-center group cursor-pointer">
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]">directions_car</span>
+</div>
+<div>
+<p class="text-body-md font-body-md text-on-surface font-semibold">KL 11 CC 9900</p>
+<p class="text-caption font-caption text-on-surface-variant">Airport → Cyberpark</p>
+</div>
+</div>
+<div class="text-right flex items-center gap-md">
+<div>
+<p class="text-body-md font-body-md text-on-surface">₹850</p>
+<p class="text-caption font-caption text-on-surface-variant">28km • 50m</p>
+</div>
+<span class="inline-flex items-center px-2 py-1 rounded-full text-label-md font-label-md bg-[#D1FAE5] text-[#065F46]">Paid</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary transition-colors">chevron_right</span>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Side Column -->
+<div class="bento-col-12 lg:bento-col-4 flex flex-col gap-md">
+<!-- Live Fuel Price Card -->
+<div class="glass-card rounded-xl p-md bg-gradient-to-br from-surface to-surface-container-low relative overflow-hidden">
+<div class="absolute -right-8 -top-8 w-32 h-32 bg-primary/10 rounded-full blur-2xl"></div>
+<div class="flex justify-between items-start mb-sm relative z-10">
+<h3 class="text-body-lg font-body-lg text-on-surface font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">local_gas_station</span>
+                                Live Fuel Price
+                            </h3>
+<button class="p-1 rounded hover:bg-surface-container-high transition-colors text-on-surface-variant group">
+<span class="material-symbols-outlined text-[20px] group-active:rotate-180 transition-transform duration-300">refresh</span>
+</button>
+</div>
+<div class="relative z-10">
+<div class="flex items-baseline gap-1 mb-1">
+<span class="text-headline-md font-headline-md text-on-surface">₹104.20</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">/ L (Petrol)</span>
+</div>
+<p class="text-caption font-caption text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">location_on</span> Kozhikode, Kerala
+                            </p>
+<p class="text-caption font-caption text-outline mt-2 italic flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified 10 min ago
+                            </p>
+</div>
+</div>
+<!-- Active Vehicles Mini Cards -->
+<div class="glass-card rounded-xl p-md flex-1 flex flex-col">
+<div class="flex justify-between items-center mb-md">
+<h3 class="text-body-lg font-body-lg text-on-surface font-semibold">Active Fleet Status</h3>
+</div>
+<div class="flex flex-col gap-sm">
+<!-- Vehicle 1 -->
+<div class="p-3 border border-outline-variant rounded-lg bg-surface hover:border-primary transition-colors cursor-pointer flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+<div>
+<p class="text-body-sm font-body-sm text-on-surface font-bold">KL 16 P 78</p>
+<p class="text-caption font-caption text-on-surface-variant">Moving • 45 km/h</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">more_vert</span>
+</div>
+<!-- Vehicle 2 -->
+<div class="p-3 border border-outline-variant rounded-lg bg-surface hover:border-primary transition-colors cursor-pointer flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#F59E0B] shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
+<div>
+<p class="text-body-sm font-body-sm text-on-surface font-bold">KL 08 AB 4521</p>
+<p class="text-caption font-caption text-on-surface-variant">Idle • 12 mins</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">more_vert</span>
+</div>
+<!-- Vehicle 3 -->
+<div class="p-3 border border-outline-variant rounded-lg bg-surface hover:border-primary transition-colors cursor-pointer flex justify-between items-center">
+<div class="flex items-center gap-3">
+<div class="w-2 h-2 rounded-full bg-[#3B82F6] shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
+<div>
+<p class="text-body-sm font-body-sm text-on-surface font-bold">KL 11 CC 9900</p>
+<p class="text-caption font-caption text-on-surface-variant">Parked • Home Base</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">more_vert</span>
+</div>
+<button class="mt-2 w-full py-2 border border-outline-variant rounded-lg text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+                                Manage Fleet
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

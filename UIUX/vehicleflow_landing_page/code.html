@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VehicleFlow - Fleet Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#643e14",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-container": "#623d13",
+                        "inverse-primary": "#9acee1",
+                        "surface-container-highest": "#e1e2e4",
+                        "on-primary-fixed": "#001f28",
+                        "secondary": "#505f76",
+                        "tertiary-fixed-dim": "#f3bc87",
+                        "background": "#f9f9fa",
+                        "on-primary-fixed-variant": "#114d5d",
+                        "on-secondary-container": "#54647a",
+                        "surface-dim": "#d9dadb",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e1e2e4",
+                        "primary": "#003441",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c0c8cb",
+                        "primary-fixed-dim": "#9acee1",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-container": "#edeeef",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface": "#f9f9fa",
+                        "tertiary-fixed": "#ffdcbe",
+                        "on-tertiary-container": "#dda975",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1d",
+                        "tertiary": "#482700",
+                        "outline": "#70787c",
+                        "on-primary-container": "#87bbce",
+                        "on-surface": "#191c1d",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-bright": "#f9f9fa",
+                        "inverse-on-surface": "#f0f1f2",
+                        "inverse-surface": "#2e3132",
+                        "primary-container": "#0f4c5c",
+                        "primary-fixed": "#b6ebfe",
+                        "surface-tint": "#306576",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-tertiary-fixed": "#2c1600",
+                        "secondary-container": "#d0e1fb",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#40484b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "base": "4px",
+                        "2xl": "48px",
+                        "container-margin": "24px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "3xl": "64px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "28px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+                        "caption": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "headline-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "headline-lg": ["30px", { "lineHeight": "38px", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-sm": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9f9fa; color: #191c1d; }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-md flex justify-between items-center h-16 px-lg sticky top-0 z-40 border-b border-outline-variant dark:border-outline">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary font-bold text-[28px]" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed-dim">VehicleFlow</span>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#how-it-works">How It Works</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#features">Features</a>
+</div>
+<div class="flex items-center gap-4">
+<button class="hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 cursor-pointer transition-all text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 cursor-pointer transition-all text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="flex-grow">
+<!-- Hero Section -->
+<section class="pt-32 pb-24 px-lg max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+<div class="space-y-8">
+<h1 class="font-display-lg text-display-lg text-on-background">
+                    Track every ride. Calculate every cost. Pay effortlessly.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                    Manage your vehicles, mileage, fuel costs, usage bills and UPI payments from one simple platform designed for professional fleet and personal vehicle management.
+                </p>
+<div class="flex flex-col sm:flex-row gap-4 pt-4">
+<button class="bg-primary text-on-primary px-6 py-3 rounded-lg font-label-md text-label-md uppercase tracking-wider hover:bg-primary-container hover:text-on-primary-container transition-colors shadow-sm">
+                        GET STARTED
+                    </button>
+<button class="bg-surface text-secondary border border-outline-variant px-6 py-3 rounded-lg font-label-md text-label-md uppercase tracking-wider hover:bg-surface-container-low transition-colors">
+                        SEE HOW IT WORKS
+                    </button>
+</div>
+</div>
+<!-- Hero Visual: Glassmorphic Phone Mockup -->
+<div class="relative w-full max-w-md mx-auto">
+<div class="absolute inset-0 bg-primary/10 rounded-[3rem] blur-3xl transform -rotate-6"></div>
+<div class="bg-surface border border-outline-variant rounded-[2.5rem] shadow-xl p-4 relative z-10 overflow-hidden">
+<!-- Notch -->
+<div class="w-1/3 h-6 bg-on-background rounded-b-xl mx-auto absolute top-0 left-0 right-0"></div>
+<div class="pt-8 pb-4 px-4 h-[600px] flex flex-col gap-4 overflow-y-auto">
+<div class="flex justify-between items-center mb-4">
+<span class="font-headline-sm text-headline-sm">Ride Summary</span>
+<span class="material-symbols-outlined text-outline">more_horiz</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm">
+<div class="flex justify-between items-start mb-2">
+<span class="font-body-md text-body-md text-on-surface-variant">Vehicle</span>
+<span class="font-headline-sm text-headline-sm font-bold">KL 16 P 78</span>
+</div>
+<div class="flex gap-2">
+<span class="bg-primary-container text-on-primary-container px-2 py-1 rounded font-caption text-caption">Petrol</span>
+<span class="bg-surface-container text-on-surface px-2 py-1 rounded font-caption text-caption">40 km/L</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-center items-center">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="route">route</span>
+<span class="font-headline-md text-headline-md font-bold">8 km</span>
+<span class="font-caption text-caption text-on-surface-variant">Distance</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-center items-center">
+<span class="material-symbols-outlined text-primary mb-2" data-icon="local_gas_station">local_gas_station</span>
+<span class="font-headline-sm text-headline-sm font-bold">₹104.20</span>
+<span class="font-caption text-caption text-on-surface-variant">Price/L</span>
+</div>
+</div>
+<div class="mt-auto bg-primary-container p-6 rounded-2xl flex flex-col items-center justify-center text-center">
+<span class="font-body-sm text-body-sm text-on-primary-container mb-1">Total Cost</span>
+<span class="font-display-sm text-display-sm text-on-primary-container mb-4">₹20.84</span>
+<button class="w-full bg-primary text-on-primary py-3 rounded-lg font-label-md text-label-md uppercase tracking-wider flex items-center justify-center gap-2">
+                                PAY NOW
+                                <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- How It Works Section -->
+<section class="py-24 bg-surface-container-lowest" id="how-it-works">
+<div class="max-w-7xl mx-auto px-lg">
+<div class="text-center mb-16">
+<h2 class="font-display-sm text-display-sm mb-4">How It Works</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">A seamless workflow designed to eliminate administrative overhead.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-8 relative">
+<!-- Connecting line for desktop -->
+<div class="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-outline-variant/30"></div>
+<!-- Steps -->
+<div class="relative flex flex-col items-center text-center">
+<div class="w-24 h-24 bg-surface rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-6 z-10 text-primary">
+<span class="material-symbols-outlined text-[40px]" data-icon="app_registration">app_registration</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Register</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Add your vehicles.</p>
+</div>
+<div class="relative flex flex-col items-center text-center">
+<div class="w-24 h-24 bg-surface rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-6 z-10 text-primary">
+<span class="material-symbols-outlined text-[40px]" data-icon="play_circle">play_circle</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Start</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Log ODO reading.</p>
+</div>
+<div class="relative flex flex-col items-center text-center">
+<div class="w-24 h-24 bg-surface rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-6 z-10 text-primary">
+<span class="material-symbols-outlined text-[40px]" data-icon="moving">moving</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Track</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Monitor journey.</p>
+</div>
+<div class="relative flex flex-col items-center text-center">
+<div class="w-24 h-24 bg-surface rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-6 z-10 text-primary">
+<span class="material-symbols-outlined text-[40px]" data-icon="calculate">calculate</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Calculate</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Auto fuel costs.</p>
+</div>
+<div class="relative flex flex-col items-center text-center">
+<div class="w-24 h-24 bg-surface rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-6 z-10 text-primary">
+<span class="material-symbols-outlined text-[40px]" data-icon="payments">payments</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Pay</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Settle via UPI.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Features Section (Bento Grid) -->
+<section class="py-24 px-lg max-w-7xl mx-auto" id="features">
+<div class="mb-16">
+<h2 class="font-display-sm text-display-sm mb-4">Features built for precision.</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Everything you need to maintain accurate vehicle logs and financial records.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px]">
+<!-- Feature 1: Live Fuel Pricing -->
+<div class="col-span-1 md:col-span-2 bg-surface border border-outline-variant rounded-2xl p-8 flex flex-col justify-end relative overflow-hidden shadow-sm group hover:shadow-md transition-shadow">
+<div class="absolute top-0 right-0 p-8 text-primary opacity-20 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500">
+<span class="material-symbols-outlined text-[120px]" data-icon="local_gas_station">local_gas_station</span>
+</div>
+<div class="relative z-10 max-w-md">
+<h3 class="font-headline-md text-headline-md mb-2">Live Fuel Pricing</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">Real-time API integration fetches current local fuel prices for hyper-accurate trip cost calculations.</p>
+</div>
+</div>
+<!-- Feature 2: Digital Invoices -->
+<div class="col-span-1 bg-surface-container-high border border-outline-variant rounded-2xl p-8 flex flex-col justify-between shadow-sm">
+<span class="material-symbols-outlined text-primary text-[40px]" data-icon="receipt_long">receipt_long</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Digital Invoices</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Auto-generated compliant receipts for every settled ride.</p>
+</div>
+</div>
+<!-- Feature 3: Smart Tracking -->
+<div class="col-span-1 bg-surface-container-high border border-outline-variant rounded-2xl p-8 flex flex-col justify-between shadow-sm">
+<span class="material-symbols-outlined text-primary text-[40px]" data-icon="track_changes">track_changes</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm mb-2">Smart Tracking</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">GPS-assisted distance logging reduces manual entry errors.</p>
+</div>
+</div>
+<!-- Feature 4: Odometer History -->
+<div class="col-span-1 bg-surface border border-outline-variant rounded-2xl p-8 flex flex-col justify-between shadow-sm relative overflow-hidden group">
+<div class="absolute inset-0 bg-gradient-to-br from-transparent to-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-primary text-[40px] relative z-10" data-icon="history">history</span>
+<div class="relative z-10">
+<h3 class="font-headline-sm text-headline-sm mb-2">Odometer History</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Immutable logs of past trips.</p>
+</div>
+</div>
+<!-- Feature 5: UPI & PWA -->
+<div class="col-span-1 md:col-span-1 bg-primary-container text-on-primary-container rounded-2xl p-8 flex flex-col justify-center text-center shadow-sm">
+<span class="material-symbols-outlined text-[48px] mb-4" data-icon="qr_code_scanner">qr_code_scanner</span>
+<h3 class="font-headline-md text-headline-md mb-2">UPI Payments</h3>
+<p class="font-body-sm text-body-sm opacity-90">Instant settlements. PWA support for native-like access.</p>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface border-t border-outline-variant py-12 px-lg mt-12">
+<div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary font-bold text-[24px]" data-icon="local_shipping" data-weight="fill" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+<span class="text-headline-sm font-headline-sm font-bold text-primary">VehicleFlow</span>
+</div>
+<div class="flex gap-6 text-on-surface-variant font-body-sm text-body-sm">
+<a class="hover:text-primary transition-colors" href="#">Privacy</a>
+<a class="hover:text-primary transition-colors" href="#">Terms</a>
+<a class="hover:text-primary transition-colors" href="#">Contact</a>
+</div>
+<div class="font-caption text-caption text-outline">
+                © 2024 VehicleFlow. All rights reserved.
+            </div>
+</div>
+</footer>
+</body></html>

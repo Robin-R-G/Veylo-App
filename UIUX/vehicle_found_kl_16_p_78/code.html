@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VehicleFlow - QR Entry</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#643e14",
+                        "on-secondary-fixed": "#0b1c30",
+                        "tertiary-container": "#623d13",
+                        "inverse-primary": "#9acee1",
+                        "surface-container-highest": "#e1e2e4",
+                        "on-primary-fixed": "#001f28",
+                        "secondary": "#505f76",
+                        "tertiary-fixed-dim": "#f3bc87",
+                        "background": "#f9f9fa",
+                        "on-primary-fixed-variant": "#114d5d",
+                        "on-secondary-container": "#54647a",
+                        "surface-dim": "#d9dadb",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e1e2e4",
+                        "primary": "#003441",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#e7e8e9",
+                        "error-container": "#ffdad6",
+                        "outline-variant": "#c0c8cb",
+                        "primary-fixed-dim": "#9acee1",
+                        "secondary-fixed-dim": "#b7c8e1",
+                        "surface-container": "#edeeef",
+                        "on-secondary-fixed-variant": "#38485d",
+                        "surface": "#f9f9fa",
+                        "tertiary-fixed": "#ffdcbe",
+                        "on-tertiary-container": "#dda975",
+                        "surface-container-lowest": "#ffffff",
+                        "on-background": "#191c1d",
+                        "tertiary": "#482700",
+                        "outline": "#70787c",
+                        "on-primary-container": "#87bbce",
+                        "on-surface": "#191c1d",
+                        "surface-container-low": "#f3f4f5",
+                        "surface-bright": "#f9f9fa",
+                        "inverse-on-surface": "#f0f1f2",
+                        "inverse-surface": "#2e3132",
+                        "primary-container": "#0f4c5c",
+                        "primary-fixed": "#b6ebfe",
+                        "surface-tint": "#306576",
+                        "secondary-fixed": "#d3e4fe",
+                        "on-tertiary-fixed": "#2c1600",
+                        "secondary-container": "#d0e1fb",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#40484b"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "4px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "base": "4px",
+                        "2xl": "48px",
+                        "container-margin": "24px",
+                        "lg": "24px",
+                        "xl": "32px",
+                        "3xl": "64px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "label-md": ["Inter"],
+                        "caption": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "60px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "caption": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                        "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["30px", {"lineHeight": "38px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "display-sm": ["36px", {"lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f9f9fa; /* bg-background */
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Mobile Specific Overrides */
+        @media (max-width: 768px) {
+            .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased flex flex-col min-h-screen">
+<!-- TopNavBar (Web Focus, Hidden on Mobile for this specific linear task flow normally, but requested here) -->
+<header class="flex justify-between items-center h-16 px-lg sticky top-0 z-40 bg-surface/80 dark:bg-inverse-surface/80 backdrop-blur-md md:ml-[280px]">
+<div class="flex items-center gap-sm cursor-pointer transition-all">
+<span class="text-headline-sm font-headline-sm font-bold text-primary dark:text-primary-fixed-dim">VehicleFlow</span>
+</div>
+<div class="flex items-center gap-md">
+<button aria-label="Notifications" class="text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="Profile" class="text-on-surface-variant hover:bg-surface-container-low dark:hover:bg-surface-container-high rounded-full p-2 transition-all">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar (Desktop Only) -->
+<aside class="hidden md:flex flex-col w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant dark:border-outline bg-surface dark:bg-inverse-surface shadow-sm py-lg z-50">
+<div class="px-md mb-lg">
+<div class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim">VehicleFlow</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant mt-1">Fleet Management</div>
+</div>
+<nav class="flex-1 overflow-y-auto">
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                        Dashboard
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-primary dark:text-primary-fixed-dim bg-secondary-container dark:bg-primary-container border-l-4 border-primary dark:border-primary-fixed-dim font-bold font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="directions_car">directions_car</span>
+                        Vehicles
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="route">route</span>
+                        Rides
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="local_gas_station">local_gas_station</span>
+                        Fuel
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="build">build</span>
+                        Maintenance
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+                        Bills
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+                        Analytics
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="loyalty">loyalty</span>
+                        Subscriptions
+                    </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+                        Settings
+                    </a>
+</li>
+</ul>
+</nav>
+<div class="mt-auto border-t border-outline-variant pt-md">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-high dark:hover:bg-surface-container-highest transition-colors font-body-md text-body-md" href="#">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+                Robin
+            </a>
+</div>
+</aside>
+<!-- Main Canvas -->
+<main class="flex-1 flex flex-col items-center justify-center px-md py-lg md:ml-[280px] pb-32">
+<!-- Contextual Header -->
+<div class="text-center mb-lg w-full max-w-md">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success-container text-success mb-sm">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle">check_circle</span>
+</div>
+<h1 class="font-display-sm text-display-sm text-on-background">Vehicle Found</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2">Ready to start your ride.</p>
+</div>
+<!-- Vehicle Detail Card -->
+<div class="w-full max-w-md bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden mb-xl">
+<!-- Header Image Area (Abstract Map/Route representation) -->
+<div class="h-32 bg-surface-container-high relative flex items-center justify-center overflow-hidden">
+<div class="absolute inset-0 bg-cover bg-center opacity-40" data-alt="A macro shot of a metallic motorcycle gas tank reflecting bright overhead light in a sterile garage environment. Clean lines, dark teal and silver hues. High contrast, sharp focus, technical aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBTU3uSAagRYr_1CLTa85pjn_HnBXW_Rj9LhB3M8iQfvAM-IESJYofWxk-IK5dCzCCVPhmOVUPTvilXtmsnQAV0G9MECdJdXmSLCd7_mBzt-1IpUTYAV5w6KcZOrkKJZMSKINvFpRYSrsqanPRazpBNOJupfi-3Xn6D7dXTsyR9K2RRQQ3D80PWag6hlPnBFuOZpUDHzkrmK8imKoBaR7720RoYSji025SvXrgPauePzBP37bt7YCYBKg')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
+<span class="material-symbols-outlined text-5xl text-primary z-10" data-icon="two_wheeler">two_wheeler</span>
+</div>
+<div class="p-md">
+<!-- Vehicle Identity -->
+<div class="flex justify-between items-start mb-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">KL 16 P 78</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-full font-label-md text-label-md">Motorcycle</span>
+<span class="px-2 py-1 bg-surface-container-high text-on-surface-variant rounded-full font-label-md text-label-md">Petrol</span>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-primary">40</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">km/L</span>
+</div>
+</div>
+<hr class="border-outline-variant my-md"/>
+<!-- Real-time Stats -->
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
+<div class="flex items-center gap-1 text-on-surface-variant mb-1">
+<span class="material-symbols-outlined text-sm" data-icon="speed">speed</span>
+<span class="font-label-md text-label-md">ODOMETER</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">12,560 <span class="font-body-sm text-body-sm text-on-surface-variant">km</span></div>
+</div>
+<div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
+<div class="flex items-center gap-1 text-on-surface-variant mb-1">
+<span class="material-symbols-outlined text-sm" data-icon="local_gas_station">local_gas_station</span>
+<span class="font-label-md text-label-md">PETROL PRICE</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-surface">₹104.20<span class="font-body-sm text-body-sm text-on-surface-variant">/L</span></div>
+<div class="font-caption text-caption text-on-surface-variant mt-1">Updated 10m ago</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Call to Actions -->
+<div class="w-full max-w-md flex flex-col gap-sm">
+<button class="w-full bg-primary text-on-primary h-14 rounded-xl font-headline-sm text-headline-sm flex items-center justify-center gap-2 hover:bg-primary-container hover:text-on-primary-container transition-colors active:scale-[0.98]">
+<span class="material-symbols-outlined" data-icon="play_arrow">play_arrow</span>
+                START RIDE
+            </button>
+<button class="w-full bg-surface text-secondary border border-outline-variant h-12 rounded-lg font-body-md text-body-md font-medium flex items-center justify-center hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+                VIEW VEHICLE DETAILS
+            </button>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 right-0 flex justify-around items-center px-sm pb-safe h-16 z-50 bg-surface/90 dark:bg-inverse-surface/90 backdrop-blur-lg border-t border-outline-variant shadow-lg">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest active:scale-90 transition-transform w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home">home</span>
+<span class="font-label-md text-label-md">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim bg-primary-container dark:bg-primary-container rounded-xl px-4 py-1 active:scale-90 transition-transform w-20" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="directions_car">directions_car</span>
+<span class="font-label-md text-label-md">Vehicles</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest active:scale-90 transition-transform w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="route">route</span>
+<span class="font-label-md text-label-md">Rides</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest active:scale-90 transition-transform w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-md text-label-md">Bills</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-variant hover:bg-surface-container-highest active:scale-90 transition-transform w-16" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-md text-label-md">Profile</span>
+</a>
+</nav>
+</body></html>

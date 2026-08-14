@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>VehicleFlow - Payment Summary</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#643e14",
+                      "on-secondary-fixed": "#0b1c30",
+                      "tertiary-container": "#623d13",
+                      "inverse-primary": "#9acee1",
+                      "surface-container-highest": "#e1e2e4",
+                      "on-primary-fixed": "#001f28",
+                      "secondary": "#505f76",
+                      "tertiary-fixed-dim": "#f3bc87",
+                      "background": "#f9f9fa",
+                      "on-primary-fixed-variant": "#114d5d",
+                      "on-secondary-container": "#54647a",
+                      "surface-dim": "#d9dadb",
+                      "on-primary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "surface-variant": "#e1e2e4",
+                      "primary": "#003441",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#e7e8e9",
+                      "error-container": "#ffdad6",
+                      "outline-variant": "#c0c8cb",
+                      "primary-fixed-dim": "#9acee1",
+                      "secondary-fixed-dim": "#b7c8e1",
+                      "surface-container": "#edeeef",
+                      "on-secondary-fixed-variant": "#38485d",
+                      "surface": "#f9f9fa",
+                      "tertiary-fixed": "#ffdcbe",
+                      "on-tertiary-container": "#dda975",
+                      "surface-container-lowest": "#ffffff",
+                      "on-background": "#191c1d",
+                      "tertiary": "#482700",
+                      "outline": "#70787c",
+                      "on-primary-container": "#87bbce",
+                      "on-surface": "#191c1d",
+                      "surface-container-low": "#f3f4f5",
+                      "surface-bright": "#f9f9fa",
+                      "inverse-on-surface": "#f0f1f2",
+                      "inverse-surface": "#2e3132",
+                      "primary-container": "#0f4c5c",
+                      "primary-fixed": "#b6ebfe",
+                      "surface-tint": "#306576",
+                      "secondary-fixed": "#d3e4fe",
+                      "on-tertiary-fixed": "#2c1600",
+                      "secondary-container": "#d0e1fb",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#40484b"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "base": "4px",
+                      "2xl": "48px",
+                      "container-margin": "24px",
+                      "lg": "24px",
+                      "xl": "32px",
+                      "3xl": "64px",
+                      "gutter": "16px"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "label-md": [
+                              "Inter"
+                      ],
+                      "caption": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "display-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "60px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "label-md": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "caption": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "20px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "30px",
+                              {
+                                      "lineHeight": "38px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-sm": [
+                              "36px",
+                              {
+                                      "lineHeight": "44px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .loader {
+            border: 3px solid var(--color-surface-container-highest);
+            border-top: 3px solid var(--color-primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pulse-bg {
+            animation: pulse-light 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse-light {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased font-body-md text-body-md h-screen flex flex-col md:hidden overflow-hidden">
+<!-- Header -->
+<header class="bg-surface/80 backdrop-blur-md border-b border-outline-variant flex justify-between items-center h-16 px-md sticky top-0 z-40">
+<div class="flex items-center gap-sm">
+<button aria-label="Go back" class="p-2 -ml-2 rounded-full hover:bg-surface-container-low transition-colors" onclick="closeModal()">
+<span class="material-symbols-outlined text-on-surface">arrow_back</span>
+</button>
+<h1 class="text-headline-sm font-headline-sm font-bold text-on-surface">Ride Bill | KL 16 P 78</h1>
+</div>
+<button aria-label="Support" class="p-2 rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant">help</span>
+</button>
+</header>
+<!-- Main Content (Scrollable) -->
+<main class="flex-1 overflow-y-auto pb-[120px] px-md pt-lg relative z-10">
+<!-- Summary Card -->
+<div class="bg-surface rounded-xl border border-outline-variant p-md mb-lg shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface mb-md">Journey Summary</h2>
+<div class="space-y-4">
+<div class="flex justify-between items-center pb-3 border-b border-surface-container-high">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">route</span>
+<span class="font-body-md text-body-md">Distance</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">8 km</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b border-surface-container-high">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">speed</span>
+<span class="font-body-md text-body-md">Mileage</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">40 km/L</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b border-surface-container-high">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">local_gas_station</span>
+<span class="font-body-md text-body-md">Petrol Price</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">₹104.20/L</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b border-surface-container-high">
+<div class="flex items-center gap-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-secondary text-[20px]">water_drop</span>
+<span class="font-body-md text-body-md">Fuel Used</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface">0.20 L</span>
+</div>
+<div class="flex justify-between items-center pt-2">
+<div class="flex items-center gap-sm text-on-surface">
+<span class="material-symbols-outlined text-primary text-[20px] fill">payments</span>
+<span class="font-body-md text-body-md font-semibold">Fuel Cost</span>
+</div>
+<span class="font-body-lg text-body-lg font-bold text-on-surface">₹20.84</span>
+</div>
+</div>
+</div>
+<!-- Total Payable Highlight -->
+<div class="bg-primary-container rounded-xl p-md flex flex-col items-center justify-center text-center shadow-sm border border-primary/20">
+<span class="font-label-md text-label-md text-on-primary-container uppercase tracking-widest mb-1">Total Payable</span>
+<span class="text-display-sm font-display-sm text-on-primary-fixed font-bold">₹20.84</span>
+</div>
+</main>
+<!-- Sticky Footer CTA -->
+<div class="fixed bottom-0 left-0 right-0 bg-surface/95 backdrop-blur-xl border-t border-outline-variant p-md pb-safe pt-md z-30 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+<button class="w-full bg-primary text-on-primary h-14 rounded-xl font-headline-sm text-headline-sm flex items-center justify-center gap-sm hover:bg-primary/90 transition-colors active:scale-[0.98]" id="payButton" onclick="openModal()">
+<span class="material-symbols-outlined">lock</span>
+            PAY ₹20.84
+        </button>
+<p class="text-center font-caption text-caption text-on-surface-variant mt-3 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+            Payment will be made securely through your UPI app.
+        </p>
+</div>
+<!-- Payment Processing Modal (Hidden by default) -->
+<div class="fixed inset-0 z-50 flex items-end justify-center hidden" id="paymentModal">
+<!-- Backdrop -->
+<div class="absolute inset-0 bg-on-background/40 backdrop-blur-sm transition-opacity opacity-0" id="modalBackdrop" onclick="closeModal()"></div>
+<!-- Modal Content -->
+<div class="bg-surface w-full rounded-t-3xl shadow-xl transform translate-y-full transition-transform duration-300 ease-out relative z-10 flex flex-col max-h-[85vh]" id="modalContent">
+<!-- Handle -->
+<div class="w-full flex justify-center pt-3 pb-2 cursor-pointer" onclick="closeModal()">
+<div class="w-12 h-1.5 bg-outline-variant rounded-full"></div>
+</div>
+<div class="px-md pb-xl overflow-y-auto flex-1">
+<!-- Loading State (Initial View) -->
+<div class="flex flex-col items-center py-xl" id="loadingState">
+<div class="relative mb-6">
+<div class="loader" style="border-top-color: #003441; border-right-color: #003441; border-bottom-color: #003441; border-left-color: #e1e2e4;"></div>
+<span class="material-symbols-outlined absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-primary" style="font-size: 20px;">contactless</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Processing Payment</h3>
+<p class="font-body-md text-body-md text-on-surface-variant text-center pulse-bg">Waiting for payment confirmation...</p>
+<div class="mt-8 bg-surface-container-low rounded-lg p-sm px-md flex items-center gap-2 border border-outline-variant/50">
+<span class="font-label-md text-label-md text-on-surface-variant">REF:</span>
+<span class="font-body-sm text-body-sm text-on-surface font-mono">INV-2026-00124</span>
+</div>
+</div>
+<!-- UPI Options (Simulation of next step) -->
+<div class="hidden mt-4" id="upiOptions">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md">Select UPI App</h3>
+<div class="space-y-3">
+<button class="w-full bg-surface-container-low border border-outline-variant rounded-xl p-md flex items-center justify-between hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-sm">
+<span class="font-bold text-blue-600">G</span>
+</div>
+<div class="text-left">
+<p class="font-body-md text-body-md font-semibold text-on-surface">Google Pay</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full bg-surface-container-low border border-outline-variant rounded-xl p-md flex items-center justify-between hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-sm">
+<span class="font-bold text-purple-600">Pe</span>
+</div>
+<div class="text-left">
+<p class="font-body-md text-body-md font-semibold text-on-surface">PhonePe</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<button class="w-full bg-surface-container-low border border-outline-variant rounded-xl p-md flex items-center justify-between hover:bg-surface-container-high transition-colors active:scale-[0.98]">
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center shadow-sm">
+<span class="font-bold text-blue-400 text-sm">Paytm</span>
+</div>
+<div class="text-left">
+<p class="font-body-md text-body-md font-semibold text-on-surface">Paytm</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+</div>
+<button class="w-full mt-lg py-sm font-body-md text-body-md text-secondary hover:text-on-surface transition-colors" onclick="closeModal()">
+                        Cancel Payment
+                    </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+        const modal = document.getElementById('paymentModal');
+        const backdrop = document.getElementById('modalBackdrop');
+        const content = document.getElementById('modalContent');
+        const loadingState = document.getElementById('loadingState');
+        const upiOptions = document.getElementById('upiOptions');
+        let simulationTimeout;
+
+        function openModal() {
+            modal.classList.remove('hidden');
+            
+            // Trigger reflow
+            void modal.offsetWidth;
+            
+            // Animate in
+            backdrop.classList.remove('opacity-0');
+            content.classList.remove('translate-y-full');
+            
+            // Reset state
+            loadingState.classList.remove('hidden');
+            upiOptions.classList.add('hidden');
+            
+            // Simulate processing to UPI options
+            clearTimeout(simulationTimeout);
+            simulationTimeout = setTimeout(() => {
+                loadingState.classList.add('hidden');
+                upiOptions.classList.remove('hidden');
+            }, 2500);
+        }
+
+        function closeModal() {
+            // Animate out
+            backdrop.classList.add('opacity-0');
+            content.classList.add('translate-y-full');
+            
+            // Hide after animation
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+            
+            clearTimeout(simulationTimeout);
+        }
+    </script>
+</body></html>
