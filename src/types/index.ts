@@ -2,11 +2,31 @@ export type PlanTier = 'FREE' | 'PRO' | 'BUSINESS';
 
 export type UserRole = 'SUPER_ADMIN' | 'OWNER' | 'STAFF' | 'CUSTOMER';
 
+// Application-level role for session/auth separation
+export type AppRole = 'OWNER' | 'RIDER' | 'ADMIN';
+
+export interface AppSession {
+  role: AppRole;
+  userId: string;
+  name: string;
+  phone?: string;
+  email?: string;
+  createdAt: string;
+}
+
+export interface RiderProfile {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  createdAt: string;
+}
+
 export type VehicleType = 'MOTORCYCLE' | 'SCOOTER' | 'CAR';
 
 export type FuelType = 'PETROL' | 'DIESEL' | 'CNG' | 'ELECTRIC';
 
-export type VehicleStatus = 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'INACTIVE';
+export type VehicleStatus = 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'INACTIVE' | 'RENTAL_REQUESTED' | 'BLOCKED';
 
 export type PricingMode = 'FUEL_COST' | 'PER_KM' | 'FUEL_PLUS_PER_KM' | 'FIXED' | 'CUSTOM';
 
@@ -29,13 +49,34 @@ export type TripStatus =
   | 'CONFIRMATION_PENDING'
   | 'INVOICE_GENERATED'
   | 'PAYMENT_PENDING'
+  | 'PAYMENT_PROCESSING'
   | 'PAYMENT_VERIFIED'
   | 'COMPLETED'
   | 'REJECTED'
   | 'CANCELLED'
   | 'GPS_ERROR'
   | 'PAYMENT_FAILED'
-  | 'UNDER_REVIEW';
+  | 'UNDER_REVIEW'
+  | 'DISPUTED';
+
+export type GpsQuality = 'GOOD' | 'FAIR' | 'POOR' | 'UNAVAILABLE' | 'SUSPICIOUS';
+
+export type DisputeStatus = 'OPEN' | 'UNDER_REVIEW' | 'RESOLVED' | 'REJECTED';
+
+export interface Dispute {
+  id: string;
+  tripId: string;
+  invoiceId?: string;
+  raisedBy: 'RIDER' | 'OWNER';
+  raisedByName: string;
+  reason: string;
+  claimedDistanceKm?: number;
+  evidence?: string;
+  status: DisputeStatus;
+  resolution?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export type IssueSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
@@ -308,6 +349,8 @@ export interface Invoice {
   paymentStatus: PaymentStatus;
   paymentMethod?: string;
   paymentReference?: string;
+  tripStartTime?: string;  // ISO timestamp when trip started
+  tripEndTime?: string;    // ISO timestamp when trip ended
   issuedAt: string;
   paidAt?: string;
   notes?: string;

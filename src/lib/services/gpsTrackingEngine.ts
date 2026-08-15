@@ -1,4 +1,4 @@
-import { GPSPoint } from '@/types';
+import { GPSPoint, GpsQuality } from '@/types';
 
 // Earth's mean radius in kilometers
 const EARTH_RADIUS_KM = 6371.0;
@@ -133,6 +133,97 @@ export function filterAndValidateGpsPoint(
     distanceDeltaKm: rawDistKm,
     isSuspicious: false,
   };
+}
+
+/**
+ * Calculates GPS tracking quality based on recent accepted points.
+ * 
+ * Quality levels:
+ * - GOOD: accuracy <= 15m, regular intervals
+ * - FAIR: accuracy 15–30m, some gaps
+ * - POOR: accuracy > 30m or many filtered points
+ * - UNAVAILABLE: no points yet
+ * - SUSPICIOUS: anomalies detected
+ */
+export function calculateTrackingQuality(
+  recentPoints: GPSPoint[],
+  isSuspicious: boolean
+): GpsQuality {
+  if (isSuspicious) return 'SUSPICIOUS';
+  if (recentPoints.length === 0) return 'UNAVAILABLE';
+
+  const last5 = recentPoints.slice(-5);
+  const avgAccuracy = last5.reduce((sum, p) => sum + p.accuracy, 0) / last5.length;
+
+  if (avgAccuracy <= 15) return 'GOOD';
+  if (avgAccuracy <= 30) return 'FAIR';
+  return 'POOR';
+}
+
+/**
+ * Returns the emoji + label for a GPS quality level.
+ */
+export function getQualityDisplay(quality: GpsQuality): { emoji: string; label: string; color: string } {
+  switch (quality) {
+    case 'GOOD': return { emoji: '🟢', label: 'GPS Tracking Good', color: 'text-emerald-600' };
+    case 'FAIR': return { emoji: '🟡', label: 'GPS Signal Fair', color: 'text-amber-600' };
+    case 'POOR': return { emoji: '🔴', label: 'GPS Signal Weak', color: 'text-red-600' };
+    case 'SUSPICIOUS': return { emoji: '⚠️', label: 'Anomaly Detected', color: 'text-orange-600' };
+    case 'UNAVAILABLE': default: return { emoji: '⚪', label: 'GPS Acquiring...', color: 'text-on-surface-variant' };
+  }
+}
+
+// =============================================================================
+// OFFLINE GPS QUEUE
+// GPS points collected while offline are stored in localStorage and
+// flushed to the trip when connectivity is restored.
+// =============================================================================
+
+const GPS_QUEUE_PREFIX = 'veylo_gps_queue_';
+
+/**
+ * Adds a GPS point to the offline queue for the given trip.
+ */
+export function enqueueOfflineGpsPoint(tripId: string, point: GPSPoint): void {
+  if (typeof window === 'undefined') return;
+  try {
+    const key = `${GPS_QUEUE_PREFIX}${tripId}`;
+    const raw = localStorage.getItem(key);
+    const queue: GPSPoint[] = raw ? JSON.parse(raw) : [];
+    // Deduplicate by timestamp
+    if (!queue.find(p => p.timestamp === point.timestamp)) {
+      queue.push(point);
+      localStorage.setItem(key, JSON.stringify(queue));
+    }
+  } catch {
+    // Fail silently — GPS tracking continues without queueing
+  }
+}
+
+/**
+ * Retrieves all queued offline GPS points for a trip.
+ */
+export function getOfflineGpsQueue(tripId: string): GPSPoint[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const key = `${GPS_QUEUE_PREFIX}${tripId}`;
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Clears the offline GPS queue for a trip after successful sync.
+ */
+export function clearOfflineGpsQueue(tripId: string): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(`${GPS_QUEUE_PREFIX}${tripId}`);
+  } catch {
+    // Fail silently
+  }
 }
 
 /**

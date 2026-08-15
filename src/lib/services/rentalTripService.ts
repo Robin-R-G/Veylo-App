@@ -2,6 +2,7 @@ import { RentalTrip, GPSPoint, TripStatus, Invoice, Vehicle } from '@/types';
 import { mockStorage } from './mockStorage';
 import { filterAndValidateGpsPoint } from './gpsTrackingEngine';
 import { generateUpiDeepLink } from './financialEngine';
+import { authService } from './authService';
 
 export class RentalTripService {
   /**
@@ -21,6 +22,12 @@ export class RentalTripService {
     if (vehicle.status !== 'AVAILABLE') {
       throw new Error(`Vehicle is currently ${vehicle.status}. Only available vehicles can be rented.`);
     }
+
+    // Use auth session if available, otherwise use provided params
+    const session = authService.getSession();
+    const riderId = session?.userId || `rider_${Date.now()}`;
+    const riderName = (session?.name || params.riderName).trim() || 'Rider';
+    const riderPhone = (session?.phone || params.riderPhone).trim() || '+91 94000 11223';
 
     const state = mockStorage.getState();
     const tripId = `TRIP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(state.rentalTrips?.length ? state.rentalTrips.length + 1 : 1).padStart(3, '0')}`;
@@ -43,9 +50,9 @@ export class RentalTripService {
       ownerId: vehicle.ownerId,
       ownerName: 'Robin (Owner)',
       ownerUpiId: vehicle.ownerUpiId || state.organization.upiId || 'vehicleowner@upi',
-      riderId: `rider_${Date.now()}`,
-      riderName: params.riderName.trim() || 'Rider',
-      riderPhone: params.riderPhone.trim() || '+91 94000 11223',
+      riderId,
+      riderName,
+      riderPhone,
       
       startTime: new Date().toISOString(),
       durationSeconds: 0,
@@ -210,6 +217,8 @@ export class RentalTripService {
       payeeName: trip.ownerName || 'Vehicle Owner',
       upiDeepLink: upiLink,
       paymentStatus: 'PENDING',
+      tripStartTime: trip.startTime,
+      tripEndTime: trip.endTime || new Date().toISOString(),
       issuedAt: new Date().toISOString(),
       notes: `GPS Distance: ${trip.gpsDistanceKm} km @ ₹${trip.ratePerKmRupees}/km. Vehicle: ${trip.vehicleRegNumber}`,
     };

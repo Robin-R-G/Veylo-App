@@ -1,23 +1,40 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { isRouteActive } from '@/lib/navigation';
+import { authService } from '@/lib/services/authService';
+import { AppSession } from '@/types';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
+  const [session, setSession] = useState<AppSession | null>(null);
+
+  useEffect(() => {
+    setSession(authService.getSession());
+  }, []);
 
   const navItems = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
-    { label: 'Rider Mode', icon: 'two_wheeler', href: '/rider' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
     { label: 'Trip Estimator', icon: 'calculate', href: '/estimator' },
     { label: 'Fuel Rates', icon: 'local_gas_station', href: '/admin/fuel-rates' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
     { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices/inv_101' },
-    { label: 'Admin Control', icon: 'settings', href: '/admin' },
+    { label: 'Admin Control', icon: 'admin_panel_settings', href: '/admin' },
+    { label: 'Trip Disputes', icon: 'gavel', href: '/admin/disputes' },
+    { label: 'Settings', icon: 'settings', href: '/settings' },
   ];
+
+  const handleLogout = () => {
+    authService.clearSession();
+    router.push('/login');
+  };
+
+  const displayName = session?.name || 'Owner';
+  const initials = displayName.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <aside className="hidden md:flex flex-col w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant bg-surface shadow-sm py-6 z-40">
@@ -72,17 +89,24 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      {/* Footer User Profile & Fleet Card */}
-      <div className="mt-auto border-t border-outline-variant pt-4 px-4">
+      {/* Footer User Profile & Logout */}
+      <div className="mt-auto border-t border-outline-variant pt-4 px-4 space-y-2">
         <div className="flex items-center gap-3 p-2.5 rounded-xl bg-surface-container-low border border-outline-variant">
           <div className="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-xs">
-            R
+            {initials}
           </div>
-          <div className="text-xs overflow-hidden">
-            <p className="font-bold text-on-surface truncate">Robin (Owner)</p>
-            <p className="text-[10px] text-on-surface-variant font-medium truncate">Veylo Fleet Org</p>
+          <div className="text-xs overflow-hidden flex-1">
+            <p className="font-bold text-on-surface truncate">{displayName}</p>
+            <p className="text-[10px] text-on-surface-variant font-medium truncate">Owner · Veylo Fleet</p>
           </div>
         </div>
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:bg-error-container hover:text-on-error-container transition-all"
+        >
+          <span className="material-symbols-outlined text-sm">logout</span>
+          Sign Out
+        </button>
       </div>
     </aside>
   );

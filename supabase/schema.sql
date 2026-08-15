@@ -335,3 +335,96 @@ VALUES
     ('invoice-bottom', true, 'MOCK_ADSENSE', true, 'Automotive Care Partner', 'Keep your vehicle health score above 80 with regular engine service.'),
     ('public-page-bottom', true, 'MOCK_ADSENSE', true, 'Track Your Own Vehicles', 'Create your free Vehicle Bill account to track fuel & maintenance.')
 ON CONFLICT (placement) DO NOTHING;
+
+-- =============================================================================
+-- 11. RIDER PROFILES (Separate from organization members — external renters)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.rider_profiles (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID UNIQUE,   -- References auth.users(id) if Supabase Auth is enabled
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50) NOT NULL,
+    email VARCHAR(255),
+    -- Rider statistics (denormalized for fast dashboard queries)
+    total_trips INT NOT NULL DEFAULT 0,
+    total_distance_km NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    total_spent_paise BIGINT NOT NULL DEFAULT 0,
+    is_blocked BOOLEAN NOT NULL DEFAULT FALSE,
+    block_reason TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_rider_profiles_phone ON public.rider_profiles(phone);
+CREATE INDEX IF NOT EXISTS idx_rider_profiles_user ON public.rider_profiles(user_id);
+
+-- =============================================================================
+-- 12. DISPUTES (Trip distance / billing disagreements)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.disputes (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    trip_id VARCHAR(100) NOT NULL REFERENCES public.rental_trips(id) ON DELETE CASCADE,
+    invoice_id UUID REFERENCES public.invoices(id) ON DELETE SET NULL,
+    organization_id UUID REFERENCES public.organizations(id) ON DELETE SET NULL,
+    raised_by VARCHAR(10) NOT NULL CHECK (raised_by IN ('RIDER', 'OWNER')),
+    raised_by_name VARCHAR(255) NOT NULL,
+    reason TEXT NOT NULL,
+    claimed_distance_km NUMERIC(10,2),
+    evidence TEXT,                          -- Photo URLs or description
+    status VARCHAR(20) NOT NULL DEFAULT 'OPEN' CHECK (status IN ('OPEN', 'UNDER_REVIEW', 'RESOLVED', 'REJECTED')),
+    resolution TEXT,
+    resolved_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_disputes_trip ON public.disputes(trip_id);
+CREATE INDEX IF NOT EXISTS idx_disputes_status ON public.disputes(status);
+CREATE INDEX IF NOT EXISTS idx_disputes_org ON public.disputes(organization_id);
+
+-- =============================================================================
+-- 13. NOTIFICATION QUEUE (Stub for future push/email notifications)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.notification_queue (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    recipient_id UUID,                    -- References profiles or rider_profiles
+    recipient_type VARCHAR(10) NOT NULL CHECK (recipient_type IN ('OWNER', 'RIDER', 'ADMIN')),
+    channel VARCHAR(20) NOT NULL DEFAULT 'APP' CHECK (channel IN ('APP', 'EMAIL', 'SMS', 'PUSH')),
+    event_type VARCHAR(50) NOT NULL,      -- e.g. 'TRIP_COMPLETED', 'PAYMENT_RECEIVED', 'DISPUTE_RAISED'
+    title VARCHAR(255) NOT NULL,
+    body TEXT NOT NULL,
+    payload JSONB,                        -- Event-specific data
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'SENT', 'FAILED', 'CANCELLED')),
+    sent_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notification_queue_recipient ON public.notification_queue(recipient_id, status);
+CREATE INDEX IF NOT EXISTS idx_notification_queue_event ON public.notification_queue(event_type, status);
+
+-- =============================================================================
+-- 14. APP SESSIONS (For future server-side auth migration)
+-- =============================================================================
+CREATE TABLE IF NOT EXISTS public.app_sessions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID,
+    role VARCHAR(10) NOT NULL CHECK (role IN ('OWNER', 'RIDER', 'ADMIN')),
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    email VARCHAR(255),
+    token VARCHAR(255) UNIQUE,             -- Session token (JWT or random secret)
+    expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 days'),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_app_sessions_token ON public.app_sessions(token);
+CREATE INDEX IF NOT EXISTS idx_app_sessions_user ON public.app_sessions(user_id);
+
+-- Update rental_trips to add rider_profile_id reference (migration-safe)
+ALTER TABLE public.rental_trips ADD COLUMN IF NOT EXISTS rider_profile_id UUID REFERENCES public.rider_profiles(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_rental_trips_rider_profile ON public.rental_trips(rider_profile_id);
+
+-- Update invoices to add trip timestamp columns
+ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS trip_start_time TIMESTAMPTZ;
+ALTER TABLE public.invoices ADD COLUMN IF NOT EXISTS trip_end_time TIMESTAMPTZ;

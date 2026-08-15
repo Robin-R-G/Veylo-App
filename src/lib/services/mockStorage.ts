@@ -13,7 +13,10 @@ import {
   FuelPriceSnapshot,
   PaymentStatus,
   RentalTrip,
-  VehicleStatus
+  VehicleStatus,
+  RiderProfile,
+  Dispute,
+  DisputeStatus
 } from '@/types';
 import { normalizeRegistrationNumber } from './registrationNormalizer';
 import { calculateRideCosts, generateUpiDeepLink } from './financialEngine';
@@ -33,6 +36,8 @@ export interface AppState {
   issues: Issue[];
   adConfigurations: AdConfiguration[];
   featureFlags: FeatureFlags;
+  riders: RiderProfile[];
+  disputes: Dispute[];
 }
 
 const DEFAULT_SNAPSHOT: FuelPriceSnapshot = {
@@ -285,6 +290,8 @@ const INITIAL_STATE: AppState = {
     maintenance: true,
     gpsTracking: true,
   },
+  riders: [],
+  disputes: [],
 };
 
 class MockStorageService {
@@ -298,11 +305,17 @@ class MockStorageService {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_STATE));
         return INITIAL_STATE;
       }
-      return JSON.parse(serialized);
+      const parsed = JSON.parse(serialized) as AppState;
+      // Migrate: patch missing fields added in schema updates
+      if (!parsed.riders) parsed.riders = [];
+      if (!parsed.disputes) parsed.disputes = [];
+      if (!parsed.rentalTrips) parsed.rentalTrips = [];
+      return parsed;
     } catch {
       return INITIAL_STATE;
     }
   }
+
 
   private saveStore(state: AppState) {
     if (typeof window !== 'undefined') {
@@ -668,6 +681,81 @@ class MockStorageService {
     const store = this.getStore();
     store.featureFlags = { ...store.featureFlags, ...flags };
     this.saveStore(store);
+  }
+
+  // --- RIDER PROFILES ---
+  getRiders(): RiderProfile[] {
+    return this.getStore().riders || [];
+  }
+
+  getRiderById(riderId: string): RiderProfile | undefined {
+    return this.getRiders().find(r => r.id === riderId);
+  }
+
+  getRiderByPhone(phone: string): RiderProfile | undefined {
+    const normalized = phone.replace(/\D/g, '');
+    return this.getRiders().find(r => r.phone.replace(/\D/g, '') === normalized);
+  }
+
+  upsertRider(rider: RiderProfile): RiderProfile {
+    const store = this.getStore();
+    if (!store.riders) store.riders = [];
+    const idx = store.riders.findIndex(r => r.id === rider.id);
+    if (idx !== -1) {
+      store.riders[idx] = rider;
+    } else {
+      store.riders.unshift(rider);
+    }
+    this.saveStore(store);
+    return rider;
+  }
+
+  // --- DISPUTES ---
+  getDisputes(): Dispute[] {
+    return this.getStore().disputes || [];
+  }
+
+  getDisputeByTripId(tripId: string): Dispute | undefined {
+    return this.getDisputes().find(d => d.tripId === tripId);
+  }
+
+  addDispute(dispute: Omit<Dispute, 'id' | 'createdAt' | 'updatedAt'>): Dispute {
+    const store = this.getStore();
+    if (!store.disputes) store.disputes = [];
+    const newDispute: Dispute = {
+      ...dispute,
+      id: `dispute_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    store.disputes.unshift(newDispute);
+    this.saveStore(store);
+    return newDispute;
+  }
+
+  updateDispute(disputeId: string, updates: Partial<Pick<Dispute, 'status' | 'resolution'>>): Dispute | undefined {
+    const store = this.getStore();
+    if (!store.disputes) store.disputes = [];
+    const dispute = store.disputes.find(d => d.id === disputeId);
+    if (!dispute) return undefined;
+    Object.assign(dispute, { ...updates, updatedAt: new Date().toISOString() });
+    this.saveStore(store);
+    return dispute;
+  }
+
+  // --- TODAY / MONTH EARNINGS HELPERS ---
+  getTodayEarnings(): number {
+    const today = new Date().toISOString().slice(0, 10);
+    return this.getStore().invoices
+      .filter(i => i.paymentStatus === 'PAID' && i.issuedAt?.startsWith(today))
+      .reduce((sum, i) => sum + i.totalRupees, 0);
+  }
+
+  getThisMonthEarnings(): number {
+    const month = new Date().toISOString().slice(0, 7);
+    return this.getStore().invoices
+      .filter(i => i.paymentStatus === 'PAID' && i.issuedAt?.startsWith(month))
+      .reduce((sum, i) => sum + i.totalRupees, 0);
   }
 }
 
