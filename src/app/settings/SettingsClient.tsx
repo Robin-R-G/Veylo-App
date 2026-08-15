@@ -6,6 +6,8 @@ import { mockStorage } from '@/lib/services/mockStorage';
 import { authService } from '@/lib/services/authService';
 import { Organization } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import Link from 'next/link';
+
 
 export default function SettingsClient() {
   const router = useRouter();
@@ -177,56 +179,26 @@ export default function SettingsClient() {
           </div>
         </div>
 
-        {/* UPI Payment Settings */}
+        {/* UPI Payment Settings Link */}
         <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-lg">payments</span>
               UPI Payment Settings
             </h2>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <span className="text-xs font-medium text-on-surface-variant">Enabled</span>
-              <div
-                onClick={() => setUpiEnabled(!upiEnabled)}
-                className={`w-10 h-6 rounded-full transition-colors cursor-pointer relative ${upiEnabled ? 'bg-primary' : 'bg-outline'}`}
-              >
-                <div className={`absolute top-1 w-4 h-4 rounded-full bg-white shadow transition-all ${upiEnabled ? 'left-5' : 'left-1'}`} />
-              </div>
-            </label>
+            <Link
+              href="/settings/payment"
+              className="px-4 py-2.5 rounded-xl border border-primary text-primary font-bold text-xs hover:bg-primary hover:text-on-primary transition-all flex items-center gap-1.5"
+            >
+              <span className="material-symbols-outlined text-sm">settings</span>
+              Configure UPI Details
+            </Link>
           </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-semibold text-on-surface mb-1.5">UPI ID</label>
-              <input
-                type="text"
-                id="upi-id"
-                value={upiId}
-                onChange={e => setUpiId(e.target.value)}
-                placeholder="yourname@paytm"
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface focus:outline-none focus:border-primary text-sm font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-semibold text-on-surface mb-1.5">Payee Display Name</label>
-              <input
-                type="text"
-                id="upi-payee-name"
-                value={upiPayeeName}
-                onChange={e => setUpiPayeeName(e.target.value)}
-                placeholder="Your Name"
-                className="w-full px-3 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface focus:outline-none focus:border-primary text-sm"
-              />
-            </div>
-          </div>
-
-          {upiId && (
-            <div className="p-3 rounded-xl bg-primary-container text-on-primary-container text-xs">
-              <p className="font-semibold mb-1">Payment Link Preview:</p>
-              <p className="font-mono break-all">upi://pay?pa={upiId}&pn={encodeURIComponent(upiPayeeName)}&cu=INR</p>
-            </div>
-          )}
+          <p className="text-xs text-on-surface-variant leading-relaxed">
+            Configure direct rider-to-owner payment accounts, verify bank connection, check deep-link intent structures, and configure verification states.
+          </p>
         </div>
+
 
         {/* GST / Tax Settings */}
         <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-4">

@@ -20,8 +20,11 @@ import {
   FuelPrice,
   FuelPriceHistoryItem,
   FuelPriceAuditLog,
-  FuelType
+  FuelType,
+  PaymentAttempt,
+  UpiStatus
 } from '@/types';
+
 
 import { normalizeRegistrationNumber } from './registrationNormalizer';
 import { calculateRideCosts, generateUpiDeepLink } from './financialEngine';
@@ -45,6 +48,7 @@ export interface AppState {
   fuelPrices: FuelPrice[];
   fuelPriceHistory: FuelPriceHistoryItem[];
   fuelPriceAuditLogs: FuelPriceAuditLog[];
+  paymentAttempts: PaymentAttempt[];
 }
 
 
@@ -379,7 +383,8 @@ const INITIAL_STATE: AppState = {
       recordedAt: new Date().toISOString()
     }
   ],
-  fuelPriceAuditLogs: []
+  fuelPriceAuditLogs: [],
+  paymentAttempts: []
 };
 
 class MockStorageService {
@@ -407,11 +412,18 @@ class MockStorageService {
       if (!parsed.fuelPriceAuditLogs) {
         parsed.fuelPriceAuditLogs = [];
       }
+      if (!parsed.paymentAttempts) {
+        parsed.paymentAttempts = [];
+      }
+      if (parsed.organization && !parsed.organization.upiStatus) {
+        parsed.organization.upiStatus = parsed.organization.upiId ? 'ACTIVE' : 'NOT_CONFIGURED';
+      }
       return parsed;
     } catch {
       return INITIAL_STATE;
     }
   }
+
 
 
 
@@ -731,6 +743,18 @@ class MockStorageService {
     this.saveStore(store);
   }
 
+  updateInvoice(invoice: Invoice) {
+    const store = this.getStore();
+    const idx = store.invoices.findIndex(i => i.id === invoice.id);
+    if (idx !== -1) {
+      store.invoices[idx] = invoice;
+    } else {
+      store.invoices.unshift(invoice);
+    }
+    this.saveStore(store);
+  }
+
+
   updateInvoicePaymentStatus(invoiceId: string, status: PaymentStatus, method = 'UPI_INTENT', ref?: string): Invoice {
     const store = this.getStore();
     const invoice = store.invoices.find(i => i.id === invoiceId);
@@ -745,13 +769,19 @@ class MockStorageService {
     return invoice;
   }
 
-  updateOwnerUpiSettings(upiId: string, payeeName: string, enabled = true) {
+  updateOwnerUpiSettings(upiId: string, payeeName: string, enabled = true, status: UpiStatus = 'CONFIGURED') {
     const store = this.getStore();
     store.organization.upiId = upiId;
     store.organization.upiPayeeName = payeeName;
     store.organization.upiEnabled = enabled;
+    store.organization.upiStatus = status;
+    store.organization.upiUpdatedAt = new Date().toISOString();
+    if (status === 'ACTIVE') {
+      store.organization.upiVerifiedAt = new Date().toISOString();
+    }
     this.saveStore(store);
   }
+
 
   addMaintenanceRecord(rec: Omit<MaintenanceRecord, 'id' | 'createdAt'>): MaintenanceRecord {
     const store = this.getStore();
@@ -934,7 +964,51 @@ class MockStorageService {
     this.saveStore(store);
     return newLog;
   }
+
+  // --- PAYMENT ATTEMPTS CRUD ---
+  getPaymentAttempts(): PaymentAttempt[] {
+    return this.getStore().paymentAttempts || [];
+  }
+
+  getPaymentAttemptsByInvoiceId(invoiceId: string): PaymentAttempt[] {
+    return this.getPaymentAttempts().filter(pa => pa.invoiceId === invoiceId);
+  }
+
+  addPaymentAttempt(attempt: Omit<PaymentAttempt, 'paymentId' | 'createdAt' | 'updatedAt'>): PaymentAttempt {
+    const store = this.getStore();
+    if (!store.paymentAttempts) store.paymentAttempts = [];
+    
+    const newAttempt: PaymentAttempt = {
+      ...attempt,
+      paymentId: `pay_${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    store.paymentAttempts.unshift(newAttempt);
+    this.saveStore(store);
+    return newAttempt;
+  }
+
+  updatePaymentAttempt(paymentId: string, status: PaymentStatus | 'PAYMENT_PROCESSING' | 'REFUNDED', ref?: string): PaymentAttempt | undefined {
+    const store = this.getStore();
+    if (!store.paymentAttempts) store.paymentAttempts = [];
+    
+    const attempt = store.paymentAttempts.find(pa => pa.paymentId === paymentId);
+    if (!attempt) return undefined;
+    
+    attempt.status = status;
+    attempt.updatedAt = new Date().toISOString();
+    if (ref) attempt.providerReference = ref;
+    if (status === 'PAID') {
+      attempt.paidAt = new Date().toISOString();
+    }
+    
+    this.saveStore(store);
+    return attempt;
+  }
 }
+
 
 export const mockStorage = new MockStorageService();
 

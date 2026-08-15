@@ -83,5 +83,89 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
     expect(price.status).toMatch(/verified|cached|fallback|LIVE|RECENT|STALE/);
   });
 
+  test('TEST 6 — Owner UPI Configuration and Verification Status', () => {
+    mockStorage.updateOwnerUpiSettings('robin@paytm', 'Robin Rentals', true, 'CONFIGURED');
+    const store = mockStorage.getState();
+    expect(store.organization.upiId).toBe('robin@paytm');
+    expect(store.organization.upiPayeeName).toBe('Robin Rentals');
+    expect(store.organization.upiStatus).toBe('CONFIGURED');
+
+    // Simulate Admin/API verification update
+    mockStorage.updateOwnerUpiSettings('robin@paytm', 'Robin Rentals', true, 'ACTIVE');
+    const updatedStore = mockStorage.getState();
+    expect(updatedStore.organization.upiStatus).toBe('ACTIVE');
+    expect(updatedStore.organization.upiVerifiedAt).toBeDefined();
+  });
+
+  test('TEST 7 — Payment Attempt Initiation and Duplicate Prevention', async () => {
+    const { paymentService } = await import('../paymentService');
+
+    // Setup dummy invoice
+    const dummyInvoice = {
+      id: 'inv_test_999',
+      invoiceNumber: 'INV-TEST-999',
+      tripId: 'trip_test_999',
+      totalRupees: 301.20,
+      paymentStatus: 'PENDING' as const,
+      payeeUpiId: 'ownername@upi',
+      payeeName: 'Owner Name',
+      issuedAt: new Date().toISOString(),
+    };
+    
+    const store = mockStorage.getState();
+    store.invoices.push(dummyInvoice as any);
+    store.rentalTrips.push({
+      id: 'trip_test_999',
+      riderId: 'rider_999',
+      ownerId: 'owner_999',
+      vehicleId: 'vehicle_999',
+      totalAmountRupees: 301.20,
+      status: 'CONFIRMATION_PENDING',
+      paymentStatus: 'PENDING',
+    } as any);
+    mockStorage.saveStore(store);
+
+    // 1. Initiate first payment attempt
+    const attempt1 = await paymentService.initiatePaymentAttempt({
+      invoiceId: 'inv_test_999',
+      paymentMethod: 'UPI_DIRECT'
+    });
+
+    expect(attempt1.amount).toBe(301.20);
+    expect(attempt1.paymentDestination).toBe('ownername@upi');
+    expect(attempt1.status).toBe('PAYMENT_PROCESSING');
+
+    // 2. Try duplicate payment initiation: should return same active attempt
+    const attempt2 = await paymentService.initiatePaymentAttempt({
+      invoiceId: 'inv_test_999',
+      paymentMethod: 'UPI_DIRECT'
+    });
+
+    expect(attempt2.paymentId).toBe(attempt1.paymentId);
+    expect(mockStorage.getPaymentAttemptsByInvoiceId('inv_test_999').length).toBe(1);
+  });
+
+  test('TEST 8 — Payment Attempt Verification and State Flow', async () => {
+    const { paymentService } = await import('../paymentService');
+    const attempts = mockStorage.getPaymentAttemptsByInvoiceId('inv_test_999');
+    const activeAttempt = attempts[0];
+
+    // Verify payment attempt
+    const result = await paymentService.verifyPaymentAttempt(activeAttempt.paymentId, 'TXN_REF_REAL_123');
+    
+    expect(result.success).toBe(true);
+    expect(result.attempt.status).toBe('PAID');
+    expect(result.attempt.providerReference).toBe('TXN_REF_REAL_123');
+
+    // Verify that invoice and trip statuses are updated automatically
+    const state = mockStorage.getState();
+    const inv = state.invoices.find(i => i.id === 'inv_test_999');
+    const trip = state.rentalTrips.find(t => t.id === 'trip_test_999');
+
+    expect(inv?.paymentStatus).toBe('PAID');
+    expect(trip?.paymentStatus).toBe('PAID');
+    expect(trip?.status).toBe('COMPLETED');
+  });
 
 });
+

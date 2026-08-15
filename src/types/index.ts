@@ -34,11 +34,14 @@ export type PaymentStatus =
   | 'PENDING' 
   | 'PAYMENT_INITIATED' 
   | 'PAYMENT_SUBMITTED' 
+  | 'PAYMENT_PROCESSING' 
   | 'PAID' 
   | 'SUCCESS' 
   | 'FAILED' 
   | 'CANCELLED' 
+  | 'REFUNDED' 
   | 'UNDER_REVIEW';
+
 
 export type TripStatus =
   | 'REQUESTED'
@@ -115,6 +118,8 @@ export interface Profile {
   createdAt: string;
 }
 
+export type UpiStatus = 'NOT_CONFIGURED' | 'CONFIGURED' | 'VERIFICATION_REQUIRED' | 'ACTIVE' | 'SUSPENDED';
+
 export interface Organization {
   id: string;
   name: string;
@@ -129,6 +134,9 @@ export interface Organization {
   upiId?: string;
   upiPayeeName?: string;
   upiEnabled?: boolean;
+  upiStatus?: UpiStatus;
+  upiVerifiedAt?: string;
+  upiUpdatedAt?: string;
   taxEnabled: boolean;
   gstin?: string;
   cgstRate: number;
@@ -137,6 +145,24 @@ export interface Organization {
   invoicePrefix: string;
   createdAt: string;
 }
+
+export interface PaymentAttempt {
+  paymentId: string;
+  tripId: string;
+  invoiceId: string;
+  ownerId: string;
+  riderId: string;
+  amount: number;
+  currency: string;
+  paymentMethod: string; // 'UPI_DIRECT' | 'CASH' | 'PAYMENT_GATEWAY' | etc.
+  paymentDestination: string; // UPI ID or cash indicator
+  status: PaymentStatus | 'PAYMENT_PROCESSING' | 'REFUNDED';
+  providerReference?: string;
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string;
+}
+
 
 export interface Vehicle {
   id: string;

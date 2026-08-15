@@ -18,6 +18,13 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     logo_url TEXT,
     phone VARCHAR(50),
     email VARCHAR(255),
+    -- UPI Payment Settings
+    upi_id VARCHAR(100),
+    upi_payee_name VARCHAR(255),
+    upi_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    upi_status VARCHAR(30) NOT NULL DEFAULT 'NOT_CONFIGURED' CHECK (upi_status IN ('NOT_CONFIGURED', 'CONFIGURED', 'VERIFICATION_REQUIRED', 'ACTIVE', 'SUSPENDED')),
+    upi_verified_at TIMESTAMPTZ,
+    upi_updated_at TIMESTAMPTZ,
     -- GST and Tax Configuration (Tax Disabled by default until legally registered)
     tax_enabled BOOLEAN NOT NULL DEFAULT FALSE,
     gstin VARCHAR(20),
@@ -28,6 +35,7 @@ CREATE TABLE IF NOT EXISTS public.organizations (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
 
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -271,6 +279,30 @@ CREATE TABLE IF NOT EXISTS public.invoices (
 CREATE INDEX IF NOT EXISTS idx_invoices_org ON public.invoices(organization_id);
 
 -- -----------------------------------------------------------------------------
+-- 6B. PAYMENT ATTEMPTS
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.payment_attempts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    trip_id VARCHAR(100) NOT NULL,
+    invoice_id UUID NOT NULL REFERENCES public.invoices(id) ON DELETE CASCADE,
+    owner_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    rider_id VARCHAR(100) NOT NULL,
+    amount NUMERIC(10,2) NOT NULL,
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    payment_method VARCHAR(50) NOT NULL DEFAULT 'UPI_DIRECT',
+    payment_destination VARCHAR(255) NOT NULL,
+    status VARCHAR(30) NOT NULL DEFAULT 'PENDING' CHECK (status IN ('PENDING', 'PAYMENT_INITIATED', 'PAYMENT_PROCESSING', 'PAID', 'FAILED', 'CANCELLED', 'REFUNDED', 'UNDER_REVIEW')),
+    provider_reference VARCHAR(255),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    paid_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_payment_attempts_invoice ON public.payment_attempts(invoice_id);
+CREATE INDEX IF NOT EXISTS idx_payment_attempts_status ON public.payment_attempts(status);
+
+-- -----------------------------------------------------------------------------
+
 -- 7. VEHICLE HEALTH & MAINTENANCE TRACKER
 -- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.maintenance_records (

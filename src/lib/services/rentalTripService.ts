@@ -227,9 +227,10 @@ export class RentalTripService {
       subtotalRupees: trip.distanceChargeRupees,
       taxRupees: 0,
       totalRupees: trip.totalAmountRupees,
-      payeeUpiId: trip.ownerUpiId,
-      payeeName: trip.ownerName || 'Vehicle Owner',
+      payeeUpiId: trip.ownerUpiId || state.organization.upiId || 'vehicleowner@upi',
+      payeeName: trip.ownerName || state.organization.upiPayeeName || 'Vehicle Owner',
       upiDeepLink: upiLink,
+
       paymentStatus: 'PENDING',
       priceSnapshot,
       tripStartTime: trip.startTime,

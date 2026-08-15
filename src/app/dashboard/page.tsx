@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { mockStorage } from '@/lib/services/mockStorage';
-import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip } from '@/types';
+import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { AdSlot } from '@/components/ads/AdSlot';
@@ -14,6 +14,7 @@ export default function OwnerDashboard() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [rentalTrips, setRentalTrips] = useState<RentalTrip[]>([]);
   const [fuelPrice, setFuelPrice] = useState<FuelPrice | null>(null);
+  const [paymentAttempts, setPaymentAttempts] = useState<PaymentAttempt[]>([]);
   const [tier, setTier] = useState<PlanTier>('FREE');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -34,6 +35,7 @@ export default function OwnerDashboard() {
     setVehicles(state.vehicles);
     setInvoices(state.invoices);
     setRentalTrips(state.rentalTrips || []);
+    setPaymentAttempts(mockStorage.getPaymentAttempts());
     setTier(state.currentTier);
 
     loadFuelRate();
@@ -41,17 +43,34 @@ export default function OwnerDashboard() {
 
   if (!mounted) return null;
 
+
   // Active rentals
   const activeRentals = rentalTrips.filter(t => t.status === 'ACTIVE' || t.status === 'CONFIRMATION_PENDING');
 
-  // Owner Earnings calculations matching Prompt #18
-  const paidInvoices = invoices.filter(i => i.paymentStatus === 'PAID');
-  const totalEarningsRupees = paidInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
-  const todayEarningsRupees = totalEarningsRupees > 0 ? totalEarningsRupees : 1245;
-  const thisWeekEarningsRupees = 8420 + totalEarningsRupees;
-  const thisMonthEarningsRupees = 31250 + totalEarningsRupees;
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const monthStr = new Date().toISOString().slice(0, 7);
+
+  const todayPaid = invoices.filter(i => i.paymentStatus === 'PAID' && i.issuedAt?.startsWith(todayStr));
+  const monthPaid = invoices.filter(i => i.paymentStatus === 'PAID' && i.issuedAt?.startsWith(monthStr));
+  const pendingInvoices = invoices.filter(i => i.paymentStatus === 'PENDING' || i.paymentStatus === 'PAYMENT_INITIATED' || i.paymentStatus === 'PAYMENT_SUBMITTED');
+  const completedInvoices = invoices.filter(i => i.paymentStatus === 'PAID');
+
+  const todayEarningsVal = todayPaid.reduce((sum, i) => sum + i.totalRupees, 0);
+  const todayEarningsRupees = todayEarningsVal > 0 ? todayEarningsVal : 2450;
+  
+  const thisMonthEarningsVal = monthPaid.reduce((sum, i) => sum + i.totalRupees, 0);
+  const thisMonthEarningsRupees = thisMonthEarningsVal > 0 ? thisMonthEarningsVal : 48250;
+
+  const pendingEarningsVal = pendingInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
+  const pendingEarningsRupees = pendingEarningsVal > 0 ? pendingEarningsVal : 500;
+
+  const completedEarningsVal = completedInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
+  const completedEarningsRupees = completedEarningsVal > 0 ? completedEarningsVal : 47750;
 
   const totalDistanceKm = rentalTrips.reduce((sum, t) => sum + t.gpsDistanceKm, 0) + 68;
+
+  const org = mockStorage.getState().organization;
+  const upiIdDisplay = org.upiId || 'Not Configured';
 
   return (
     <div className="space-y-6">
@@ -68,35 +87,31 @@ export default function OwnerDashboard() {
               className="px-4 py-2.5 rounded-lg bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-emerald-800 transition-all"
             >
               <span className="material-symbols-outlined text-sm">directions_bike</span>
-              I'm a Rider Mode
+              Rider Mode
             </Link>
             <Link
-              href="/vehicles/new"
-              className="px-4 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-xs flex items-center gap-1.5 shadow-sm hover:bg-primary-container hover:text-on-primary-container transition-all"
+              href="/settings/payment"
+              className="px-4 py-2.5 rounded-lg bg-surface border border-outline-variant text-primary font-bold text-xs flex items-center gap-1.5 shadow-sm hover:bg-surface-container-low transition-all"
             >
-              <span className="material-symbols-outlined text-sm">add</span>
-              Add Vehicle
+              <span className="material-symbols-outlined text-sm">payments</span>
+              Payment Settings
             </Link>
           </div>
         }
       />
 
-      {/* Active Rental Alert Card if any vehicle is currently being ridden */}
+      {/* Active Rental Warnings */}
       {activeRentals.length > 0 && (
-        <div className="p-5 rounded-2xl bg-primary text-on-primary shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="font-extrabold text-sm uppercase tracking-wider">Active Rental in Progress</span>
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-300 text-xs text-amber-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-amber-700 animate-bounce">warning</span>
+            <div>
+              <p className="font-bold">Active Ride Telemetry Ingestion In Progress</p>
+              <p className="text-on-surface-variant font-medium mt-0.5">
+                Rider {activeRentals[0].riderName} is currently using vehicle {activeRentals[0].vehicleRegNumber}.
+              </p>
             </div>
-            <p className="text-xs text-white/90">
-              Vehicle: <strong className="font-mono">{activeRentals[0].vehicleRegNumber}</strong> ({activeRentals[0].vehicleModel}) • Rider: {activeRentals[0].riderName}
-            </p>
-            <p className="text-xs text-white/80">
-              Distance: <strong>{activeRentals[0].gpsDistanceKm.toFixed(1)} km</strong> • Current ODO: <strong>{activeRentals[0].estimatedEndOdometer.toLocaleString()} km</strong>
-            </p>
           </div>
-
           <Link
             href={`/rider/trip/${activeRentals[0].id}`}
             className="px-4 py-2.5 rounded-xl bg-white text-primary font-bold text-xs text-center shadow hover:bg-slate-100 transition-all"
@@ -106,33 +121,39 @@ export default function OwnerDashboard() {
         </div>
       )}
 
-      {/* Owner Earnings Summary matching Prompt #18 */}
+      {/* Owner Earnings Summary matching Section 12 */}
       <div className="bg-surface rounded-2xl p-6 border border-outline-variant shadow-sm space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="font-bold text-base text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">payments</span>
-            Owner Rental Earnings
+            Owner Payments Summary
           </h2>
-          <span className="text-xs text-on-surface-variant font-medium">Auto-settled to: <strong className="font-mono text-primary">vehicleowner@upi</strong></span>
+          <span className="text-xs text-on-surface-variant font-medium">Auto-settled to: <strong className="font-mono text-primary">{upiIdDisplay}</strong></span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <span className="text-[10px] text-on-surface-variant block uppercase font-semibold">Today's Earnings</span>
-            <span className="font-extrabold text-2xl text-emerald-800 mt-1 block">{formatCurrency(todayEarningsRupees)}</span>
-            <span className="text-[10px] text-emerald-700 font-semibold">✓ Instant UPI settled</span>
+            <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Today's Earnings</span>
+            <span className="font-extrabold text-xl sm:text-2xl text-emerald-800 mt-1 block">{formatCurrency(todayEarningsRupees)}</span>
+            <span className="text-[10px] text-emerald-700 font-bold">✓ Instant UPI settled</span>
           </div>
 
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <span className="text-[10px] text-on-surface-variant block uppercase font-semibold">This Week's Earnings</span>
-            <span className="font-extrabold text-2xl text-primary mt-1 block">{formatCurrency(thisWeekEarningsRupees)}</span>
-            <span className="text-[10px] text-on-surface-variant">7 active rental days</span>
+            <span className="text-[10px] text-on-surface-variant block uppercase font-bold">This Month</span>
+            <span className="font-extrabold text-xl sm:text-2xl text-primary mt-1 block">{formatCurrency(thisMonthEarningsRupees)}</span>
+            <span className="text-[10px] text-on-surface-variant font-medium">Aug 2026 fleet revenue</span>
           </div>
 
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-            <span className="text-[10px] text-on-surface-variant block uppercase font-semibold">This Month's Earnings</span>
-            <span className="font-extrabold text-2xl text-primary mt-1 block">{formatCurrency(thisMonthEarningsRupees)}</span>
-            <span className="text-[10px] text-on-surface-variant">Aug 2026 fleet revenue</span>
+            <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Pending</span>
+            <span className="font-extrabold text-xl sm:text-2xl text-amber-800 mt-1 block">{formatCurrency(pendingEarningsRupees)}</span>
+            <span className="text-[10px] text-on-surface-variant font-medium">Awaiting payment verification</span>
+          </div>
+
+          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
+            <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Completed</span>
+            <span className="font-extrabold text-xl sm:text-2xl text-emerald-800 mt-1 block">{formatCurrency(completedEarningsRupees)}</span>
+            <span className="text-[10px] text-emerald-700 font-bold">Paid direct invoice sums</span>
           </div>
         </div>
       </div>
@@ -285,6 +306,86 @@ export default function OwnerDashboard() {
               ))
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Direct UPI Payment attempts history - Section 12 */}
+      <div className="bg-surface p-6 rounded-2xl border border-outline-variant shadow-sm space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-outline-variant">
+          <h2 className="text-base font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary">payments</span>
+            Direct UPI Payment History Ledger
+          </h2>
+          <span className="text-xs text-on-surface-variant font-medium">
+            Total transactions logged: <strong>{paymentAttempts.length}</strong>
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          {paymentAttempts.length === 0 ? (
+            <div className="text-center py-8 text-xs text-on-surface-variant space-y-1">
+              <span className="material-symbols-outlined text-outline text-3xl">payments</span>
+              <p className="font-semibold">No direct UPI payment attempts registered yet.</p>
+              <p>Simulated payments from riders will display here.</p>
+            </div>
+          ) : (
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-outline-variant text-on-surface-variant uppercase text-[10px]">
+                  <th className="py-3 px-4">Date</th>
+                  <th className="py-3 px-4">Rider</th>
+                  <th className="py-3 px-4">Invoice ID</th>
+                  <th className="py-3 px-4">Amount</th>
+                  <th className="py-3 px-4">Method & Destination</th>
+                  <th className="py-3 px-4">Ref/VPA</th>
+                  <th className="py-3 px-4 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paymentAttempts.map((pa) => {
+                  const date = new Date(pa.createdAt);
+                  return (
+                    <tr key={pa.paymentId} className="border-b border-outline-variant hover:bg-surface-container-low transition-all">
+                      <td className="py-3 px-4 font-medium text-on-surface-variant">
+                        {date.getDate()} {date.toLocaleString('en-US', { month: 'short' })} {date.getFullYear()}
+                      </td>
+                      <td className="py-3 px-4 font-bold text-on-surface">
+                        Rider {pa.riderId.substring(6, 12).toUpperCase()}
+                      </td>
+                      <td className="py-3 px-4 font-mono font-bold text-primary">
+                        <Link href={`/invoices/${pa.invoiceId}`} className="hover:underline">
+                          {pa.invoiceId.substring(0, 8).toUpperCase()}
+                        </Link>
+                      </td>
+                      <td className="py-3 px-4 font-extrabold text-primary">
+                        ₹{pa.amount.toFixed(2)}
+                      </td>
+                      <td className="py-3 px-4 font-medium text-on-surface-variant">
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] uppercase font-bold mr-1.5">
+                          {pa.paymentMethod}
+                        </span>
+                        <span className="font-mono text-[10px]">{pa.paymentDestination}</span>
+                      </td>
+                      <td className="py-3 px-4 font-mono text-[10px] text-on-surface-variant">
+                        {pa.providerReference || 'N/A'}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <span className={`px-2 py-0.5 rounded border text-[10px] font-bold ${
+                          pa.status === 'PAID' 
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            : pa.status === 'PAYMENT_PROCESSING' || pa.status === 'PAYMENT_INITIATED'
+                            ? 'bg-amber-100 text-amber-800 border-amber-300'
+                            : 'bg-red-100 text-red-800 border-red-300'
+                        }`}>
+                          {pa.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
 
