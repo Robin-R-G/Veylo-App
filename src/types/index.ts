@@ -10,7 +10,32 @@ export type VehicleStatus = 'AVAILABLE' | 'IN_USE' | 'MAINTENANCE' | 'INACTIVE';
 
 export type PricingMode = 'FUEL_COST' | 'PER_KM' | 'FUEL_PLUS_PER_KM' | 'FIXED' | 'CUSTOM';
 
-export type PaymentStatus = 'INITIATED' | 'PENDING' | 'SUCCESS' | 'PAID' | 'FAILED' | 'CANCELLED';
+export type PaymentStatus = 
+  | 'PENDING' 
+  | 'PAYMENT_INITIATED' 
+  | 'PAYMENT_SUBMITTED' 
+  | 'PAID' 
+  | 'SUCCESS' 
+  | 'FAILED' 
+  | 'CANCELLED' 
+  | 'UNDER_REVIEW';
+
+export type TripStatus =
+  | 'REQUESTED'
+  | 'APPROVED'
+  | 'ACTIVE'
+  | 'ENDING'
+  | 'DISTANCE_CALCULATED'
+  | 'CONFIRMATION_PENDING'
+  | 'INVOICE_GENERATED'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_VERIFIED'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'GPS_ERROR'
+  | 'PAYMENT_FAILED'
+  | 'UNDER_REVIEW';
 
 export type IssueSeverity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
@@ -87,10 +112,73 @@ export interface Vehicle {
   mileageKmpl: number;
   initialOdometer: number;
   currentOdometer: number;
+  lastVerifiedOdometer: number;
+  estimatedCurrentOdometer: number;
+  ratePerKmRupees: number; // e.g. 12 for ₹12/km
+  ownerUpiId?: string;
+  requiresApproval?: boolean;
   state: string; // e.g. "Kerala"
   city: string;  // e.g. "Kozhikode"
   status: VehicleStatus;
   notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GPSPoint {
+  id?: string;
+  latitude: number;
+  longitude: number;
+  accuracy: number;
+  speed?: number | null; // meters per second
+  heading?: number | null;
+  timestamp: number;
+  distanceFromLastPointKm?: number;
+  isFiltered?: boolean;
+}
+
+export interface RentalTrip {
+  id: string;
+  vehicleId: string;
+  vehicleRegNumber: string;
+  vehicleModel: string;
+  vehicleType: VehicleType;
+  ownerId: string;
+  ownerName?: string;
+  ownerUpiId: string;
+  riderId: string;
+  riderName: string;
+  riderPhone: string;
+  
+  startTime: string;
+  endTime?: string;
+  durationSeconds: number;
+
+  startOdometer: number;
+  gpsDistanceKm: number;
+  estimatedEndOdometer: number;
+  actualEndOdometer?: number;
+
+  ratePerKmRupees: number;
+  distanceChargeRupees: number;
+  otherChargesRupees: number;
+  totalAmountRupees: number;
+
+  status: TripStatus;
+  gpsTrackingStatus: 'ACTIVE' | 'WEAK_SIGNAL' | 'LOST' | 'STOPPED';
+  isSuspicious: boolean;
+  suspiciousReason?: string;
+
+  startCoordinates?: { lat: number; lng: number };
+  currentCoordinates?: { lat: number; lng: number };
+  trackingPoints: GPSPoint[];
+
+  invoiceId?: string;
+  paymentStatus: PaymentStatus;
+  upiDeepLink?: string;
+  upiTransactionRef?: string;
+  paidAt?: string;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -103,8 +191,9 @@ export interface OdometerRecord {
   difference: number;
   updatedByProfileId?: string;
   updatedByName?: string;
-  reason: 'RIDE_COMPLETED' | 'MANUAL_UPDATE' | 'ADMIN_CORRECTION';
+  reason: 'RIDE_COMPLETED' | 'GPS_RIDE_COMPLETED' | 'MANUAL_UPDATE' | 'ADMIN_CORRECTION' | 'OWNER_VERIFIED';
   rideId?: string;
+  tripId?: string;
   notes?: string;
   timestamp: string;
 }
@@ -186,8 +275,9 @@ export interface Ride {
 
 export interface Invoice {
   id: string;
-  organizationId: string;
+  organizationId?: string;
   rideId?: string;
+  tripId?: string;
   vehicleId: string;
   vehicleRegNumber: string;
   vehicleMakeModel: string;
@@ -198,13 +288,14 @@ export interface Invoice {
   startOdometer: number;
   endOdometer: number;
   distanceKm: number;
-  mileageKmpl: number;
+  mileageKmpl?: number;
   
-  priceSnapshot: FuelPriceSnapshot;
+  priceSnapshot?: FuelPriceSnapshot;
   
-  estimatedFuelLitres: number;
-  estimatedFuelCostRupees: number;
-  pricingMode: PricingMode;
+  estimatedFuelLitres?: number;
+  estimatedFuelCostRupees?: number;
+  pricingMode?: PricingMode;
+  ratePerKmRupees?: number;
   perKmRateRupees?: number;
   additionalChargesRupees?: number;
   subtotalRupees: number;
@@ -281,6 +372,7 @@ export interface FeatureFlags {
   subscriptions: boolean;
   aiInsights: boolean;
   maintenance: boolean;
+  gpsTracking: boolean;
 }
 
 export interface PlanEntitlements {

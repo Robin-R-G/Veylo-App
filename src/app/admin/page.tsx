@@ -16,6 +16,7 @@ export default function AdminControlPage() {
     subscriptions: true,
     aiInsights: true,
     maintenance: true,
+    gpsTracking: true,
   });
 
   const [adConfigs, setAdConfigs] = useState<AdConfiguration[]>([]);

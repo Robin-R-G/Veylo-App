@@ -125,17 +125,21 @@ export function generateUpiDeepLink(params: {
   payeeUpiId: string;
   payeeName: string;
   amountRupees: number;
-  transactionRef: string;
-  invoiceId: string;
+  transactionRef?: string;
+  referenceId?: string;
+  invoiceId?: string;
   note?: string;
+  transactionNote?: string;
 }): string {
-  const { payeeUpiId, payeeName, amountRupees, transactionRef, invoiceId, note } = params;
+  const { payeeUpiId, payeeName, amountRupees } = params;
+  const ref = params.transactionRef || params.referenceId || `TXN_${Date.now()}`;
+  const note = params.transactionNote || params.note || `Usage Bill Payment ${params.invoiceId || ref}`;
 
   const encUpi = encodeURIComponent(payeeUpiId.trim());
   const encName = encodeURIComponent(payeeName.trim() || 'Vehicle Owner');
   const formattedAmt = amountRupees.toFixed(2);
-  const encNote = encodeURIComponent(note || `Usage Bill Payment ${invoiceId}`);
-  const encRef = encodeURIComponent(transactionRef);
+  const encNote = encodeURIComponent(note);
+  const encRef = encodeURIComponent(ref);
 
   return `upi://pay?pa=${encUpi}&pn=${encName}&am=${formattedAmt}&cu=INR&tr=${encRef}&tn=${encNote}`;
 }

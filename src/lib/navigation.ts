@@ -6,6 +6,11 @@ export function isRouteActive(pathname: string, href: string): boolean {
     return pathname === '/dashboard';
   }
 
+  // Rider mode route (including /rider, /rider/start/..., /rider/trip/...)
+  if (href === '/rider') {
+    return pathname.startsWith('/rider');
+  }
+
   // Exact matching for admin control root
   if (href === '/admin') {
     return pathname === '/admin';

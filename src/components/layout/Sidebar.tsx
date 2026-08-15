@@ -10,8 +10,9 @@ export const Sidebar: React.FC = () => {
 
   const navItems = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
+    { label: 'Rider Mode', icon: 'two_wheeler', href: '/rider' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
-    { label: 'Rides', icon: 'route', href: '/estimator' },
+    { label: 'Trip Estimator', icon: 'calculate', href: '/estimator' },
     { label: 'Fuel Rates', icon: 'local_gas_station', href: '/admin/fuel-rates' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
     { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices/inv_101' },
@@ -22,7 +23,7 @@ export const Sidebar: React.FC = () => {
     <aside className="hidden md:flex flex-col w-[280px] h-screen fixed left-0 top-0 border-r border-outline-variant bg-surface shadow-sm py-6 z-40">
       
       {/* Brand Header */}
-      <div className="px-6 mb-8 flex items-center gap-3">
+      <div className="px-6 mb-6 flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary font-extrabold text-base shadow">
           VL
         </div>
@@ -32,15 +33,31 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
+      {/* Prominent "I'm a Rider" CTA Button */}
+      <div className="px-4 mb-4">
+        <Link
+          href="/rider"
+          className="w-full py-2.5 px-3.5 rounded-xl bg-emerald-700 text-white font-bold text-xs flex items-center justify-between shadow hover:bg-emerald-800 transition-all group"
+        >
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-base">directions_bike</span>
+            <span>I'm a Rider</span>
+          </div>
+          <span className="material-symbols-outlined text-sm group-hover:translate-x-0.5 transition-transform">
+            arrow_forward
+          </span>
+        </Link>
+      </div>
+
       {/* Navigation List */}
-      <nav className="flex-1 px-3 space-y-1.5 overflow-y-auto">
+      <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const active = isRouteActive(pathname, item.href);
           return (
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+              className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 active
                   ? 'bg-secondary-container text-primary font-bold border-l-4 border-primary rounded-r-xl shadow-sm'
                   : 'text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface'

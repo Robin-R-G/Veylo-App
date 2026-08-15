@@ -11,13 +11,15 @@ import {
   Organization,
   PricingMode,
   FuelPriceSnapshot,
-  PaymentStatus
+  PaymentStatus,
+  RentalTrip,
+  VehicleStatus
 } from '@/types';
 import { normalizeRegistrationNumber } from './registrationNormalizer';
 import { calculateRideCosts, generateUpiDeepLink } from './financialEngine';
 import { fuelPriceService } from './fuelPriceProvider';
 
-const STORAGE_KEY = 'vbs_saas_store_v1';
+const STORAGE_KEY = 'veylo_saas_store_v2';
 
 export interface AppState {
   currentTier: PlanTier;
@@ -25,6 +27,7 @@ export interface AppState {
   vehicles: Vehicle[];
   odometerHistory: OdometerRecord[];
   rides: Ride[];
+  rentalTrips: RentalTrip[];
   invoices: Invoice[];
   maintenanceRecords: MaintenanceRecord[];
   issues: Issue[];
@@ -51,25 +54,52 @@ const INITIAL_STATE: AppState = {
   currentTier: 'FREE',
   organization: {
     id: 'org_demo_1',
-    name: 'Apex Fleet Solutions',
-    slug: 'apex-fleet',
+    name: 'Veylo Fleet Solutions',
+    slug: 'veylo-fleet',
     planTier: 'FREE',
-    businessName: 'Apex Vehicle Billing',
-    email: 'owner@speeedfleet.com',
+    businessName: 'Veylo Vehicle Rentals',
+    email: 'owner@veylo.com',
     phone: '+91 98765 43210',
     defaultState: 'Kerala',
     defaultCity: 'Kozhikode',
-    upiId: 'owner@upi',
+    upiId: 'vehicleowner@upi',
     upiPayeeName: 'Vehicle Owner',
     upiEnabled: true,
     taxEnabled: false,
     cgstRate: 0,
     sgstRate: 0,
     igstRate: 0,
-    invoicePrefix: 'VBS',
+    invoicePrefix: 'INV',
     createdAt: new Date().toISOString(),
   },
   vehicles: [
+    {
+      id: 'v_kl08ab1234',
+      organizationId: 'org_demo_1',
+      ownerId: 'prof_owner_1',
+      securePublicId: 'pub_kl08ab1234_z77c',
+      registrationNumber: 'KL 08 AB 1234',
+      normalizedRegNumber: 'KL08AB1234',
+      vehicleType: 'SCOOTER',
+      make: 'Honda',
+      model: 'Activa 6G',
+      manufacturingYear: 2023,
+      fuelType: 'PETROL',
+      mileageKmpl: 45,
+      initialOdometer: 42000,
+      currentOdometer: 42580,
+      lastVerifiedOdometer: 42580,
+      estimatedCurrentOdometer: 42580,
+      ratePerKmRupees: 12,
+      ownerUpiId: 'vehicleowner@upi',
+      requiresApproval: false,
+      state: 'Kerala',
+      city: 'Kozhikode',
+      status: 'AVAILABLE',
+      notes: 'Available for immediate rental at Kozhikode beach hub.',
+      createdAt: '2026-08-01T08:00:00Z',
+      updatedAt: new Date().toISOString(),
+    },
     {
       id: 'v_kl16p78',
       organizationId: 'org_demo_1',
@@ -85,10 +115,15 @@ const INITIAL_STATE: AppState = {
       mileageKmpl: 40,
       initialOdometer: 12500,
       currentOdometer: 12560,
+      lastVerifiedOdometer: 12560,
+      estimatedCurrentOdometer: 12560,
+      ratePerKmRupees: 15,
+      ownerUpiId: 'vehicleowner@upi',
+      requiresApproval: false,
       state: 'Kerala',
       city: 'Kozhikode',
       status: 'AVAILABLE',
-      notes: 'Primary daily commute bike. Kozhikode location.',
+      notes: 'Primary daily cruiser bike. Kozhikode location.',
       createdAt: '2026-08-01T08:00:00Z',
       updatedAt: new Date().toISOString(),
     },
@@ -107,6 +142,11 @@ const INITIAL_STATE: AppState = {
       mileageKmpl: 14,
       initialOdometer: 34200,
       currentOdometer: 34850,
+      lastVerifiedOdometer: 34850,
+      estimatedCurrentOdometer: 34850,
+      ratePerKmRupees: 20,
+      ownerUpiId: 'vehicleowner@upi',
+      requiresApproval: false,
       state: 'Maharashtra',
       city: 'Mumbai',
       status: 'AVAILABLE',
@@ -116,6 +156,17 @@ const INITIAL_STATE: AppState = {
     }
   ],
   odometerHistory: [
+    {
+      id: 'odo_0',
+      vehicleId: 'v_kl08ab1234',
+      previousReading: 42000,
+      newReading: 42580,
+      difference: 580,
+      updatedByName: 'Owner Physical Verification',
+      reason: 'OWNER_VERIFIED',
+      notes: 'Verified physical odometer reading',
+      timestamp: '2026-08-14T08:00:00Z',
+    },
     {
       id: 'odo_1',
       vehicleId: 'v_kl16p78',
@@ -140,33 +191,8 @@ const INITIAL_STATE: AppState = {
       timestamp: new Date().toISOString(),
     }
   ],
-  rides: [
-    {
-      id: 'ride_101',
-      vehicleId: 'v_kl16p78',
-      organizationId: 'org_demo_1',
-      ownerId: 'prof_owner_1',
-      customerName: 'Rahul Nair',
-      customerPhone: '+91 94000 11223',
-      startOdometer: 12500,
-      endOdometer: 12560,
-      distanceKm: 60,
-      fuelType: 'PETROL',
-      mileageKmpl: 40,
-      priceSnapshot: DEFAULT_SNAPSHOT,
-      estimatedFuelLitres: 1.50,
-      estimatedFuelCostPaise: 15630,
-      pricePerKmPaise: 260,
-      pricingMode: 'FUEL_COST',
-      totalAmountPaise: 15630,
-      totalAmountRupees: 156.30,
-      notes: 'Highway & city run',
-      issueReported: false,
-      status: 'COMPLETED',
-      createdAt: new Date().toISOString(),
-      completedAt: new Date().toISOString(),
-    }
-  ],
+  rides: [],
+  rentalTrips: [],
   invoices: [
     {
       id: 'inv_101',
@@ -175,28 +201,30 @@ const INITIAL_STATE: AppState = {
       vehicleId: 'v_kl16p78',
       vehicleRegNumber: 'KL 16 P 78',
       vehicleMakeModel: 'Royal Enfield Classic 350',
-      invoiceNumber: 'VBS-2026-0001',
+      invoiceNumber: 'INV-20260814-001',
       title: 'USAGE BILL',
       customerName: 'Rahul Nair',
       customerPhone: '+91 94000 11223',
       startOdometer: 12500,
-      endOdometer: 12560,
-      distanceKm: 60,
+      endOdometer: 12508,
+      distanceKm: 8,
       mileageKmpl: 40,
       priceSnapshot: DEFAULT_SNAPSHOT,
-      estimatedFuelLitres: 1.50,
-      estimatedFuelCostRupees: 156.30,
+      estimatedFuelLitres: 0.20,
+      estimatedFuelCostRupees: 20.84,
       pricingMode: 'FUEL_COST',
-      subtotalRupees: 156.30,
+      subtotalRupees: 20.84,
       taxRupees: 0.00,
-      totalRupees: 156.30,
+      totalRupees: 20.84,
       payeeUpiId: 'owner@upi',
       payeeName: 'Vehicle Owner',
-      upiDeepLink: 'upi://pay?pa=owner%40upi&pn=Vehicle%20Owner&am=156.30&cu=INR&tr=VBS-2026-0001&tn=Usage%20Bill',
+      upiDeepLink: 'upi://pay?pa=owner@upi&pn=Vehicle%20Owner&am=20.84&cu=INR&tr=INV-20260814-001',
       paymentStatus: 'PAID',
       paymentMethod: 'UPI_INTENT',
+      paymentReference: 'UPI_TXN_98721',
       issuedAt: new Date().toISOString(),
       paidAt: new Date().toISOString(),
+      notes: '8 km test journey at ₹104.20/L petrol price',
     }
   ],
   maintenanceRecords: [
@@ -206,11 +234,21 @@ const INITIAL_STATE: AppState = {
       serviceType: 'ENGINE_OIL',
       serviceDate: '2026-07-20',
       odometerReading: 12000,
-      costRupees: 1450,
-      notes: 'Full synthetic oil change & oil filter replace',
+      costRupees: 1500,
+      notes: 'Full synthetic 15W50 engine oil replacement and filter change',
       nextDueOdometer: 15000,
-      nextDueDate: '2026-11-20',
       createdAt: '2026-07-20T10:00:00Z',
+    },
+    {
+      id: 'maint_2',
+      vehicleId: 'v_kl08ab1234',
+      serviceType: 'GENERAL_SERVICE',
+      serviceDate: '2026-08-05',
+      odometerReading: 40000,
+      costRupees: 1200,
+      notes: 'Brake pads and CVT belt inspection',
+      nextDueOdometer: 45000,
+      createdAt: '2026-08-05T10:00:00Z',
     }
   ],
   issues: [],
@@ -219,40 +257,20 @@ const INITIAL_STATE: AppState = {
       id: 'ad_dash',
       placement: 'dashboard-bottom',
       enabled: true,
-      provider: 'Google AdSense (Mock)',
+      provider: 'Veylo Ads Engine',
       premiumExcluded: true,
-      bannerTitle: 'Save on Fleet Insurance & RSA',
-      bannerText: 'Compare instant vehicle insurance quotes with zero commission.',
+      bannerTitle: 'Vehicle Insurance & RSA',
+      bannerText: 'Save up to 40% on comprehensive two-wheeler and four-wheeler insurance.',
       bannerUrl: '#',
     },
     {
       id: 'ad_veh',
       placement: 'vehicle-bottom',
       enabled: true,
-      provider: 'Google AdSense (Mock)',
+      provider: 'Veylo Ads Engine',
       premiumExcluded: true,
-      bannerTitle: 'Certified Tyre Replacement Stores',
-      bannerText: 'Get 15% discount on Goodyear & Michelin tyres near your location.',
-      bannerUrl: '#',
-    },
-    {
-      id: 'ad_inv',
-      placement: 'invoice-bottom',
-      enabled: true,
-      provider: 'Google AdSense (Mock)',
-      premiumExcluded: true,
-      bannerTitle: 'Automotive Care & Engine Health',
-      bannerText: 'Keep your health score above 85% with verified service partners.',
-      bannerUrl: '#',
-    },
-    {
-      id: 'ad_pub',
-      placement: 'public-page-bottom',
-      enabled: true,
-      provider: 'Google AdSense (Mock)',
-      premiumExcluded: true,
-      bannerTitle: 'Manage Your Own Vehicles Free',
-      bannerText: 'Create a free Vehicle Bill account to track fuel expenses & bills.',
+      bannerTitle: 'Doorstep Battery & Tyre Care',
+      bannerText: 'Get verified doorstep battery health check and genuine tyres in Kozhikode.',
       bannerUrl: '#',
     }
   ],
@@ -265,35 +283,43 @@ const INITIAL_STATE: AppState = {
     subscriptions: true,
     aiInsights: true,
     maintenance: true,
-  }
+    gpsTracking: true,
+  },
 };
 
-export class MockStorageService {
+class MockStorageService {
   private getStore(): AppState {
-    if (typeof window === 'undefined') return INITIAL_STATE;
+    if (typeof window === 'undefined') {
+      return INITIAL_STATE;
+    }
     try {
-      const data = localStorage.getItem(STORAGE_KEY);
-      if (!data) {
+      const serialized = localStorage.getItem(STORAGE_KEY);
+      if (!serialized) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_STATE));
         return INITIAL_STATE;
       }
-      return JSON.parse(data);
+      return JSON.parse(serialized);
     } catch {
       return INITIAL_STATE;
     }
   }
 
   private saveStore(state: AppState) {
-    if (typeof window === 'undefined') return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (e) {
-      console.error('Storage save error:', e);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.error('Failed to save to localStorage', err);
+      }
     }
   }
 
   getState(): AppState {
     return this.getStore();
+  }
+
+  resetStore() {
+    this.saveStore(INITIAL_STATE);
   }
 
   setTier(tier: PlanTier) {
@@ -307,45 +333,104 @@ export class MockStorageService {
     return this.getStore().vehicles;
   }
 
-  getVehicleById(id: string): Vehicle | undefined {
-    return this.getStore().vehicles.find(v => v.id === id || v.securePublicId === id);
+  getVehicleById(idOrPublicId: string): Vehicle | undefined {
+    const store = this.getStore();
+    return store.vehicles.find(
+      (v) => v.id === idOrPublicId || v.securePublicId === idOrPublicId
+    );
   }
 
-  addVehicle(rawVehicle: Omit<Vehicle, 'id' | 'securePublicId' | 'normalizedRegNumber' | 'currentOdometer' | 'status' | 'createdAt' | 'updatedAt'> & { initialOdometer: number; state?: string; city?: string }): Vehicle {
+  findVehicleByRegNumber(reg: string): Vehicle | undefined {
     const store = this.getStore();
-    const normalized = normalizeRegistrationNumber(rawVehicle.registrationNumber);
-    
+    const normalized = normalizeRegistrationNumber(reg);
+    return store.vehicles.find(
+      (v) => v.normalizedRegNumber === normalized || v.registrationNumber.toLowerCase().replace(/\s+/g, '') === normalized.toLowerCase()
+    );
+  }
+
+  addVehicle(vehicleData: Omit<Vehicle, 'id' | 'securePublicId' | 'normalizedRegNumber' | 'currentOdometer' | 'lastVerifiedOdometer' | 'estimatedCurrentOdometer' | 'status' | 'createdAt' | 'updatedAt'>): Vehicle {
+    const store = this.getStore();
+    const normalized = normalizeRegistrationNumber(vehicleData.registrationNumber);
+    const id = `v_${normalized.toLowerCase()}_${Date.now()}`;
+    const securePublicId = `pub_${normalized.toLowerCase()}_${Math.random().toString(36).substring(2, 6)}`;
+
     const newVehicle: Vehicle = {
-      ...rawVehicle,
-      id: `v_${Date.now()}`,
-      organizationId: store.organization.id,
-      ownerId: 'prof_owner_1',
-      securePublicId: `pub_${normalized.toLowerCase()}_${Math.random().toString(36).substring(2, 6)}`,
+      ...vehicleData,
+      id,
+      securePublicId,
       normalizedRegNumber: normalized,
-      currentOdometer: rawVehicle.initialOdometer,
-      state: rawVehicle.state || store.organization.defaultState || 'Kerala',
-      city: rawVehicle.city || store.organization.defaultCity || 'Kozhikode',
+      currentOdometer: vehicleData.initialOdometer,
+      lastVerifiedOdometer: vehicleData.initialOdometer,
+      estimatedCurrentOdometer: vehicleData.initialOdometer,
+      ratePerKmRupees: vehicleData.ratePerKmRupees || 12,
+      ownerUpiId: vehicleData.ownerUpiId || store.organization.upiId || 'vehicleowner@upi',
+      requiresApproval: vehicleData.requiresApproval || false,
       status: 'AVAILABLE',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    store.vehicles.unshift(newVehicle);
-    
+    store.vehicles.push(newVehicle);
+
+    // Initial odometer record
     store.odometerHistory.unshift({
-      id: `odo_init_${Date.now()}`,
-      vehicleId: newVehicle.id,
-      previousReading: rawVehicle.initialOdometer,
-      newReading: rawVehicle.initialOdometer,
+      id: `odo_${Date.now()}`,
+      vehicleId: id,
+      previousReading: vehicleData.initialOdometer,
+      newReading: vehicleData.initialOdometer,
       difference: 0,
       updatedByName: 'Vehicle Registration',
       reason: 'MANUAL_UPDATE',
-      notes: 'Initial vehicle registration',
+      notes: 'Initial registration entry',
       timestamp: new Date().toISOString(),
     });
 
     this.saveStore(store);
     return newVehicle;
+  }
+
+  updateVehicleStatus(vehicleId: string, status: VehicleStatus) {
+    const store = this.getStore();
+    const vehicle = store.vehicles.find(v => v.id === vehicleId);
+    if (vehicle) {
+      vehicle.status = status;
+      vehicle.updatedAt = new Date().toISOString();
+      this.saveStore(store);
+    }
+  }
+
+  updateVehicleOdometer(
+    vehicleId: string,
+    newReading: number,
+    reason: 'RIDE_COMPLETED' | 'GPS_RIDE_COMPLETED' | 'MANUAL_UPDATE' | 'ADMIN_CORRECTION' | 'OWNER_VERIFIED' = 'GPS_RIDE_COMPLETED',
+    tripId?: string,
+    notes?: string
+  ) {
+    const store = this.getStore();
+    const vehicle = store.vehicles.find(v => v.id === vehicleId);
+    if (!vehicle) return;
+
+    const prev = vehicle.currentOdometer;
+    vehicle.currentOdometer = newReading;
+    vehicle.estimatedCurrentOdometer = newReading;
+    if (reason === 'OWNER_VERIFIED' || reason === 'MANUAL_UPDATE') {
+      vehicle.lastVerifiedOdometer = newReading;
+    }
+    vehicle.updatedAt = new Date().toISOString();
+
+    store.odometerHistory.unshift({
+      id: `odo_${Date.now()}`,
+      vehicleId,
+      previousReading: prev,
+      newReading,
+      difference: Math.round((newReading - prev) * 100) / 100,
+      reason,
+      tripId,
+      notes: notes || (reason === 'GPS_RIDE_COMPLETED' ? 'Automatic GPS tracking update' : 'Odometer verified by owner'),
+      timestamp: new Date().toISOString(),
+    });
+
+    this.saveStore(store);
   }
 
   recordRide(params: {
@@ -356,38 +441,15 @@ export class MockStorageService {
     fuelPriceRupees: number;
     pricingMode?: PricingMode;
     perKmRateRupees?: number;
-    fixedRateRupees?: number;
     additionalChargesRupees?: number;
     notes?: string;
   }): { ride: Ride; invoice: Invoice } {
     const store = this.getStore();
-    const vehicle = store.vehicles.find(v => v.id === params.vehicleId);
-    
-    if (!vehicle) {
-      throw new Error('Vehicle not found');
-    }
-
-    if (params.endOdometer < vehicle.currentOdometer) {
-      throw new Error(`End odometer (${params.endOdometer} km) cannot be less than current odometer (${vehicle.currentOdometer} km).`);
-    }
+    const vehicle = store.vehicles.find((v) => v.id === params.vehicleId);
+    if (!vehicle) throw new Error('Vehicle not found');
 
     const startOdometer = vehicle.currentOdometer;
     const fuelPricePaise = Math.round(params.fuelPriceRupees * 100);
-
-    const priceSnapshot: FuelPriceSnapshot = {
-      snapshotId: `snap_${Date.now()}`,
-      fuelType: vehicle.fuelType,
-      country: 'India',
-      state: vehicle.state || 'Kerala',
-      city: vehicle.city || 'Kozhikode',
-      pricePerLitreRupees: params.fuelPriceRupees,
-      pricePerUnitPaise: fuelPricePaise,
-      currency: 'INR',
-      source: 'Indian API (fuel.indianapi.in)',
-      effectiveAt: new Date().toISOString(),
-      fetchedAt: new Date().toISOString(),
-      status: 'verified',
-    };
 
     const calc = calculateRideCosts({
       startOdometer,
@@ -395,15 +457,29 @@ export class MockStorageService {
       mileageKmpl: vehicle.mileageKmpl,
       fuelPricePaise,
       pricingMode: params.pricingMode || 'FUEL_COST',
-      perKmRateRupees: params.perKmRateRupees || 0,
-      fixedRateRupees: params.fixedRateRupees || 0,
-      additionalChargesRupees: params.additionalChargesRupees || 0,
+      perKmRateRupees: params.perKmRateRupees,
+      additionalChargesRupees: params.additionalChargesRupees,
     });
 
     const now = new Date().toISOString();
     const rideId = `ride_${Date.now()}`;
     const invoiceId = `inv_${Date.now()}`;
-    const invoiceNum = `VBS-${new Date().getFullYear()}-${String(store.invoices.length + 1).padStart(4, '0')}`;
+    const invoiceNum = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(store.invoices.length + 1).padStart(3, '0')}`;
+
+    const priceSnapshot: FuelPriceSnapshot = {
+      snapshotId: `snap_${Date.now()}`,
+      fuelType: vehicle.fuelType,
+      country: 'India',
+      state: vehicle.state || store.organization.defaultState || 'Kerala',
+      city: vehicle.city || store.organization.defaultCity || 'Kozhikode',
+      pricePerLitreRupees: params.fuelPriceRupees,
+      pricePerUnitPaise: fuelPricePaise,
+      currency: 'INR',
+      source: 'Indian API (fuel.indianapi.in)',
+      effectiveAt: now,
+      fetchedAt: now,
+      status: 'verified',
+    };
 
     const newRide: Ride = {
       id: rideId,
@@ -423,7 +499,6 @@ export class MockStorageService {
       pricePerKmPaise: calc.pricePerKmPaise,
       pricingMode: params.pricingMode || 'FUEL_COST',
       perKmRateRupees: params.perKmRateRupees,
-      fixedRateRupees: params.fixedRateRupees,
       additionalChargesRupees: params.additionalChargesRupees,
       totalAmountPaise: calc.totalAmountPaise,
       totalAmountRupees: calc.totalAmountRupees,
@@ -434,16 +509,15 @@ export class MockStorageService {
       completedAt: now,
     };
 
-    const payeeUpi = store.organization.upiId || 'owner@upi';
+    const payeeUpi = vehicle.ownerUpiId || store.organization.upiId || 'vehicleowner@upi';
     const payeeName = store.organization.upiPayeeName || 'Vehicle Owner';
 
     const upiLink = generateUpiDeepLink({
       payeeUpiId: payeeUpi,
       payeeName,
       amountRupees: calc.totalAmountRupees,
-      transactionRef: invoiceNum,
-      invoiceId: invoiceNum,
-      note: `Usage Bill ${invoiceNum} for ${vehicle.registrationNumber}`,
+      transactionNote: `Ride ${vehicle.registrationNumber} (${calc.distanceKm} km)`,
+      referenceId: invoiceNum,
     });
 
     const newInvoice: Invoice = {
@@ -479,6 +553,7 @@ export class MockStorageService {
     };
 
     vehicle.currentOdometer = params.endOdometer;
+    vehicle.estimatedCurrentOdometer = params.endOdometer;
     vehicle.updatedAt = now;
 
     store.odometerHistory.unshift({
@@ -498,6 +573,48 @@ export class MockStorageService {
 
     this.saveStore(store);
     return { ride: newRide, invoice: newInvoice };
+  }
+
+  // --- RENTAL TRIPS ---
+  addRentalTrip(trip: RentalTrip) {
+    const store = this.getStore();
+    if (!store.rentalTrips) store.rentalTrips = [];
+    store.rentalTrips.unshift(trip);
+    this.saveStore(store);
+  }
+
+  updateRentalTrip(trip: RentalTrip) {
+    const store = this.getStore();
+    if (!store.rentalTrips) store.rentalTrips = [];
+    const idx = store.rentalTrips.findIndex(t => t.id === trip.id);
+    if (idx !== -1) {
+      store.rentalTrips[idx] = trip;
+    } else {
+      store.rentalTrips.unshift(trip);
+    }
+    this.saveStore(store);
+  }
+
+  getRentalTripById(tripId: string): RentalTrip | undefined {
+    const store = this.getStore();
+    return store.rentalTrips?.find(t => t.id === tripId);
+  }
+
+  getRentalTrips(): RentalTrip[] {
+    const store = this.getStore();
+    return store.rentalTrips || [];
+  }
+
+  getActiveRentalTrips(): RentalTrip[] {
+    const store = this.getStore();
+    return (store.rentalTrips || []).filter(t => t.status === 'ACTIVE' || t.status === 'CONFIRMATION_PENDING');
+  }
+
+  // --- INVOICES ---
+  addInvoice(invoice: Invoice) {
+    const store = this.getStore();
+    store.invoices.unshift(invoice);
+    this.saveStore(store);
   }
 
   updateInvoicePaymentStatus(invoiceId: string, status: PaymentStatus, method = 'UPI_INTENT', ref?: string): Invoice {

@@ -17,6 +17,8 @@ export default function NewVehiclePage() {
   const [fuelType, setFuelType] = useState<FuelType>('PETROL');
   const [mileageKmpl, setMileageKmpl] = useState<number>(40);
   const [initialOdometer, setInitialOdometer] = useState<number>(12500);
+  const [ratePerKmRupees, setRatePerKmRupees] = useState<number>(12);
+  const [ownerUpiId, setOwnerUpiId] = useState('vehicleowner@upi');
   const [state, setState] = useState('Kerala');
   const [city, setCity] = useState('Kozhikode');
   const [notes, setNotes] = useState('');
@@ -42,6 +44,9 @@ export default function NewVehiclePage() {
       fuelType,
       mileageKmpl: Number(mileageKmpl),
       initialOdometer: Number(initialOdometer),
+      ratePerKmRupees: Number(ratePerKmRupees || 12),
+      ownerUpiId: ownerUpiId || 'vehicleowner@upi',
+      requiresApproval: false,
       state,
       city,
       notes,
@@ -192,6 +197,37 @@ export default function NewVehiclePage() {
               className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface text-sm font-bold"
               required
             />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-xl bg-surface-container-low border border-outline-variant">
+          <div>
+            <label className="block text-xs font-semibold text-on-surface mb-1">
+              Rental Rate (₹ / km) *
+            </label>
+            <input
+              type="number"
+              value={ratePerKmRupees}
+              onChange={(e) => setRatePerKmRupees(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded bg-surface border border-outline-variant text-primary font-bold text-sm"
+              required
+            />
+            <span className="text-[10px] text-on-surface-variant block mt-0.5">Used for automatic GPS billing</span>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-on-surface mb-1">
+              Owner UPI ID *
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. vehicleowner@upi"
+              value={ownerUpiId}
+              onChange={(e) => setOwnerUpiId(e.target.value)}
+              className="w-full px-3 py-2 rounded bg-surface border border-outline-variant text-on-surface text-xs font-mono font-semibold"
+              required
+            />
+            <span className="text-[10px] text-on-surface-variant block mt-0.5">Rider UPI payment recipient</span>
           </div>
         </div>
 

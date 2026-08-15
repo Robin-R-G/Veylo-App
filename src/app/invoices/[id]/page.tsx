@@ -34,7 +34,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
 
   const handleLaunchUpi = () => {
     setUpiInitiated(true);
-    mockStorage.updateInvoicePaymentStatus(invoice.id, 'INITIATED', 'UPI_INTENT');
+    mockStorage.updateInvoicePaymentStatus(invoice.id, 'PAYMENT_INITIATED', 'UPI_INTENT');
     if (invoice.upiDeepLink && typeof window !== 'undefined') {
       window.location.href = invoice.upiDeepLink;
     }
@@ -126,55 +126,73 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
               <span className="font-semibold text-on-surface">{invoice.startOdometer} km → {invoice.endOdometer} km</span>
             </div>
 
-            <div className="flex justify-between items-center pb-2 border-b border-surface-container-high">
-              <div className="flex items-center gap-2 text-on-surface-variant">
-                <span className="material-symbols-outlined text-secondary text-sm">toys</span>
-                <span>Mileage Rating</span>
+            {invoice.mileageKmpl && (
+              <div className="flex justify-between items-center pb-2 border-b border-surface-container-high">
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                  <span className="material-symbols-outlined text-secondary text-sm">toys</span>
+                  <span>Mileage Rating</span>
+                </div>
+                <span className="font-semibold text-on-surface">{invoice.mileageKmpl} km/L</span>
               </div>
-              <span className="font-semibold text-on-surface">{invoice.mileageKmpl} km/L</span>
-            </div>
+            )}
 
+            {invoice.estimatedFuelLitres !== undefined && (
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                  <span className="material-symbols-outlined text-secondary text-sm">local_gas_station</span>
+                  <span>Estimated Fuel Consumed</span>
+                </div>
+                <span className="font-bold text-primary">{invoice.estimatedFuelLitres.toFixed(2)} L</span>
+              </div>
+            )}
+
+            {invoice.ratePerKmRupees && (
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-2 text-on-surface-variant">
+                  <span className="material-symbols-outlined text-secondary text-sm">paid</span>
+                  <span>Rental Rate</span>
+                </div>
+                <span className="font-bold text-primary">₹{invoice.ratePerKmRupees} / km</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Price Snapshot Box (if fuel mode) */}
+        {snapshot && (
+          <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-xs space-y-1.5">
             <div className="flex justify-between items-center">
-              <div className="flex items-center gap-2 text-on-surface-variant">
-                <span className="material-symbols-outlined text-secondary text-sm">local_gas_station</span>
-                <span>Estimated Fuel Consumed</span>
-              </div>
-              <span className="font-bold text-primary">{invoice.estimatedFuelLitres.toFixed(2)} L</span>
+              <span className="font-bold text-primary flex items-center gap-1">
+                <span className="material-symbols-outlined text-sm">local_gas_station</span>
+                PETROL PRICE SNAPSHOT USED
+              </span>
+              <span className="font-extrabold text-emerald-800 text-sm">
+                ₹{(snapshot.pricePerLitreRupees || 104.20).toFixed(2)} / L
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-[10px] text-on-surface-variant">
+              <span>Captured: {capturedTimeStr}</span>
+              <span>Location: {snapshot.city || 'Kozhikode'}, {snapshot.state || 'Kerala'}</span>
             </div>
           </div>
-        </div>
-
-        {/* Permanent Billing Price Snapshot Box */}
-        <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-xs space-y-1.5">
-          <div className="flex justify-between items-center">
-            <span className="font-bold text-primary flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">local_gas_station</span>
-              PETROL PRICE SNAPSHOT USED
-            </span>
-            <span className="font-extrabold text-emerald-800 text-sm">
-              ₹{(snapshot?.pricePerLitreRupees || 104.20).toFixed(2)} / L
-            </span>
-          </div>
-          <div className="flex justify-between items-center text-[10px] text-on-surface-variant">
-            <span>Captured: {capturedTimeStr}</span>
-            <span>Location: {snapshot?.city || 'Kozhikode'}, {snapshot?.state || 'Kerala'}</span>
-          </div>
-        </div>
+        )}
 
         {/* Price Breakdown */}
         <div>
           <h2 className="font-bold text-base text-on-surface mb-3 pb-2 border-b border-outline-variant">Price Breakdown</h2>
           
           <div className="space-y-2 text-xs">
-            <div className="flex justify-between items-center">
-              <span className="text-on-surface-variant">Fuel Expense ({invoice.estimatedFuelLitres.toFixed(2)} L × ₹{(snapshot?.pricePerLitreRupees || 104.20).toFixed(2)})</span>
-              <span className="font-semibold text-on-surface">{formatCurrency(invoice.estimatedFuelCostRupees)}</span>
-            </div>
-
-            {invoice.pricingMode === 'PER_KM' && (
+            {invoice.estimatedFuelLitres !== undefined && invoice.estimatedFuelCostRupees !== undefined && (
               <div className="flex justify-between items-center">
-                <span className="text-on-surface-variant">Per KM Charge ({invoice.distanceKm} km × ₹3)</span>
-                <span className="font-semibold text-on-surface">{formatCurrency(24.00)}</span>
+                <span className="text-on-surface-variant">Fuel Expense ({invoice.estimatedFuelLitres.toFixed(2)} L × ₹{(snapshot?.pricePerLitreRupees || 104.20).toFixed(2)})</span>
+                <span className="font-semibold text-on-surface">{formatCurrency(invoice.estimatedFuelCostRupees)}</span>
+              </div>
+            )}
+
+            {(invoice.pricingMode === 'PER_KM' || invoice.ratePerKmRupees) && (
+              <div className="flex justify-between items-center">
+                <span className="text-on-surface-variant">Distance Charge ({invoice.distanceKm} km × ₹{invoice.ratePerKmRupees || 12})</span>
+                <span className="font-semibold text-on-surface">{formatCurrency(invoice.subtotalRupees)}</span>
               </div>
             )}
 

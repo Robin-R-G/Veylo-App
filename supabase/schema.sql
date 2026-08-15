@@ -67,6 +67,11 @@ CREATE TABLE IF NOT EXISTS public.vehicles (
     mileage_kmpl NUMERIC(6,2) NOT NULL, -- km per litre or km per kWh
     initial_odometer NUMERIC(10,2) NOT NULL DEFAULT 0.00,
     current_odometer NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    last_verified_odometer NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    estimated_current_odometer NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    rate_per_km NUMERIC(8,2) NOT NULL DEFAULT 12.00, -- e.g. ₹12.00/km
+    owner_upi_id VARCHAR(100) DEFAULT 'vehicleowner@upi',
+    requires_approval BOOLEAN NOT NULL DEFAULT FALSE,
     status VARCHAR(20) NOT NULL DEFAULT 'AVAILABLE' CHECK (status IN ('AVAILABLE', 'IN_USE', 'MAINTENANCE', 'INACTIVE')),
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -150,6 +155,56 @@ CREATE TABLE IF NOT EXISTS public.rides (
 
 CREATE INDEX IF NOT EXISTS idx_rides_vehicle ON public.rides(vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_rides_org ON public.rides(organization_id);
+
+-- -----------------------------------------------------------------------------
+-- 5B. RENTAL TRIPS & GPS TELEMETRY
+-- -----------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.rental_trips (
+    id VARCHAR(100) PRIMARY KEY,
+    vehicle_id UUID NOT NULL REFERENCES public.vehicles(id) ON DELETE CASCADE,
+    owner_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+    rider_id VARCHAR(100) NOT NULL,
+    rider_name VARCHAR(255) NOT NULL,
+    rider_phone VARCHAR(50) NOT NULL,
+    start_time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    end_time TIMESTAMPTZ,
+    duration_seconds INT NOT NULL DEFAULT 0,
+    start_odometer NUMERIC(10,2) NOT NULL,
+    gps_distance_km NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    estimated_end_odometer NUMERIC(10,2) NOT NULL,
+    actual_end_odometer NUMERIC(10,2),
+    rate_per_km_rupees NUMERIC(8,2) NOT NULL,
+    distance_charge_rupees NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    other_charges_rupees NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    total_amount_rupees NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+    status VARCHAR(30) NOT NULL DEFAULT 'ACTIVE',
+    gps_tracking_status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    is_suspicious BOOLEAN NOT NULL DEFAULT FALSE,
+    suspicious_reason TEXT,
+    invoice_id UUID,
+    payment_status VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    upi_deep_link TEXT,
+    upi_transaction_ref VARCHAR(100),
+    paid_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS public.gps_tracking_points (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    trip_id VARCHAR(100) NOT NULL REFERENCES public.rental_trips(id) ON DELETE CASCADE,
+    latitude NUMERIC(10,7) NOT NULL,
+    longitude NUMERIC(10,7) NOT NULL,
+    accuracy NUMERIC(8,2) NOT NULL,
+    speed NUMERIC(8,2),
+    heading NUMERIC(8,2),
+    distance_from_last_km NUMERIC(8,3) DEFAULT 0.000,
+    timestamp BIGINT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_rental_trips_vehicle ON public.rental_trips(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_gps_points_trip ON public.gps_tracking_points(trip_id);
 
 -- -----------------------------------------------------------------------------
 -- 6. INVOICES / USAGE BILLS (NO FAKE GST)

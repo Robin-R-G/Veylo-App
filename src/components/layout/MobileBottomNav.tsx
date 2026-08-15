@@ -10,8 +10,8 @@ export const MobileBottomNav: React.FC = () => {
 
   const items = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
+    { label: 'Rider', icon: 'two_wheeler', href: '/rider' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
-    { label: 'Scan QR', icon: 'qr_code_scanner', href: '/v/pub_kl16p78_x99a' },
     { label: 'Estimator', icon: 'calculate', href: '/estimator' },
     { label: 'Admin', icon: 'settings', href: '/admin' },
   ];
