@@ -3,13 +3,21 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
+import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
+import { useEffect } from 'react';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function TripEstimatorPage() {
   const [startOdo, setStartOdo] = useState<number>(12500);
   const [endOdo, setEndOdo] = useState<number>(12508);
   const [mileage, setMileage] = useState<number>(40);
-  const [fuelPrice, setFuelPrice] = useState<number>(104.20);
+  const [fuelPrice, setFuelPrice] = useState<number>(0);
+
+  useEffect(() => {
+    const rate = fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode') || 104.20;
+    setFuelPrice(rate);
+  }, []);
+
   const [mode, setMode] = useState<'FUEL_COST' | 'PER_KM' | 'FUEL_PLUS_PER_KM'>('FUEL_COST');
   const [perKmRate, setPerKmRate] = useState<number>(3);
 

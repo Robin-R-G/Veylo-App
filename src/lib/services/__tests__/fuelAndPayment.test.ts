@@ -75,12 +75,13 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
     expect(result.totalAmountRupees).toBe(24.00); // 8 x 3 = 24
   });
 
-  test('TEST 5 — Fuel API Unavailable Fallback Timestamp Display', async () => {
+  test('TEST 5 — Fuel API Unavailable Fallback Display', async () => {
     const price = await fuelPriceService.getLatestFuelPrice('PETROL', 'Kerala', 'Kozhikode');
     
     expect(price.priceRupees).toBeGreaterThan(0);
-    expect(price.source).toBeDefined();
-    expect(price.status).toMatch(/verified|cached|fallback/);
+    expect(price.sourceName || price.source).toBeDefined();
+    expect(price.status).toMatch(/verified|cached|fallback|LIVE|RECENT|STALE/);
   });
+
 
 });

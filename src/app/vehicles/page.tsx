@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { mockStorage } from '@/lib/services/mockStorage';
 import { Vehicle, VehicleType } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
+import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function VehiclesPage() {
@@ -68,12 +69,14 @@ export default function VehiclesPage() {
           </div>
         ) : (
           filteredVehicles.map((v) => {
+            const cachedPrice = fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city) || 0;
             const calc = calculateRideCosts({
               startOdometer: v.currentOdometer,
               endOdometer: v.currentOdometer + 1,
               mileageKmpl: v.mileageKmpl,
-              fuelPricePaise: 10420,
+              fuelPricePaise: Math.round(cachedPrice * 100),
             });
+
 
             return (
               <div key={v.id} className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4 flex flex-col justify-between">

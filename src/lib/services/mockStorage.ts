@@ -16,11 +16,15 @@ import {
   VehicleStatus,
   RiderProfile,
   Dispute,
-  DisputeStatus
+  DisputeStatus,
+  FuelPrice,
+  FuelPriceHistoryItem,
+  FuelPriceAuditLog,
+  FuelType
 } from '@/types';
+
 import { normalizeRegistrationNumber } from './registrationNormalizer';
 import { calculateRideCosts, generateUpiDeepLink } from './financialEngine';
-import { fuelPriceService } from './fuelPriceProvider';
 
 const STORAGE_KEY = 'veylo_saas_store_v2';
 
@@ -38,7 +42,11 @@ export interface AppState {
   featureFlags: FeatureFlags;
   riders: RiderProfile[];
   disputes: Dispute[];
+  fuelPrices: FuelPrice[];
+  fuelPriceHistory: FuelPriceHistoryItem[];
+  fuelPriceAuditLogs: FuelPriceAuditLog[];
 }
+
 
 const DEFAULT_SNAPSHOT: FuelPriceSnapshot = {
   snapshotId: 'snap_init_10420',
@@ -47,13 +55,16 @@ const DEFAULT_SNAPSHOT: FuelPriceSnapshot = {
   state: 'Kerala',
   city: 'Kozhikode',
   pricePerLitreRupees: 104.20,
+  priceRupees: 104.20,
   pricePerUnitPaise: 10420,
+  unit: 'LITRE',
   currency: 'INR',
   source: 'Indian API (fuel.indianapi.in)',
   effectiveAt: '2026-08-15T10:30:00Z',
   fetchedAt: '2026-08-15T10:30:00Z',
   status: 'verified',
 };
+
 
 const INITIAL_STATE: AppState = {
   currentTier: 'FREE',
@@ -292,6 +303,83 @@ const INITIAL_STATE: AppState = {
   },
   riders: [],
   disputes: [],
+  fuelPrices: [
+    {
+      id: 'fp_init_petrol',
+      country: 'India',
+      state: 'Kerala',
+      city: 'Kozhikode',
+      fuelType: 'PETROL',
+      pricePerUnitPaise: 10420,
+      priceRupees: 104.20,
+      unit: 'LITRE',
+      currency: 'INR',
+      sourceName: 'MANUAL',
+      effectiveDate: '2026-08-15',
+      fetchedAt: new Date().toISOString(),
+      status: 'LIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      source: 'MANUAL',
+      effectiveAt: new Date().toISOString()
+    },
+    {
+      id: 'fp_init_diesel',
+      country: 'India',
+      state: 'Kerala',
+      city: 'Kozhikode',
+      fuelType: 'DIESEL',
+      pricePerUnitPaise: 9250,
+      priceRupees: 92.50,
+      unit: 'LITRE',
+      currency: 'INR',
+      sourceName: 'MANUAL',
+      effectiveDate: '2026-08-15',
+      fetchedAt: new Date().toISOString(),
+      status: 'LIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      source: 'MANUAL',
+      effectiveAt: new Date().toISOString()
+    },
+    {
+      id: 'fp_init_cng',
+      country: 'India',
+      state: 'Kerala',
+      city: 'Kozhikode',
+      fuelType: 'CNG',
+      pricePerUnitPaise: 8500,
+      priceRupees: 85.00,
+      unit: 'KG',
+      currency: 'INR',
+      sourceName: 'MANUAL',
+      effectiveDate: '2026-08-15',
+      fetchedAt: new Date().toISOString(),
+      status: 'LIVE',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      source: 'MANUAL',
+      effectiveAt: new Date().toISOString()
+    }
+  ],
+  fuelPriceHistory: [
+    {
+      id: 'h_init_petrol',
+      fuelPriceId: 'fp_init_petrol',
+      fuelType: 'PETROL',
+      country: 'India',
+      state: 'Kerala',
+      city: 'Kozhikode',
+      priceRupees: 104.20,
+      pricePerUnitPaise: 10420,
+      unit: 'LITRE',
+      currency: 'INR',
+      sourceName: 'MANUAL',
+      effectiveDate: '2026-08-15',
+      recordedAt: new Date().toISOString()
+    }
+  ],
+  fuelPriceAuditLogs: []
 };
 
 class MockStorageService {
@@ -310,11 +398,21 @@ class MockStorageService {
       if (!parsed.riders) parsed.riders = [];
       if (!parsed.disputes) parsed.disputes = [];
       if (!parsed.rentalTrips) parsed.rentalTrips = [];
+      if (!parsed.fuelPrices || parsed.fuelPrices.length === 0) {
+        parsed.fuelPrices = INITIAL_STATE.fuelPrices;
+      }
+      if (!parsed.fuelPriceHistory) {
+        parsed.fuelPriceHistory = INITIAL_STATE.fuelPriceHistory;
+      }
+      if (!parsed.fuelPriceAuditLogs) {
+        parsed.fuelPriceAuditLogs = [];
+      }
       return parsed;
     } catch {
       return INITIAL_STATE;
     }
   }
+
 
 
   private saveStore(state: AppState) {
@@ -486,13 +584,16 @@ class MockStorageService {
       state: vehicle.state || store.organization.defaultState || 'Kerala',
       city: vehicle.city || store.organization.defaultCity || 'Kozhikode',
       pricePerLitreRupees: params.fuelPriceRupees,
+      priceRupees: params.fuelPriceRupees,
       pricePerUnitPaise: fuelPricePaise,
+      unit: vehicle.fuelType === 'CNG' ? 'KG' : 'LITRE',
       currency: 'INR',
       source: 'Indian API (fuel.indianapi.in)',
       effectiveAt: now,
       fetchedAt: now,
       status: 'verified',
     };
+
 
     const newRide: Ride = {
       id: rideId,
@@ -757,6 +858,83 @@ class MockStorageService {
       .filter(i => i.paymentStatus === 'PAID' && i.issuedAt?.startsWith(month))
       .reduce((sum, i) => sum + i.totalRupees, 0);
   }
+
+  // --- FUEL PRICES CRUD ---
+  getFuelPrices(): FuelPrice[] {
+    return this.getStore().fuelPrices || [];
+  }
+
+  getFuelPrice(fuelType: FuelType, state: string = 'Kerala', city: string = 'Kozhikode'): FuelPrice | undefined {
+    return this.getFuelPrices().find(
+      fp => fp.fuelType === fuelType &&
+            fp.state.toLowerCase() === state.toLowerCase() &&
+            fp.city.toLowerCase() === city.toLowerCase()
+    );
+  }
+
+  saveFuelPrice(fuelPrice: FuelPrice): FuelPrice {
+    const store = this.getStore();
+    if (!store.fuelPrices) store.fuelPrices = [];
+    const idx = store.fuelPrices.findIndex(
+      fp => fp.fuelType === fuelPrice.fuelType &&
+            fp.state.toLowerCase() === fuelPrice.state.toLowerCase() &&
+            fp.city.toLowerCase() === fuelPrice.city.toLowerCase()
+    );
+
+    const now = new Date().toISOString();
+    const updatedPrice = {
+      ...fuelPrice,
+      // Ensure compatibility fields are present
+      source: fuelPrice.sourceName,
+      effectiveAt: fuelPrice.effectiveDate + 'T06:00:00Z',
+      createdAt: idx !== -1 ? store.fuelPrices[idx].createdAt : now,
+      updatedAt: now
+    };
+
+    if (idx !== -1) {
+      store.fuelPrices[idx] = updatedPrice;
+    } else {
+      store.fuelPrices.push(updatedPrice);
+    }
+
+    this.saveStore(store);
+    return updatedPrice;
+  }
+
+  getFuelPriceHistory(): FuelPriceHistoryItem[] {
+    return this.getStore().fuelPriceHistory || [];
+  }
+
+  addFuelPriceHistoryItem(item: Omit<FuelPriceHistoryItem, 'id' | 'recordedAt'>): FuelPriceHistoryItem {
+    const store = this.getStore();
+    if (!store.fuelPriceHistory) store.fuelPriceHistory = [];
+    const newItem: FuelPriceHistoryItem = {
+      ...item,
+      id: `h_${Date.now()}`,
+      recordedAt: new Date().toISOString()
+    };
+    store.fuelPriceHistory.unshift(newItem);
+    this.saveStore(store);
+    return newItem;
+  }
+
+  getFuelPriceAuditLogs(): FuelPriceAuditLog[] {
+    return this.getStore().fuelPriceAuditLogs || [];
+  }
+
+  addFuelPriceAuditLog(log: Omit<FuelPriceAuditLog, 'id' | 'createdAt'>): FuelPriceAuditLog {
+    const store = this.getStore();
+    if (!store.fuelPriceAuditLogs) store.fuelPriceAuditLogs = [];
+    const newLog: FuelPriceAuditLog = {
+      ...log,
+      id: `audit_${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    store.fuelPriceAuditLogs.unshift(newLog);
+    this.saveStore(store);
+    return newLog;
+  }
 }
 
 export const mockStorage = new MockStorageService();
+

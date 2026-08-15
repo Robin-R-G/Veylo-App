@@ -1,8 +1,9 @@
-import { RentalTrip, GPSPoint, TripStatus, Invoice, Vehicle } from '@/types';
+import { RentalTrip, GPSPoint, TripStatus, Invoice, Vehicle, FuelPriceSnapshot } from '@/types';
 import { mockStorage } from './mockStorage';
 import { filterAndValidateGpsPoint } from './gpsTrackingEngine';
 import { generateUpiDeepLink } from './financialEngine';
 import { authService } from './authService';
+import { fuelPriceService } from './fuelPriceService';
 
 export class RentalTripService {
   /**
@@ -193,6 +194,19 @@ export class RentalTripService {
       referenceId: invNumber,
     });
 
+    const vehicle = mockStorage.getVehicleById(trip.vehicleId);
+    let priceSnapshot: FuelPriceSnapshot | undefined = undefined;
+    
+    if (vehicle) {
+      const stateName = vehicle.state || 'Kerala';
+      const cityName = vehicle.city || 'Kozhikode';
+      const fp = mockStorage.getFuelPrice(vehicle.fuelType, stateName, cityName)
+        || mockStorage.getFuelPrice(vehicle.fuelType, 'Kerala', 'Kozhikode');
+      if (fp) {
+        priceSnapshot = fuelPriceService.createPriceSnapshot(fp);
+      }
+    }
+
     const newInvoice: Invoice = {
       id: `inv_${Date.now()}`,
       tripId: trip.id,
@@ -217,6 +231,7 @@ export class RentalTripService {
       payeeName: trip.ownerName || 'Vehicle Owner',
       upiDeepLink: upiLink,
       paymentStatus: 'PENDING',
+      priceSnapshot,
       tripStartTime: trip.startTime,
       tripEndTime: trip.endTime || new Date().toISOString(),
       issuedAt: new Date().toISOString(),

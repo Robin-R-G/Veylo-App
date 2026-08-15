@@ -20,7 +20,14 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   const [rentalTrips, setRentalTrips] = useState<RentalTrip[]>([]);
   const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>([]);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(104.20);
+  const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(() => {
+    const v = mockStorage.getVehicleById(id);
+    if (v) {
+      return fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city) || 0;
+    }
+    return 0;
+  });
+
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ledger' | 'timeline' | 'maintenance' | 'issues' | 'qr'>('ledger');
 

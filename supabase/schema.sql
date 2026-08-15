@@ -101,28 +101,68 @@ CREATE TABLE IF NOT EXISTS public.odometer_history (
 
 CREATE INDEX IF NOT EXISTS idx_odometer_vehicle ON public.odometer_history(vehicle_id);
 
--- -----------------------------------------------------------------------------
--- 4. FUEL PRICES & PRICE HISTORY
--- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS public.fuel_prices (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    state VARCHAR(100) NOT NULL DEFAULT 'DEFAULT',
+    country VARCHAR(100) NOT NULL DEFAULT 'India',
+    state VARCHAR(100) NOT NULL DEFAULT 'Kerala',
+    district VARCHAR(100),
+    city VARCHAR(100) NOT NULL DEFAULT 'Kozhikode',
+    pincode VARCHAR(20),
     fuel_type VARCHAR(20) NOT NULL CHECK (fuel_type IN ('PETROL', 'DIESEL', 'CNG', 'ELECTRIC')),
-    price_per_unit_paise INT NOT NULL, -- Integer paise e.g. 10400 = ₹104.00
-    source VARCHAR(50) NOT NULL DEFAULT 'MANUAL', -- EXTERNAL_API, MANUAL, VERIFIED_FALLBACK
-    verified_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    price_per_unit_paise INT NOT NULL, -- Integer paise e.g. 11400 = ₹114.00
+    price_rupees NUMERIC(10,2) NOT NULL, -- Decimal price e.g. 114.00
+    unit VARCHAR(10) NOT NULL DEFAULT 'LITRE' CHECK (unit IN ('LITRE', 'KG')),
+    currency VARCHAR(10) NOT NULL DEFAULT 'INR',
+    effective_date DATE NOT NULL DEFAULT CURRENT_DATE,
+    source_name VARCHAR(100) NOT NULL DEFAULT 'MANUAL', -- IOCL, BPCL, HPCL, GoodReturns, etc.
+    source_url VARCHAR(255),
+    fetched_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    status VARCHAR(30) NOT NULL DEFAULT 'LIVE' CHECK (status IN ('LIVE', 'RECENT', 'STALE', 'UNAVAILABLE', 'SOURCE_ERROR', 'VALIDATION_ERROR')),
+    fallback_reason TEXT, -- Stores reason if fallback source was used
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE(state, fuel_type)
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(state, district, city, fuel_type)
 );
 
 CREATE TABLE IF NOT EXISTS public.fuel_price_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    fuel_price_id UUID NOT NULL REFERENCES public.fuel_prices(id) ON DELETE CASCADE,
+    fuel_price_id UUID REFERENCES public.fuel_prices(id) ON DELETE SET NULL,
     fuel_type VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL DEFAULT 'India',
+    state VARCHAR(100) NOT NULL,
+    district VARCHAR(100),
+    city VARCHAR(100) NOT NULL,
+    pincode VARCHAR(20),
     price_per_unit_paise INT NOT NULL,
-    source VARCHAR(50) NOT NULL,
+    price_rupees NUMERIC(10,2) NOT NULL,
+    unit VARCHAR(10) NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+    effective_date DATE NOT NULL,
+    source_name VARCHAR(100) NOT NULL,
+    source_url VARCHAR(255),
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS public.fuel_price_audit_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_type VARCHAR(50) NOT NULL, -- FUEL_PRICE_UPDATED, FUEL_PRICE_UPDATE_FAILED
+    fuel_type VARCHAR(20) NOT NULL,
+    country VARCHAR(100) NOT NULL,
+    state VARCHAR(100) NOT NULL,
+    district VARCHAR(100),
+    city VARCHAR(100) NOT NULL,
+    old_price_rupees NUMERIC(10,2),
+    new_price_rupees NUMERIC(10,2),
+    source_name VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL, -- SUCCESS, FAILED
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_fuel_prices_location ON public.fuel_prices(state, district, city);
+CREATE INDEX IF NOT EXISTS idx_fuel_price_history_recorded ON public.fuel_price_history(recorded_at);
+CREATE INDEX IF NOT EXISTS idx_fuel_price_audit_event ON public.fuel_price_audit_log(event_type, status);
+
 
 -- -----------------------------------------------------------------------------
 -- 5. RIDES & COST CALCULATION ENGINE

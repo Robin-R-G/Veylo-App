@@ -195,10 +195,10 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             <div className="flex justify-between items-center">
               <span className="font-bold text-primary flex items-center gap-1">
                 <span className="material-symbols-outlined text-sm">local_gas_station</span>
-                PETROL PRICE SNAPSHOT USED
+                {snapshot.fuelType || 'PETROL'} PRICE SNAPSHOT USED
               </span>
               <span className="font-extrabold text-emerald-800 text-sm">
-                ₹{(snapshot.pricePerLitreRupees || 104.20).toFixed(2)} / L
+                ₹{snapshot.priceRupees.toFixed(2)} / {snapshot.unit || 'L'}
               </span>
             </div>
             <div className="flex justify-between items-center text-[10px] text-on-surface-variant">
@@ -215,10 +215,13 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
           <div className="space-y-2 text-xs">
             {invoice.estimatedFuelLitres !== undefined && invoice.estimatedFuelCostRupees !== undefined && (
               <div className="flex justify-between items-center">
-                <span className="text-on-surface-variant">Fuel Expense ({invoice.estimatedFuelLitres.toFixed(2)} L × ₹{(snapshot?.pricePerLitreRupees || 104.20).toFixed(2)})</span>
+                <span className="text-on-surface-variant">
+                  Fuel Expense ({invoice.estimatedFuelLitres.toFixed(2)} L × {snapshot ? `₹${snapshot.priceRupees.toFixed(2)}` : 'Fuel price temporarily unavailable'})
+                </span>
                 <span className="font-semibold text-on-surface">{formatCurrency(invoice.estimatedFuelCostRupees)}</span>
               </div>
             )}
+
 
             {(invoice.pricingMode === 'PER_KM' || invoice.ratePerKmRupees) && (
               <div className="flex justify-between items-center">

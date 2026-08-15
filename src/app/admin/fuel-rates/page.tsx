@@ -3,24 +3,26 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
-import { FuelPrice } from '@/types';
+import { FuelPrice, FuelPriceHistoryItem } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+
 
 export default function FuelRatesPage() {
   const [petrol, setPetrol] = useState<FuelPrice | null>(null);
   const [diesel, setDiesel] = useState<FuelPrice | null>(null);
   const [cng, setCng] = useState<FuelPrice | null>(null);
 
-  const [petrolInput, setPetrolInput] = useState<number>(104.20);
-  const [dieselInput, setDieselInput] = useState<number>(96.80);
-  const [cngInput, setCngInput] = useState<number>(85.00);
+  const [petrolInput, setPetrolInput] = useState<number>(0);
+  const [dieselInput, setDieselInput] = useState<number>(0);
+  const [cngInput, setCngInput] = useState<number>(0);
   const [stateInput, setStateInput] = useState('Kerala');
   const [cityInput, setCityInput] = useState('Kozhikode');
 
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
-  const [history, setHistory] = useState<FuelPrice[]>([]);
+  const [history, setHistory] = useState<FuelPriceHistoryItem[]>([]);
   const [mounted, setMounted] = useState(false);
+
 
   const loadPrices = async (refresh = false) => {
     setIsRefreshing(true);
@@ -46,6 +48,15 @@ export default function FuelRatesPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Try to load cached values synchronously first
+    const initP = fuelPriceService.getCachedPrice('PETROL', stateInput, cityInput) || 0;
+    const initD = fuelPriceService.getCachedPrice('DIESEL', stateInput, cityInput) || 0;
+    const initC = fuelPriceService.getCachedPrice('CNG', stateInput, cityInput) || 0;
+    
+    setPetrolInput(initP);
+    setDieselInput(initD);
+    setCngInput(initC);
+    
     loadPrices();
   }, []);
 
@@ -61,6 +72,7 @@ export default function FuelRatesPage() {
     loadPrices();
     setTimeout(() => setSaveSuccessMsg(''), 2500);
   };
+
 
   return (
     <div className="space-y-6">
@@ -97,20 +109,30 @@ export default function FuelRatesPage() {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-3">
           <div className="flex justify-between items-center text-on-surface-variant">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">PETROL</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              Verified
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+              petrol?.status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+              petrol?.status === 'RECENT' ? 'bg-blue-100 text-blue-800' :
+              petrol?.status === 'STALE' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${petrol?.status === 'LIVE' ? 'bg-emerald-600' : 'bg-amber-600'}`}></span>
+              {petrol?.status || 'UNAVAILABLE'}
             </span>
           </div>
 
           <div>
-            <p className="text-3xl font-extrabold text-primary">₹{(petrol?.priceRupees || 104.20).toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ L</span></p>
-            <p className="text-xs text-on-surface-variant font-medium mt-1">
-              {petrol?.city || 'Kozhikode'}, {petrol?.state || 'Kerala'}
-            </p>
-            <p className="text-[10px] text-on-surface-variant mt-0.5">
-              Updated {petrol ? new Date(petrol.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10 minutes ago'}
-            </p>
+            {petrol && petrol.priceRupees > 0 ? (
+              <>
+                <p className="text-3xl font-extrabold text-primary">₹{petrol.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {petrol.unit}</span></p>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">
+                  {petrol.city}, {petrol.state}
+                </p>
+                <p className="text-[10px] text-on-surface-variant mt-0.5">
+                  Updated {new Date(petrol.fetchedAt).toLocaleString()} ({petrol.sourceName})
+                </p>
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-error">Fuel price temporarily unavailable</p>
+            )}
           </div>
         </div>
 
@@ -118,20 +140,30 @@ export default function FuelRatesPage() {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-3">
           <div className="flex justify-between items-center text-on-surface-variant">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">DIESEL</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              Verified
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+              diesel?.status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+              diesel?.status === 'RECENT' ? 'bg-blue-100 text-blue-800' :
+              diesel?.status === 'STALE' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${diesel?.status === 'LIVE' ? 'bg-emerald-600' : 'bg-amber-600'}`}></span>
+              {diesel?.status || 'UNAVAILABLE'}
             </span>
           </div>
 
           <div>
-            <p className="text-3xl font-extrabold text-primary">₹{(diesel?.priceRupees || 96.80).toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ L</span></p>
-            <p className="text-xs text-on-surface-variant font-medium mt-1">
-              {diesel?.city || 'Kozhikode'}, {diesel?.state || 'Kerala'}
-            </p>
-            <p className="text-[10px] text-on-surface-variant mt-0.5">
-              Updated {diesel ? new Date(diesel.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10 minutes ago'}
-            </p>
+            {diesel && diesel.priceRupees > 0 ? (
+              <>
+                <p className="text-3xl font-extrabold text-primary">₹{diesel.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {diesel.unit}</span></p>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">
+                  {diesel.city}, {diesel.state}
+                </p>
+                <p className="text-[10px] text-on-surface-variant mt-0.5">
+                  Updated {new Date(diesel.fetchedAt).toLocaleString()} ({diesel.sourceName})
+                </p>
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-error">Fuel price temporarily unavailable</p>
+            )}
           </div>
         </div>
 
@@ -139,23 +171,34 @@ export default function FuelRatesPage() {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-3">
           <div className="flex justify-between items-center text-on-surface-variant">
             <span className="text-xs font-bold uppercase tracking-wider text-primary">CNG</span>
-            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-              Verified
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 ${
+              cng?.status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+              cng?.status === 'RECENT' ? 'bg-blue-100 text-blue-800' :
+              cng?.status === 'STALE' ? 'bg-amber-100 text-amber-800' : 'bg-red-100 text-red-800'
+            }`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${cng?.status === 'LIVE' ? 'bg-emerald-600' : 'bg-amber-600'}`}></span>
+              {cng?.status || 'UNAVAILABLE'}
             </span>
           </div>
 
           <div>
-            <p className="text-3xl font-extrabold text-primary">₹{(cng?.priceRupees || 85.00).toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ kg</span></p>
-            <p className="text-xs text-on-surface-variant font-medium mt-1">
-              {cng?.city || 'Kozhikode'}, {cng?.state || 'Kerala'}
-            </p>
-            <p className="text-[10px] text-on-surface-variant mt-0.5">
-              Updated {cng ? new Date(cng.fetchedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '10 minutes ago'}
-            </p>
+            {cng && cng.priceRupees > 0 ? (
+              <>
+                <p className="text-3xl font-extrabold text-primary">₹{cng.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {cng.unit}</span></p>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">
+                  {cng.city}, {cng.state}
+                </p>
+                <p className="text-[10px] text-on-surface-variant mt-0.5">
+                  Updated {new Date(cng.fetchedAt).toLocaleString()} ({cng.sourceName})
+                </p>
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-error">Fuel price temporarily unavailable</p>
+            )}
           </div>
         </div>
       </div>
+
 
       {/* Manual Override Form */}
       <form onSubmit={handleManualOverride} className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
@@ -245,18 +288,19 @@ export default function FuelRatesPage() {
             <tbody>
               {history.map((h) => (
                 <tr key={h.id} className="border-b border-outline-variant hover:bg-surface-container-low">
-                  <td className="py-2.5 px-3 font-mono">{new Date(h.fetchedAt).toLocaleString()}</td>
+                  <td className="py-2.5 px-3 font-mono">{new Date(h.recordedAt).toLocaleString()}</td>
                   <td className="py-2.5 px-3 font-semibold">{h.fuelType}</td>
                   <td className="py-2.5 px-3 font-bold text-primary">₹{h.priceRupees.toFixed(2)}</td>
                   <td className="py-2.5 px-3">{h.city}, {h.state}</td>
-                  <td className="py-2.5 px-3 font-mono text-[10px] text-on-surface-variant">{h.source}</td>
+                  <td className="py-2.5 px-3 font-mono text-[10px] text-on-surface-variant">{h.sourceName}</td>
                   <td className="py-2.5 px-3">
                     <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                      {h.status}
+                      VERIFIED
                     </span>
                   </td>
                 </tr>
               ))}
+
             </tbody>
           </table>
         </div>

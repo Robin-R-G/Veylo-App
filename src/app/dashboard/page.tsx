@@ -175,14 +175,23 @@ export default function OwnerDashboard() {
           </div>
 
           <div>
-            <p className="text-3xl font-extrabold text-primary">
-              ₹{(fuelPrice?.priceRupees || 104.20).toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ L</span>
-            </p>
-            <p className="text-xs text-on-surface-variant font-medium mt-1">
-              Kozhikode, Kerala • Live fuel rate
-            </p>
+            {fuelPrice && fuelPrice.priceRupees > 0 ? (
+              <>
+                <p className="text-3xl font-extrabold text-primary">
+                  ₹{fuelPrice.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {fuelPrice.unit || 'L'}</span>
+                </p>
+                <p className="text-xs text-on-surface-variant font-medium mt-1">
+                  {fuelPrice.city}, {fuelPrice.state} • {fuelPrice.status === 'LIVE' ? '🟢 Live rate' : '🟡 Cached rate'} ({fuelPrice.sourceName})
+                </p>
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-error">
+                Fuel price temporarily unavailable
+              </p>
+            )}
           </div>
         </div>
+
 
         {/* Fleet Vehicles Card Grid (Span 8) */}
         <div className="bento-col-8 bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">

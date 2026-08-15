@@ -4,11 +4,20 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
+import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
+import { useEffect } from 'react';
+
 
 export default function LandingPage() {
   const [distance, setDistance] = useState<number>(8);
   const [mileage, setMileage] = useState<number>(40);
-  const [fuelPrice, setFuelPrice] = useState<number>(104.20);
+  const [fuelPrice, setFuelPrice] = useState<number>(0);
+
+  useEffect(() => {
+    const rate = fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode') || 104.20;
+    setFuelPrice(rate);
+  }, []);
+
 
   const calcResult = calculateRideCosts({
     startOdometer: 12500,

@@ -239,48 +239,88 @@ export interface OdometerRecord {
   timestamp: string;
 }
 
+export type FuelPriceStatus = 'LIVE' | 'RECENT' | 'STALE' | 'UNAVAILABLE' | 'SOURCE_ERROR' | 'VALIDATION_ERROR';
+
 export interface FuelPriceSnapshot {
   snapshotId: string;
   fuelType: FuelType;
   country: string;
   state: string;
+  district?: string;
   city: string;
-  pricePerLitreRupees: number;
+  pincode?: string;
+  pricePerLitreRupees: number; // For compatibility
+  priceRupees: number;
   pricePerUnitPaise: number;
+  unit: 'LITRE' | 'KG';
   currency: string;
   source: string;
+  sourceUrl?: string;
   effectiveAt: string;
   fetchedAt: string;
-  status: 'verified' | 'cached' | 'fallback';
+  status: FuelPriceStatus | 'verified' | 'cached' | 'fallback';
 }
 
 export interface FuelPrice {
   id: string;
   country: string;
   state: string;
+  district?: string;
   city: string;
+  pincode?: string;
   fuelType: FuelType;
-  pricePerUnitPaise: number; // e.g. 10420 = ₹104.20
-  priceRupees: number; // e.g. 104.20
+  pricePerUnitPaise: number; // e.g. 11400 = ₹114.00
+  priceRupees: number; // e.g. 114.00
+  unit: 'LITRE' | 'KG';
   currency: string;
-  source: string;
-  effectiveAt: string;
+  sourceName: string; // IOCL, BPCL, HPCL, GoodReturns, etc.
+  sourceUrl?: string;
+  effectiveDate: string; // YYYY-MM-DD
   fetchedAt: string;
-  status: 'verified' | 'cached' | 'fallback';
+  status: FuelPriceStatus;
+  fallbackReason?: string;
+  createdAt: string;
+  updatedAt: string;
+  // Compatibility fields for existing code
+  source?: string;
+  effectiveAt?: string;
 }
 
 export interface FuelPriceHistoryItem {
   id: string;
+  fuelPriceId?: string;
   fuelType: FuelType;
   country: string;
   state: string;
+  district?: string;
   city: string;
+  pincode?: string;
   priceRupees: number;
-  source: string;
-  effectiveAt: string;
+  pricePerUnitPaise: number;
+  unit: 'LITRE' | 'KG';
+  currency: string;
+  sourceName: string;
+  sourceUrl?: string;
+  effectiveDate: string;
   recordedAt: string;
-  isManualOverride: boolean;
 }
+
+export interface FuelPriceAuditLog {
+  id: string;
+  eventType: 'FUEL_PRICE_UPDATED' | 'FUEL_PRICE_UPDATE_FAILED';
+  fuelType: FuelType;
+  country: string;
+  state: string;
+  district?: string;
+  city: string;
+  oldPriceRupees?: number;
+  newPriceRupees?: number;
+  sourceName: string;
+  status: 'SUCCESS' | 'FAILED';
+  errorMessage?: string;
+  createdAt: string;
+}
+
 
 export interface Ride {
   id: string;

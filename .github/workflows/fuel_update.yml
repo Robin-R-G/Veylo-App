@@ -1,0 +1,32 @@
+name: Daily Live Fuel Price Update
+
+on:
+  schedule:
+    # Run daily at 06:30 AM IST (which is 01:00 AM UTC) after the daily price revision at 06:00 AM IST
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Enable manual run from GitHub UI
+
+jobs:
+  update-prices:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Dependencies
+        run: npm ci || npm install
+
+      - name: Run Fuel Price Scraper
+        run: node scripts/update-fuel-prices.js
+
+      - name: Commit & Push Price Update
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/fuel-prices.json
+          git diff-index --quiet HEAD || (git commit -m "chore: auto-update daily live fuel prices" && git push)

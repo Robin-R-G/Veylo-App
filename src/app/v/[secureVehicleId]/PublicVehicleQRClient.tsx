@@ -63,7 +63,8 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   const endOdoNum = Number(endOdometer || 0);
   const startOdoNum = vehicle.currentOdometer;
   const distanceKm = endOdoNum >= startOdoNum ? endOdoNum - startOdoNum : 0;
-  const priceRupees = fuelPrice?.priceRupees || 104.20;
+  const priceRupees = fuelPrice?.priceRupees || 0;
+  const unit = vehicle.fuelType === 'CNG' ? 'kg' : 'L';
 
   // Calculation preview
   let calcPreview = null;
@@ -180,11 +181,18 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
             <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
               <div className="flex items-center gap-1 text-on-surface-variant mb-1">
                 <span className="material-symbols-outlined text-sm">local_gas_station</span>
-                <span className="font-semibold text-[10px] uppercase">Petrol Rate</span>
+                <span className="font-semibold text-[10px] uppercase">{vehicle.fuelType} Rate</span>
               </div>
-              <span className="font-bold text-base text-emerald-800">₹{priceRupees.toFixed(2)}/L</span>
-              <span className="text-[10px] text-on-surface-variant block mt-0.5">{vehicle.city || 'Kozhikode'}, {vehicle.state || 'Kerala'}</span>
+              {priceRupees > 0 ? (
+                <>
+                  <span className="font-bold text-base text-emerald-800">₹{priceRupees.toFixed(2)}/{unit}</span>
+                  <span className="text-[10px] text-on-surface-variant block mt-0.5">{vehicle.city || 'Kozhikode'}, {vehicle.state || 'Kerala'}</span>
+                </>
+              ) : (
+                <span className="font-semibold text-xs text-error block">Fuel price temporarily unavailable</span>
+              )}
             </div>
+
           </div>
         </div>
       </div>
@@ -249,8 +257,11 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
             </div>
             <div className="flex justify-between items-center text-xs">
               <span>Fuel Price Rate ({vehicle.city || 'Kozhikode'}):</span>
-              <span className="font-bold text-white text-sm">₹{priceRupees.toFixed(2)} / L</span>
+              <span className="font-bold text-white text-sm">
+                {priceRupees > 0 ? `₹${priceRupees.toFixed(2)} / ${unit}` : 'Fuel price temporarily unavailable'}
+              </span>
             </div>
+
             <div className="pt-2 border-t border-on-primary-container/20 flex justify-between items-center">
               <span className="text-xs font-semibold uppercase tracking-wider text-on-primary-container">Total Payable</span>
               <span className="font-extrabold text-2xl text-white">{formatCurrency(calcPreview.totalAmountRupees)}</span>
