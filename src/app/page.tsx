@@ -8,6 +8,8 @@ import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { useEffect } from 'react';
 
 
+import { HowItWorksInteractive } from '@/components/landing/HowItWorksInteractive';
+
 export default function LandingPage() {
   const [distance, setDistance] = useState<number>(8);
   const [mileage, setMileage] = useState<number>(40);
@@ -18,7 +20,6 @@ export default function LandingPage() {
       setFuelPrice(rate || 104.20);
     });
   }, []);
-
 
   const calcResult = calculateRideCosts({
     startOdometer: 12500,
@@ -122,57 +123,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* How It Works Section (5-Step Horizontal Grid) */}
-      <section className="py-12 bg-surface rounded-2xl p-6 border border-outline-variant shadow-sm" id="how-it-works">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-on-surface mb-2">How It Works in 5 Steps</h2>
-            <p className="text-sm text-on-surface-variant max-w-2xl mx-auto">A seamless workflow designed to eliminate administrative overhead.</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-6 relative">
-            <div className="relative flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-surface-container-low rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-3 text-primary">
-                <span className="material-symbols-outlined text-2xl">app_registration</span>
-              </div>
-              <h3 className="font-bold text-sm text-on-surface mb-1">1. Register</h3>
-              <p className="text-xs text-on-surface-variant">Add your vehicles.</p>
-            </div>
-
-            <div className="relative flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-surface-container-low rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-3 text-primary">
-                <span className="material-symbols-outlined text-2xl">play_circle</span>
-              </div>
-              <h3 className="font-bold text-sm text-on-surface mb-1">2. Start</h3>
-              <p className="text-xs text-on-surface-variant">Log ODO reading.</p>
-            </div>
-
-            <div className="relative flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-surface-container-low rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-3 text-primary">
-                <span className="material-symbols-outlined text-2xl">moving</span>
-              </div>
-              <h3 className="font-bold text-sm text-on-surface mb-1">3. Track</h3>
-              <p className="text-xs text-on-surface-variant">Monitor journey.</p>
-            </div>
-
-            <div className="relative flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-surface-container-low rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-3 text-primary">
-                <span className="material-symbols-outlined text-2xl">calculate</span>
-              </div>
-              <h3 className="font-bold text-sm text-on-surface mb-1">4. Calculate</h3>
-              <p className="text-xs text-on-surface-variant">Auto fuel costs.</p>
-            </div>
-
-            <div className="relative flex flex-col items-center text-center">
-              <div className="w-16 h-16 bg-surface-container-low rounded-full border border-outline-variant shadow-sm flex items-center justify-center mb-3 text-primary">
-                <span className="material-symbols-outlined text-2xl">payments</span>
-              </div>
-              <h3 className="font-bold text-sm text-on-surface mb-1">5. Pay</h3>
-              <p className="text-xs text-on-surface-variant">Settle via UPI.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* How It Works Section: Dynamic Multi-Screen Interactive Mockup */}
+      <HowItWorksInteractive />
 
       {/* Features Section */}
       <section className="py-12 bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-sm space-y-8" id="features">

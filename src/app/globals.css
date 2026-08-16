@@ -69,3 +69,132 @@
   background: #cbd5e1;
   border-radius: 9999px;
 }
+
+/* ==========================================================================
+   Veylo Micro-Animations & Motion Design System
+   ========================================================================== */
+
+/* QR Scanner Laser Animation */
+@keyframes laserSweep {
+  0%, 100% {
+    top: 6%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 88%;
+    opacity: 1;
+  }
+}
+.animate-laser-sweep {
+  animation: laserSweep 2s ease-in-out infinite;
+}
+
+/* Vehicle Rider Road Travel Animation */
+@keyframes riderTraverse {
+  0% {
+    transform: translateX(-60px);
+    opacity: 0;
+  }
+  5% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(calc(100% + 60px));
+    opacity: 0;
+  }
+}
+.animate-rider-traverse {
+  animation: riderTraverse 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+/* Subtle Wheel Rotation */
+@keyframes wheelSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.animate-wheel-spin {
+  animation: wheelSpin 0.6s linear infinite;
+}
+
+/* Radar Location Pulse */
+@keyframes radarPulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+}
+.animate-radar-pulse {
+  animation: radarPulse 2.5s ease-in-out infinite;
+}
+
+/* Success Checkmark Pop */
+@keyframes checkmarkPop {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.animate-checkmark-pop {
+  animation: checkmarkPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Floating Badge Chip Animation */
+@keyframes floatBadge {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.animate-float-badge {
+  animation: floatBadge 3s ease-in-out infinite;
+}
+
+/* Route Vehicle Dot Path Animation */
+@keyframes routeTravel {
+  0% {
+    offset-distance: 0%;
+  }
+  100% {
+    offset-distance: 100%;
+  }
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-laser-sweep,
+  .animate-rider-traverse,
+  .animate-wheel-spin,
+  .animate-radar-pulse,
+  .animate-checkmark-pop,
+  .animate-float-badge {
+    animation: none !important;
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
