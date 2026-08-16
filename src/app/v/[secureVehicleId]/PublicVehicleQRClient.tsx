@@ -2,11 +2,16 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { createClient } from '@/lib/supabase/client';
 import { Vehicle, IssueType, IssueSeverity, PricingMode, FuelPrice } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
+import { getVehicleById } from '@/lib/services/supabase/data';
 import { AdSlot } from '@/components/ads/AdSlot';
+
+function getSupabase() {
+  return createClient();
+}
 
 export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehicleId: string }) {
   const router = useRouter();
@@ -44,12 +49,14 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
 
   useEffect(() => {
     setMounted(true);
-    const v = mockStorage.getVehicleById(secureVehicleId);
-    if (v) {
-      setVehicle(v);
-      setEndOdometer(String(v.currentOdometer === 12500 ? 12508 : v.currentOdometer + 8));
-      loadLatestPrice(v.fuelType, v.state || 'Kerala', v.city || 'Kozhikode');
-    }
+    getVehicleById(secureVehicleId)
+      .then((data) => {
+        if (!data) return;
+        setVehicle(data);
+        setEndOdometer(String(data.currentOdometer === 12500 ? 12508 : data.currentOdometer + 8));
+        loadLatestPrice(data.fuelType, data.state || 'Kerala', data.city || 'Kozhikode');
+      })
+      .catch(() => {});
   }, [secureVehicleId]);
 
   if (!mounted || !vehicle) {
@@ -79,7 +86,7 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
     });
   }
 
-  const handleCalculateAndSubmit = (e: React.FormEvent) => {
+  const handleCalculateAndSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -94,30 +101,48 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
     }
 
     try {
-      const { invoice } = mockStorage.recordRide({
-        vehicleId: vehicle.id,
-        customerName,
-        customerPhone,
-        endOdometer: endOdoNum,
-        fuelPriceRupees: priceRupees,
-        pricingMode,
-        perKmRateRupees: perKmRate,
+      const supabase = getSupabase();
+      const { data: tripData, error: tripErr } = await supabase
+        .from('trips')
+        .insert({
+          vehicle_id: vehicle.id,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          start_odometer: startOdoNum,
+          end_odometer: endOdoNum,
+          fuel_price_rupees: priceRupees,
+          pricing_mode: pricingMode,
+          per_km_rate_rupees: perKmRate,
+        })
+        .select()
+        .single();
+
+      if (tripErr) throw tripErr;
+
+      const res = await fetch('/api/billing/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tripId: tripData.id }),
       });
 
-      router.push(`/invoices/${invoice.id}`);
+      if (!res.ok) throw new Error('Failed to generate bill');
+      const { invoiceId } = await res.json();
+
+      router.push(`/invoices/${invoiceId}`);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error generating usage bill.');
     }
   };
 
-  const handleReportIssueSubmit = (e: React.FormEvent) => {
+  const handleReportIssueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!issueDesc.trim()) return;
 
-    mockStorage.addIssue({
-      vehicleId: vehicle.id,
-      reporterName: customerName || 'Public Rider',
-      issueType,
+    const supabase = getSupabase();
+    await supabase.from('issues').insert({
+      vehicle_id: vehicle.id,
+      reporter_name: customerName || 'Public Rider',
+      issue_type: issueType,
       severity: issueSeverity,
       description: issueDesc,
     });

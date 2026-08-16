@@ -1,6 +1,13 @@
+import { describe, test, expect, vi } from 'vitest';
 import { calculateRideCosts, generateUpiDeepLink } from '../financialEngine';
 import { fuelPriceService } from '../fuelPriceProvider';
 import { mockStorage } from '../mockStorage';
+import { fakeStore } from './fakeSupabase';
+
+vi.mock('@/lib/supabase/client', async () => {
+  const m = await import('./fakeSupabase');
+  return { createClient: m.createFakeClient };
+});
 
 describe('Live Indian Fuel Price & Payment Test Suite', () => {
 
@@ -46,9 +53,12 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
       pricingMode: 'FUEL_COST',
     });
 
+    // Expected total uses the vehicle's actual mileage at the snapshot price ₹104.20/L.
+    const expectedRupees = Math.round((8 / vehicle.mileageKmpl) * 10420) / 100;
+
     // Invoice captured at start price ₹104.20/L
-    expect(invoice.priceSnapshot.pricePerLitreRupees).toBe(104.20);
-    expect(invoice.totalRupees).toBe(20.84);
+    expect(invoice.priceSnapshot!.pricePerLitreRupees).toBe(104.20);
+    expect(invoice.totalRupees).toBe(expectedRupees);
 
     // Simulate price change to ₹105.00/L
     fuelPriceService.updateManualOverride('PETROL', 105.00, 'Kerala', 'Kozhikode');
@@ -57,8 +67,8 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
     const state = mockStorage.getState();
     const fetchedInv = state.invoices.find(i => i.id === invoice.id);
 
-    expect(fetchedInv?.priceSnapshot.pricePerLitreRupees).toBe(104.20);
-    expect(fetchedInv?.totalRupees).toBe(20.84);
+    expect(fetchedInv?.priceSnapshot?.pricePerLitreRupees).toBe(104.20);
+    expect(fetchedInv?.totalRupees).toBe(expectedRupees);
   });
 
   test('TEST 4 — PER_KM Pricing Mode (Rate: ₹3/km, Distance: 8 km)', () => {
@@ -76,11 +86,32 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
   });
 
   test('TEST 5 — Fuel API Unavailable Fallback Display', async () => {
+    // Seed a cached price so the service returns instantly (no network).
+    fakeStore.tables.fuel_prices = [{
+      id: 'fp_petrol_kl',
+      country: 'India',
+      state: 'Kerala',
+      district: '',
+      city: 'Kozhikode',
+      fuel_type: 'PETROL',
+      price_per_unit_paise: 10420,
+      price_rupees: 104.20,
+      unit: 'LITRE',
+      currency: 'INR',
+      source_name: 'IOCL (Indian Oil)',
+      source_url: 'https://iocl.com/petrol-diesel-price',
+      effective_date: new Date().toISOString().slice(0, 10),
+      fetched_at: new Date().toISOString(),
+      status: 'LIVE',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }];
+
     const price = await fuelPriceService.getLatestFuelPrice('PETROL', 'Kerala', 'Kozhikode');
     
-    expect(price.priceRupees).toBeGreaterThan(0);
-    expect(price.sourceName || price.source).toBeDefined();
-    expect(price.status).toMatch(/verified|cached|fallback|LIVE|RECENT|STALE/);
+    expect(price.priceRupees).toBe(104.20);
+    expect(price.sourceName).toBe('IOCL (Indian Oil)');
+    expect(price.status).toMatch(/LIVE|RECENT|STALE/);
   });
 
   test('TEST 6 — Owner UPI Configuration and Verification Status', () => {
@@ -100,30 +131,29 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
   test('TEST 7 — Payment Attempt Initiation and Duplicate Prevention', async () => {
     const { paymentService } = await import('../paymentService');
 
-    // Setup dummy invoice
-    const dummyInvoice = {
+    // Setup dummy invoice + trip in the in-memory supabase store.
+    fakeStore.tables.invoices = [{
       id: 'inv_test_999',
-      invoiceNumber: 'INV-TEST-999',
-      tripId: 'trip_test_999',
-      totalRupees: 301.20,
-      paymentStatus: 'PENDING' as const,
-      payeeUpiId: 'ownername@upi',
-      payeeName: 'Owner Name',
-      issuedAt: new Date().toISOString(),
-    };
-    
-    const store = mockStorage.getState();
-    store.invoices.push(dummyInvoice as any);
-    store.rentalTrips.push({
+      invoice_number: 'INV-TEST-999',
+      trip_id: 'trip_test_999',
+      organization_id: 'org_test_999',
+      total_rupees: 301.20,
+      status: 'PENDING',
+      payee_upi_id: 'ownername@upi',
+      payee_name: 'Owner Name',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }];
+    fakeStore.tables.rental_trips = [{
       id: 'trip_test_999',
-      riderId: 'rider_999',
-      ownerId: 'owner_999',
-      vehicleId: 'vehicle_999',
-      totalAmountRupees: 301.20,
+      rider_id: 'rider_999',
+      owner_id: 'owner_999',
+      vehicle_id: 'vehicle_999',
+      organization_id: 'org_test_999',
       status: 'CONFIRMATION_PENDING',
-      paymentStatus: 'PENDING',
-    } as any);
-    mockStorage.saveStore(store);
+      payment_status: 'PENDING',
+    }];
+    fakeStore.tables.payment_attempts = [];
 
     // 1. Initiate first payment attempt
     const attempt1 = await paymentService.initiatePaymentAttempt({
@@ -142,28 +172,27 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
     });
 
     expect(attempt2.paymentId).toBe(attempt1.paymentId);
-    expect(mockStorage.getPaymentAttemptsByInvoiceId('inv_test_999').length).toBe(1);
+    expect(fakeStore.tables.payment_attempts.length).toBe(1);
   });
 
   test('TEST 8 — Payment Attempt Verification and State Flow', async () => {
     const { paymentService } = await import('../paymentService');
-    const attempts = mockStorage.getPaymentAttemptsByInvoiceId('inv_test_999');
+    const attempts = fakeStore.tables.payment_attempts;
     const activeAttempt = attempts[0];
 
     // Verify payment attempt
-    const result = await paymentService.verifyPaymentAttempt(activeAttempt.paymentId, 'TXN_REF_REAL_123');
+    const result = await paymentService.verifyPaymentAttempt(activeAttempt.payment_id, 'TXN_REF_REAL_123');
     
     expect(result.success).toBe(true);
     expect(result.attempt.status).toBe('PAID');
     expect(result.attempt.providerReference).toBe('TXN_REF_REAL_123');
 
     // Verify that invoice and trip statuses are updated automatically
-    const state = mockStorage.getState();
-    const inv = state.invoices.find(i => i.id === 'inv_test_999');
-    const trip = state.rentalTrips.find(t => t.id === 'trip_test_999');
+    const inv = fakeStore.tables.invoices.find(i => i.id === 'inv_test_999');
+    const trip = fakeStore.tables.rental_trips.find(t => t.id === 'trip_test_999');
 
-    expect(inv?.paymentStatus).toBe('PAID');
-    expect(trip?.paymentStatus).toBe('PAID');
+    expect(inv?.status).toBe('PAID');
+    expect(trip?.payment_status).toBe('PAID');
     expect(trip?.status).toBe('COMPLETED');
   });
 

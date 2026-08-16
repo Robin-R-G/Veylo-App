@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getVehicles } from '@/lib/services/supabase/data';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { Vehicle, VehicleType } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
@@ -10,16 +11,34 @@ import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [cachedPrices, setCachedPrices] = useState<Record<string, number>>({});
   const [filterType, setFilterType] = useState<string>('ALL');
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setMounted(true);
-    const state = mockStorage.getState();
-    setVehicles(state.vehicles);
+    (async () => {
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (orgId) {
+        const data = await getVehicles(orgId);
+        setVehicles(data);
+        const prices: Record<string, number> = {};
+        await Promise.all(data.map(async (v) => {
+          const price = await fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city);
+          prices[v.id] = price || 0;
+        }));
+        setCachedPrices(prices);
+      }
+      setLoading(false);
+    })();
   }, []);
 
-  if (!mounted) return null;
+  if (loading) {
+    return (
+      <div className="bg-surface p-8 rounded-xl border border-outline-variant text-center text-on-surface-variant text-xs">
+        Loading vehicles...
+      </div>
+    );
+  }
 
   const filteredVehicles = filterType === 'ALL'
     ? vehicles
@@ -69,7 +88,7 @@ export default function VehiclesPage() {
           </div>
         ) : (
           filteredVehicles.map((v) => {
-            const cachedPrice = fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city) || 0;
+            const cachedPrice = cachedPrices[v.id] || 0;
             const calc = calculateRideCosts({
               startOdometer: v.currentOdometer,
               endOdometer: v.currentOdometer + 1,

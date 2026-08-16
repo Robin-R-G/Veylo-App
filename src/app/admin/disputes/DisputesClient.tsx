@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { createClient } from '@/lib/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Dispute, DisputeStatus } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -30,24 +30,36 @@ export default function DisputesClient() {
       router.replace('/login');
       return;
     }
-    setDisputes(mockStorage.getDisputes());
+
+    async function loadDisputes() {
+      const supabase = createClient();
+      const { data } = await supabase.from('disputes').select('*').order('created_at', { ascending: false });
+      if (data) setDisputes(data as Dispute[]);
+    }
+
+    loadDisputes();
   }, [router]);
 
   if (!mounted) return null;
 
   const filtered = filter === 'ALL' ? disputes : disputes.filter(d => d.status === filter);
 
-  const handleResolve = (disputeId: string, newStatus: DisputeStatus) => {
+  const handleResolve = async (disputeId: string, newStatus: DisputeStatus) => {
     if (newStatus === 'RESOLVED' && !resolution.trim()) {
       alert('Please enter a resolution note.');
       return;
     }
-    const updated = mockStorage.updateDispute(disputeId, {
+
+    const supabase = createClient();
+    const { error } = await supabase.from('disputes').update({
       status: newStatus,
       resolution: resolution || `Marked as ${newStatus} by admin`,
-    });
-    if (updated) {
-      setDisputes(mockStorage.getDisputes());
+      updated_at: new Date().toISOString(),
+    }).eq('id', disputeId);
+
+    if (!error) {
+      const { data } = await supabase.from('disputes').select('*').order('created_at', { ascending: false });
+      if (data) setDisputes(data as Dispute[]);
       setSelectedDispute(null);
       setResolution('');
     }

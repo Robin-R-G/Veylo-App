@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getRentalTripById, getMonetizationSettings } from '@/lib/services/supabase/data';
 import { rentalTripService } from '@/lib/services/rentalTripService';
-import { RentalTrip } from '@/types';
+import { computePlatformFee } from '@/lib/services/platformEconomics';
+import { RentalTrip, PlatformMonetizationSettings } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -13,18 +14,21 @@ export default function ConfirmTripClient({ tripId }: { tripId: string }) {
   const router = useRouter();
 
   const [trip, setTrip] = useState<RentalTrip | null>(null);
+  const [monetization, setMonetization] = useState<PlatformMonetizationSettings | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const t = mockStorage.getRentalTripById(tripId);
-    if (t) {
-      setTrip(t);
+    async function load() {
+      const [t, m] = await Promise.all([getRentalTripById(tripId), getMonetizationSettings()]);
+      if (t) setTrip(t);
+      setMonetization(m);
     }
+    load();
   }, [tripId]);
 
-  if (!mounted || !trip) {
+  if (!mounted || !trip || !monetization) {
     return (
       <div className="max-w-md mx-auto bg-surface p-8 rounded-2xl border border-outline-variant text-center text-xs">
         Loading trip confirmation...
@@ -32,10 +36,10 @@ export default function ConfirmTripClient({ tripId }: { tripId: string }) {
     );
   }
 
-  const handleConfirmAndGenerateInvoice = () => {
+  const handleConfirmAndGenerateInvoice = async () => {
     setIsConfirming(true);
     try {
-      const { invoice } = rentalTripService.confirmTripAndGenerateInvoice(trip.id);
+      const { invoice } = await rentalTripService.confirmTripAndGenerateInvoice(trip.id);
       router.push(`/invoices/${invoice.id}`);
     } catch (err: any) {
       alert(err.message || 'Error generating invoice');
@@ -45,6 +49,9 @@ export default function ConfirmTripClient({ tripId }: { tripId: string }) {
 
   const calculatedDistanceCharge = Math.round(trip.gpsDistanceKm * trip.ratePerKmRupees * 100) / 100;
   const calculatedTotal = calculatedDistanceCharge + (trip.otherChargesRupees || 0);
+
+  const platformFee = computePlatformFee(trip.distanceChargeRupees || calculatedDistanceCharge, monetization);
+  const finalTotal = calculatedTotal + platformFee;
 
   return (
     <div className="max-w-md mx-auto space-y-6">
@@ -93,9 +100,16 @@ export default function ConfirmTripClient({ tripId }: { tripId: string }) {
             <span className="font-bold text-on-surface">{formatCurrency(calculatedDistanceCharge)}</span>
           </div>
 
+          {platformFee > 0 && (
+            <div className="flex justify-between items-center pb-2 border-b border-outline-variant">
+              <span className="text-on-surface-variant font-medium">Platform Service Fee:</span>
+              <span className="font-bold text-on-surface">{formatCurrency(platformFee)}</span>
+            </div>
+          )}
+
           <div className="pt-2 flex justify-between items-center">
             <span className="text-xs font-bold text-on-surface uppercase tracking-wider">Total Amount Due</span>
-            <span className="font-extrabold text-3xl text-primary">{formatCurrency(calculatedTotal)}</span>
+            <span className="font-extrabold text-3xl text-primary">{formatCurrency(finalTotal)}</span>
           </div>
         </div>
 

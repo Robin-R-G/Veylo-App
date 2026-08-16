@@ -23,7 +23,10 @@ export const Sidebar: React.FC = () => {
     { label: 'Fuel Rates', icon: 'local_gas_station', href: '/admin/fuel-rates' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
     { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices/inv_101' },
+    { label: 'Owner Payments', icon: 'payments', href: '/owner/payments' },
     { label: 'Admin Control', icon: 'admin_panel_settings', href: '/admin' },
+    { label: 'Admin Revenue', icon: 'bar_chart', href: '/admin/revenue' },
+    { label: 'Monetization', icon: 'tune', href: '/admin/settings/monetization' },
     { label: 'Trip Disputes', icon: 'gavel', href: '/admin/disputes' },
     { label: 'Settings', icon: 'settings', href: '/settings' },
   ];

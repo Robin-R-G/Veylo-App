@@ -2,8 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
-import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt } from '@/types';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
+import { getVehicles, getRentalTrips, getInvoices, getPayments, getOrganization } from '@/lib/services/supabase/data';
+import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt, Organization } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { AdSlot } from '@/components/ads/AdSlot';
@@ -16,7 +17,9 @@ export default function OwnerDashboard() {
   const [fuelPrice, setFuelPrice] = useState<FuelPrice | null>(null);
   const [paymentAttempts, setPaymentAttempts] = useState<PaymentAttempt[]>([]);
   const [tier, setTier] = useState<PlanTier>('FREE');
+  const [organization, setOrganization] = useState<Organization | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   const loadFuelRate = async (refresh = false) => {
@@ -31,17 +34,36 @@ export default function OwnerDashboard() {
 
   useEffect(() => {
     setMounted(true);
-    const state = mockStorage.getState();
-    setVehicles(state.vehicles);
-    setInvoices(state.invoices);
-    setRentalTrips(state.rentalTrips || []);
-    setPaymentAttempts(mockStorage.getPaymentAttempts());
-    setTier(state.currentTier);
 
+    const loadData = async () => {
+      try {
+        const orgId = await supabaseAuth.getOrganizationId();
+        if (!orgId) return;
+
+        const [v, t, inv, pay, org] = await Promise.all([
+          getVehicles(orgId),
+          getRentalTrips(orgId),
+          getInvoices(orgId),
+          getPayments(orgId),
+          getOrganization(orgId),
+        ]);
+
+        setVehicles(v);
+        setRentalTrips(t);
+        setInvoices(inv);
+        setPaymentAttempts(pay);
+        setOrganization(org);
+        if (org) setTier(org.planTier);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
     loadFuelRate();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted || isLoading) return null;
 
 
   // Active rentals
@@ -69,8 +91,7 @@ export default function OwnerDashboard() {
 
   const totalDistanceKm = rentalTrips.reduce((sum, t) => sum + t.gpsDistanceKm, 0) + 68;
 
-  const org = mockStorage.getState().organization;
-  const upiIdDisplay = org.upiId || 'Not Configured';
+  const upiIdDisplay = organization?.upiId || 'Not Configured';
 
   return (
     <div className="space-y-6">
@@ -128,7 +149,13 @@ export default function OwnerDashboard() {
             <span className="material-symbols-outlined text-primary">payments</span>
             Owner Payments Summary
           </h2>
-          <span className="text-xs text-on-surface-variant font-medium">Auto-settled to: <strong className="font-mono text-primary">{upiIdDisplay}</strong></span>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-on-surface-variant font-medium hidden sm:inline">Auto-settled to: <strong className="font-mono text-primary">{upiIdDisplay}</strong></span>
+            <Link href="/owner/payments" className="text-xs text-primary font-semibold hover:underline flex items-center gap-1">
+              <span className="material-symbols-outlined text-sm">open_in_new</span>
+              View Payments
+            </Link>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">

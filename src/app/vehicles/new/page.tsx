@@ -1,8 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import Link from 'next/link';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
+import { getVehicles } from '@/lib/services/supabase/data';
+import { subscriptionService } from '@/lib/services/subscriptionService';
 import { normalizeRegistrationNumber, formatRegistrationDisplay } from '@/lib/services/registrationNormalizer';
 import { VehicleType, FuelType } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -23,36 +26,77 @@ export default function NewVehiclePage() {
   const [city, setCity] = useState('Kozhikode');
   const [notes, setNotes] = useState('');
 
+  const [limitReached, setLimitReached] = useState(false);
+  const [limitCount, setLimitCount] = useState(2);
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (!orgId) return;
+
+      const [vehicles, plan] = await Promise.all([
+        getVehicles(orgId),
+        subscriptionService.getActivePlan(orgId),
+      ]);
+      if (vehicles.length >= plan.vehicleLimit) {
+        setLimitReached(true);
+        setLimitCount(plan.vehicleLimit);
+      }
+    })();
+  }, []);
+
   const normalizedKey = normalizeRegistrationNumber(rawReg);
   const formattedDisplay = formatRegistrationDisplay(rawReg);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (limitReached) {
+      alert('Violation: Vehicle limit reached for current plan. Please upgrade.');
+      return;
+    }
 
     if (!rawReg.trim() || !make.trim() || !model.trim()) {
       alert('Please fill in all required fields.');
       return;
     }
 
-    const created = mockStorage.addVehicle({
-      organizationId: 'org_demo_1',
-      ownerId: 'prof_owner_1',
-      registrationNumber: formattedDisplay || rawReg.toUpperCase(),
-      vehicleType,
-      make,
-      model,
-      fuelType,
-      mileageKmpl: Number(mileageKmpl),
-      initialOdometer: Number(initialOdometer),
-      ratePerKmRupees: Number(ratePerKmRupees || 12),
-      ownerUpiId: ownerUpiId || 'vehicleowner@upi',
-      requiresApproval: false,
-      state,
-      city,
-      notes,
-    });
+    setSubmitting(true);
 
-    router.push(`/vehicles/${created.id}`);
+    try {
+      const res = await fetch('/api/vehicles', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          registrationNumber: formattedDisplay || rawReg.toUpperCase(),
+          vehicleType,
+          make,
+          model,
+          fuelType,
+          mileageKmpl: Number(mileageKmpl),
+          initialOdometer: Number(initialOdometer),
+          ratePerKmRupees: Number(ratePerKmRupees || 12),
+          ownerUpiId: ownerUpiId || 'vehicleowner@upi',
+          requiresApproval: false,
+          state,
+          city,
+          notes,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Failed to create vehicle');
+      }
+
+      const { vehicle } = await res.json();
+      router.push(`/vehicles/${vehicle.id}`);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to register vehicle');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -66,7 +110,30 @@ export default function NewVehiclePage() {
         icon="add_circle"
       />
 
-      <form onSubmit={handleSubmit} className="bg-surface rounded-xl p-6 border border-outline-variant shadow-sm space-y-6">
+      {limitReached ? (
+        <div className="bg-surface rounded-2xl border border-red-300 p-8 shadow-sm text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 text-red-700 border border-red-200">
+            <span className="material-symbols-outlined text-3xl">lock</span>
+          </div>
+          <div className="space-y-1">
+            <h2 className="text-lg font-black text-on-surface">You've reached your vehicle limit</h2>
+            <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
+              Your current active subscription plan supports up to <strong>{limitCount} vehicles</strong>. To register more vehicles in your fleet, please upgrade to a higher tier plan.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              href="/settings/billing"
+              className="inline-flex px-6 py-3 rounded-xl bg-primary text-on-primary font-bold text-xs uppercase tracking-wider shadow hover:opacity-90 transition-all gap-1.5 items-center"
+            >
+              <span className="material-symbols-outlined text-sm">upgrade</span>
+              Upgrade Plan
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="bg-surface rounded-xl p-6 border border-outline-variant shadow-sm space-y-6">
+
         
         <div>
           <label className="block text-xs font-semibold text-on-surface mb-1">
@@ -233,12 +300,14 @@ export default function NewVehiclePage() {
 
         <button
           type="submit"
-          className="w-full py-3 rounded-lg bg-primary text-on-primary font-bold text-xs uppercase tracking-wider shadow hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center justify-center gap-2"
+          disabled={submitting}
+          className="w-full py-3 rounded-lg bg-primary text-on-primary font-bold text-xs uppercase tracking-wider shadow hover:bg-primary-container hover:text-on-primary-container transition-all flex items-center justify-center gap-2 disabled:opacity-50"
         >
           <span className="material-symbols-outlined text-sm">check_circle</span>
-          Complete Vehicle Registration
+          {submitting ? 'Registering...' : 'Complete Vehicle Registration'}
         </button>
       </form>
+      )}
     </div>
   );
 }

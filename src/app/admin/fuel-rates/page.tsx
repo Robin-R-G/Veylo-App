@@ -39,7 +39,7 @@ export default function FuelRatesPage() {
       setDieselInput(d.priceRupees);
       setCngInput(c.priceRupees);
 
-      const hist = fuelPriceService.getHistory();
+      const hist = await fuelPriceService.getHistory();
       setHistory(hist);
     } finally {
       setIsRefreshing(false);
@@ -48,26 +48,29 @@ export default function FuelRatesPage() {
 
   useEffect(() => {
     setMounted(true);
-    // Try to load cached values synchronously first
-    const initP = fuelPriceService.getCachedPrice('PETROL', stateInput, cityInput) || 0;
-    const initD = fuelPriceService.getCachedPrice('DIESEL', stateInput, cityInput) || 0;
-    const initC = fuelPriceService.getCachedPrice('CNG', stateInput, cityInput) || 0;
-    
-    setPetrolInput(initP);
-    setDieselInput(initD);
-    setCngInput(initC);
-    
-    loadPrices();
+    async function init() {
+      const [initP, initD, initC] = await Promise.all([
+        fuelPriceService.getCachedPrice('PETROL', stateInput, cityInput),
+        fuelPriceService.getCachedPrice('DIESEL', stateInput, cityInput),
+        fuelPriceService.getCachedPrice('CNG', stateInput, cityInput),
+      ]);
+      setPetrolInput(initP || 0);
+      setDieselInput(initD || 0);
+      setCngInput(initC || 0);
+      loadPrices();
+    }
+    init();
   }, []);
 
   if (!mounted) return null;
 
-  const handleManualOverride = (e: React.FormEvent) => {
+  const handleManualOverride = async (e: React.FormEvent) => {
     e.preventDefault();
-    fuelPriceService.updateManualOverride('PETROL', Number(petrolInput), stateInput, cityInput);
-    fuelPriceService.updateManualOverride('DIESEL', Number(dieselInput), stateInput, cityInput);
-    fuelPriceService.updateManualOverride('CNG', Number(cngInput), stateInput, cityInput);
-
+    await Promise.all([
+      fuelPriceService.updateManualOverride('PETROL', Number(petrolInput), stateInput, cityInput),
+      fuelPriceService.updateManualOverride('DIESEL', Number(dieselInput), stateInput, cityInput),
+      fuelPriceService.updateManualOverride('CNG', Number(cngInput), stateInput, cityInput),
+    ]);
     setSaveSuccessMsg('Fuel prices updated across application.');
     loadPrices();
     setTimeout(() => setSaveSuccessMsg(''), 2500);

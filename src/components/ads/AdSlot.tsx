@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { AdPlacement, AdConfiguration, PlanTier } from '@/types';
-import { isAdFreeUser } from '@/lib/services/entitlementEngine';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { AdPlacement, AdConfiguration } from '@/types';
+import { createClient } from '@/lib/supabase/client';
 import { Megaphone, ExternalLink, Sparkles } from 'lucide-react';
 
 interface AdSlotProps {
@@ -13,33 +12,67 @@ interface AdSlotProps {
 
 export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => {
   const [adConfig, setAdConfig] = useState<AdConfiguration | null>(null);
-  const [userTier, setUserTier] = useState<PlanTier>('FREE');
+  const [adsAllowed, setAdsAllowed] = useState(true);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const state = mockStorage.getState();
-    setUserTier(state.currentTier);
+    const supabase = createClient();
 
-    const config = state.adConfigurations.find(
-      (a) => a.placement === placement && a.enabled
-    );
-    if (config) {
-      setAdConfig(config);
+    async function loadAd() {
+      // Admin global switch
+      const { data: mono } = await supabase
+        .from('platform_monetization_settings')
+        .select('advertising_enabled')
+        .eq('id', 1)
+        .single();
+
+      if (mono && !mono.advertising_enabled) {
+        setAdsAllowed(false);
+        return;
+      }
+
+      // Plan-driven gating: join subscriptions → plans to check adsEnabled
+      const { data: sub } = await supabase
+        .from('subscriptions')
+        .select('plans!inner(ads_enabled)')
+        .eq('status', 'ACTIVE')
+        .limit(1)
+        .single();
+
+      if (sub && !(sub.plans as any).ads_enabled) {
+        setAdsAllowed(false);
+        return;
+      }
+
+      // Fetch ad config for this placement
+      const { data: ad } = await supabase
+        .from('ad_configurations')
+        .select('*')
+        .eq('placement', placement)
+        .eq('enabled', true)
+        .single();
+
+      if (ad) {
+        setAdConfig({
+          id: ad.id,
+          placement: ad.placement,
+          enabled: ad.enabled,
+          provider: ad.provider,
+          premiumExcluded: ad.premium_excluded,
+          bannerTitle: ad.banner_title,
+          bannerText: ad.banner_text,
+          bannerUrl: ad.banner_url,
+        });
+      }
     }
+
+    loadAd();
   }, [placement]);
 
   if (!mounted) return null;
-
-  // Centralized Entitlement Check — Pro & Business Users are Ad-Free!
-  if (isAdFreeUser(userTier)) {
-    return null;
-  }
-
-  // If placement disabled or not configured, return null
-  if (!adConfig || !adConfig.enabled) {
-    return null;
-  }
+  if (!adsAllowed) return null;
+  if (!adConfig || !adConfig.enabled) return null;
 
   return (
     <div

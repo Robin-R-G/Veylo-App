@@ -1,3 +1,4 @@
+import { describe, test, expect } from 'vitest';
 import { calculateRideCosts, formatCurrency } from '../financialEngine';
 import { normalizeRegistrationNumber } from '../registrationNormalizer';
 import { validateOdometerUpdate } from '../odometerService';

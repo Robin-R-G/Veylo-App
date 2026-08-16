@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getVehicleById, updateVehicleOdometer, getOdometerHistory, getRentalTripsByVehicle, getMaintenanceByVehicle } from '@/lib/services/supabase/data';
 import { Vehicle, OdometerRecord, MaintenanceRecord, Issue, ServiceType, RentalTrip } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { formatCurrency, calculateRideCosts } from '@/lib/services/financialEngine';
@@ -20,14 +20,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   const [rentalTrips, setRentalTrips] = useState<RentalTrip[]>([]);
   const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>([]);
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(() => {
-    const v = mockStorage.getVehicleById(id);
-    if (v) {
-      return fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city) || 0;
-    }
-    return 0;
-  });
-
+  const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(0);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ledger' | 'timeline' | 'maintenance' | 'issues' | 'qr'>('ledger');
 
@@ -43,32 +36,40 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   const [maintNotes, setMaintNotes] = useState('');
   const [maintNextKm, setMaintNextKm] = useState<number>(15000);
 
-  const [mounted, setMounted] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [verifying, setVerifying] = useState(false);
+  const [savingMaint, setSavingMaint] = useState(false);
 
-  const refreshData = () => {
-    const v = mockStorage.getVehicleById(id);
-    if (!v) return;
+  const refreshData = async () => {
+    const v = await getVehicleById(id);
+    if (!v) {
+      setLoading(false);
+      return;
+    }
 
     setVehicle(v);
     setPhysicalOdoInput(v.currentOdometer);
-    const state = mockStorage.getState();
 
-    setOdometerRecords(state.odometerHistory.filter(o => o.vehicleId === v.id));
-    setRentalTrips((state.rentalTrips || []).filter(t => t.vehicleId === v.id));
-    setMaintenance(state.maintenanceRecords.filter(m => m.vehicleId === v.id));
-    setIssues(state.issues.filter(i => i.vehicleId === v.id));
+    const [odoRecords, trips, maintRecords] = await Promise.all([
+      getOdometerHistory(v.id),
+      getRentalTripsByVehicle(v.id),
+      getMaintenanceByVehicle(v.id),
+    ]);
 
-    fuelPriceService.getLatestFuelPrice(v.fuelType, v.state || 'Kerala', v.city || 'Kozhikode').then(fp => {
-      setFuelPriceRupees(fp.priceRupees);
-    });
+    setOdometerRecords(odoRecords);
+    setRentalTrips(trips);
+    setMaintenance(maintRecords);
+
+    const fp = await fuelPriceService.getLatestFuelPrice(v.fuelType, v.state || 'Kerala', v.city || 'Kozhikode');
+    setFuelPriceRupees(fp.priceRupees);
+    setLoading(false);
   };
 
   useEffect(() => {
-    setMounted(true);
     refreshData();
   }, [id]);
 
-  if (!mounted || !vehicle) {
+  if (loading || !vehicle) {
     return (
       <div className="bg-surface p-8 rounded-xl border border-outline-variant text-center text-on-surface-variant text-xs">
         Loading vehicle records...
@@ -87,30 +88,36 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   // Vehicle Health Score Calculation
   const health = calculateVehicleHealthScore(vehicle.currentOdometer, maintenance, issues);
 
-  const handleVerifyOdometerSubmit = (e: React.FormEvent) => {
+  const handleVerifyOdometerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    mockStorage.updateVehicleOdometer(
+    setVerifying(true);
+    await updateVehicleOdometer(
       vehicle.id,
       Number(physicalOdoInput),
       'OWNER_VERIFIED',
       undefined,
       verifyNotes || 'Owner verified physical vehicle dashboard reading'
     );
+    setVerifying(false);
     setShowVerifyModal(false);
     refreshData();
   };
 
-  const handleAddMaintenanceSubmit = (e: React.FormEvent) => {
+  const handleAddMaintenanceSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    mockStorage.addMaintenanceRecord({
-      vehicleId: vehicle.id,
-      serviceType: maintType,
-      serviceDate: new Date().toISOString().split('T')[0],
-      odometerReading: vehicle.currentOdometer,
-      costRupees: Number(maintCost),
+    setSavingMaint(true);
+    const { supabase } = await import('@/lib/services/supabase/client');
+    await supabase.from('maintenance_records').insert({
+      vehicle_id: vehicle.id,
+      service_type: maintType,
+      service_date: new Date().toISOString().split('T')[0],
+      odometer_reading: vehicle.currentOdometer,
+      cost_rupees: Number(maintCost),
       notes: maintNotes,
-      nextDueOdometer: Number(maintNextKm),
+      next_due_odometer: Number(maintNextKm),
+      created_at: new Date().toISOString(),
     });
+    setSavingMaint(false);
     setShowAddMaintenance(false);
     setMaintNotes('');
     refreshData();
@@ -438,9 +445,10 @@ export default function VehicleDetailClient({ id }: { id: string }) {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shadow hover:bg-primary-container hover:text-on-primary-container"
+                disabled={verifying}
+                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold shadow hover:bg-primary-container hover:text-on-primary-container disabled:opacity-50"
               >
-                Save & Reconcile
+                {verifying ? 'Saving...' : 'Save & Reconcile'}
               </button>
             </div>
           </form>
@@ -513,9 +521,10 @@ export default function VehicleDetailClient({ id }: { id: string }) {
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold"
+                disabled={savingMaint}
+                className="px-4 py-2 rounded-lg bg-primary text-on-primary text-xs font-bold disabled:opacity-50"
               >
-                Save Record
+                {savingMaint ? 'Saving...' : 'Save Record'}
               </button>
             </div>
           </form>

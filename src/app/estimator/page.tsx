@@ -14,8 +14,9 @@ export default function TripEstimatorPage() {
   const [fuelPrice, setFuelPrice] = useState<number>(0);
 
   useEffect(() => {
-    const rate = fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode') || 104.20;
-    setFuelPrice(rate);
+    fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode').then(rate => {
+      setFuelPrice(rate || 104.20);
+    });
   }, []);
 
   const [mode, setMode] = useState<'FUEL_COST' | 'PER_KM' | 'FUEL_PLUS_PER_KM'>('FUEL_COST');

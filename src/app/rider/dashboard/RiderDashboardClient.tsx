@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { createClient } from '@/lib/supabase/client';
+import { getTripsByRider } from '@/lib/services/supabase/data';
 import { RentalTrip, Invoice, AppSession } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 
@@ -39,14 +40,18 @@ export default function RiderDashboardClient() {
     }
     setSession(s);
 
-    const state = mockStorage.getState();
-    // Filter trips belonging to this rider
-    const trips = (state.rentalTrips || []).filter(t => t.riderId === s.userId);
-    setMyTrips(trips);
+    async function load() {
+      const trips = await getTripsByRider(s!.userId);
+      setMyTrips(trips);
 
-    // Filter invoices by customer name matching rider name
-    const invoices = state.invoices.filter(i => i.customerName === s.name);
-    setMyInvoices(invoices);
+      const supabase = createClient();
+      const { data: invData } = await supabase
+        .from('invoices')
+        .select('*')
+        .eq('customer_name', s!.name);
+      setMyInvoices((invData as Invoice[]) || []);
+    }
+    load();
   }, [router]);
 
   if (!mounted || !session) return null;

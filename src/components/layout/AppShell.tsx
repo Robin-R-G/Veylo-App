@@ -11,10 +11,10 @@ import { authService } from '@/lib/services/authService';
 const PUBLIC_ROUTES = ['/v/', '/rider', '/login'];
 
 // Routes that require OWNER role
-const OWNER_ROUTES = ['/dashboard', '/vehicles', '/maintenance', '/admin', '/settings', '/invoices', '/estimator'];
+const OWNER_ROUTES = ['/dashboard', '/vehicles', '/maintenance', '/admin', '/owner', '/settings', '/invoices', '/estimator'];
 
 // Routes that should show the full app shell (sidebar + navbar)
-const SHELL_ROUTES = ['/dashboard', '/vehicles', '/maintenance', '/admin', '/settings', '/invoices', '/estimator'];
+const SHELL_ROUTES = ['/dashboard', '/vehicles', '/maintenance', '/admin', '/owner', '/settings', '/invoices', '/estimator'];
 
 export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname();

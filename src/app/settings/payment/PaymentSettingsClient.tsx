@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getOrganization } from '@/lib/services/supabase/data';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
+import { supabase } from '@/lib/services/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Organization, UpiStatus } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -32,14 +34,18 @@ export default function PaymentSettingsClient() {
       router.replace('/login');
       return;
     }
-    const state = mockStorage.getState();
-    const o = state.organization;
-    setOrg(o);
-    setUpiId(o.upiId || '');
-    setUpiPayeeName(o.upiPayeeName || '');
-    setUpiEnabled(o.upiEnabled !== false);
-    setUpiStatus(o.upiStatus || (o.upiId ? 'ACTIVE' : 'NOT_CONFIGURED'));
-    setVerifiedAt(o.upiVerifiedAt || null);
+    (async () => {
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (!orgId) return;
+      const o = await getOrganization(orgId);
+      if (!o) return;
+      setOrg(o);
+      setUpiId(o.upiId || '');
+      setUpiPayeeName(o.upiPayeeName || '');
+      setUpiEnabled(o.upiEnabled !== false);
+      setUpiStatus(o.upiStatus || (o.upiId ? 'ACTIVE' : 'NOT_CONFIGURED'));
+      setVerifiedAt(o.upiVerifiedAt || null);
+    })();
   }, [router]);
 
   if (!mounted || !org) return null;
@@ -73,7 +79,7 @@ export default function PaymentSettingsClient() {
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSaveMsg('');
@@ -83,12 +89,15 @@ export default function PaymentSettingsClient() {
       return;
     }
 
-    mockStorage.updateOwnerUpiSettings(
-      upiId,
-      upiPayeeName,
-      upiEnabled,
-      upiStatus
-    );
+    const orgId = await supabaseAuth.getOrganizationId();
+    if (!orgId) return;
+
+    await supabase.from('payment_settings').upsert({
+      organization_id: orgId,
+      upi_id: upiId,
+      payee_name: upiPayeeName,
+      status: upiStatus,
+    });
 
     setSaveMsg('UPI ID saved successfully.');
     setTimeout(() => setSaveMsg(''), 3000);
@@ -107,17 +116,20 @@ export default function PaymentSettingsClient() {
     setUpiStatus('VERIFICATION_REQUIRED');
 
     // Simulate verification delay
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsVerifying(false);
       setUpiStatus('ACTIVE');
       setVerifiedAt(new Date().toISOString());
       
-      mockStorage.updateOwnerUpiSettings(
-        upiId,
-        upiPayeeName,
-        upiEnabled,
-        'ACTIVE'
-      );
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (orgId) {
+        await supabase.from('payment_settings').upsert({
+          organization_id: orgId,
+          upi_id: upiId,
+          payee_name: upiPayeeName,
+          status: 'ACTIVE',
+        });
+      }
 
       setSaveMsg('✅ UPI account successfully verified and activated.');
       setTimeout(() => setSaveMsg(''), 4000);

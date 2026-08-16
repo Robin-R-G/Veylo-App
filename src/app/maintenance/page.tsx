@@ -2,7 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getVehicles, getMaintenanceRecords, getIssues } from '@/lib/services/supabase/data';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { Vehicle, MaintenanceRecord } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -14,9 +15,16 @@ export default function MaintenancePage() {
 
   useEffect(() => {
     setMounted(true);
-    const state = mockStorage.getState();
-    setVehicles(state.vehicles);
-    setMaintenanceRecords(state.maintenanceRecords);
+    async function fetchData() {
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (!orgId) return;
+      const v = await getVehicles(orgId);
+      setVehicles(v);
+      const vehicleIds = v.map((veh: any) => veh.id);
+      const records = await getMaintenanceRecords(vehicleIds);
+      setMaintenanceRecords(records);
+    }
+    fetchData();
   }, []);
 
   if (!mounted) return null;

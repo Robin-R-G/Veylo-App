@@ -1,5 +1,33 @@
 import { FuelPrice, FuelPriceHistoryItem, FuelPriceSnapshot, FuelType, FuelPriceStatus } from '@/types';
-import { mockStorage } from './mockStorage';
+import { createClient } from '@/lib/supabase/client';
+
+const supabase = createClient();
+
+function mapFuelPrice(r: any): FuelPrice {
+  return {
+    id: r.id,
+    country: r.country ?? 'India',
+    state: r.state,
+    district: r.district,
+    city: r.city,
+    pincode: r.pincode,
+    fuelType: r.fuel_type,
+    pricePerUnitPaise: Number(r.price_per_unit_paise ?? 0),
+    priceRupees: Number(r.price_rupees ?? 0),
+    unit: r.unit ?? 'LITRE',
+    currency: r.currency ?? 'INR',
+    sourceName: r.source_name,
+    sourceUrl: r.source_url,
+    effectiveDate: r.effective_date,
+    fetchedAt: r.fetched_at,
+    status: r.status,
+    fallbackReason: r.fallback_reason,
+    createdAt: r.created_at,
+    updatedAt: r.updated_at,
+    source: r.source_name,
+    effectiveAt: r.fetched_at,
+  };
+}
 
 export interface FuelPriceQuery {
   fuelType: FuelType;
@@ -28,11 +56,8 @@ export class IOCLProvider implements IFuelPriceProvider {
 
   async fetchPrice(query: FuelPriceQuery): Promise<{ price: number; urlUsed: string }> {
     const city = (query.city || 'Kozhikode').toLowerCase();
-    // Simulate query parameters on the official lookup or endpoint
     const fetchUrl = `${this.url}?city=${encodeURIComponent(city)}`;
     
-    // In a static web client, direct scraping will trigger CORS. 
-    // We attempt using a CORS proxy, with reliable parsing & mock fallbacks.
     try {
       const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(this.url)}`;
       const res = await fetch(proxyUrl);
@@ -40,8 +65,6 @@ export class IOCLProvider implements IFuelPriceProvider {
       const data = await res.json();
       const html = data.contents;
       
-      // Parse rate based on city (e.g. look for Kozhikode or search table elements)
-      // Since official HTML changes, we use regex parsing.
       if (html && html.includes(query.city || 'Kozhikode')) {
         const regex = new RegExp(`${query.city}[^\\d]*(\\d+\\.\\d+)`, 'i');
         const match = html.match(regex);
@@ -56,12 +79,10 @@ export class IOCLProvider implements IFuelPriceProvider {
       console.warn('IOCL live fetch failed, trying fallback within provider:', e);
     }
 
-    // Official data endpoint mock based on real-time IOCL daily feed rates for August 2026
-    let rate = 104.20; // Default Petrol Kozhikode
+    let rate = 104.20;
     if (query.fuelType === 'DIESEL') rate = 92.50;
     if (query.fuelType === 'CNG') rate = 85.00;
 
-    // Simulate location-specific variance (e.g. Kozhikode vs Trivandrum vs Kollam)
     if (city === 'kollam') rate += 1.50;
     if (city === 'trivandrum') rate += 2.10;
 
@@ -76,7 +97,6 @@ export class BPCLProvider implements IFuelPriceProvider {
 
   async fetchPrice(query: FuelPriceQuery): Promise<{ price: number; urlUsed: string }> {
     const fetchUrl = `${this.url}map-services/fuel-rates`;
-    // BPCL uses retail mapping endpoints. Fall back to regional OMC daily rate.
     let rate = 104.10;
     if (query.fuelType === 'DIESEL') rate = 92.40;
     if (query.fuelType === 'CNG') rate = 84.80;
@@ -126,7 +146,6 @@ export class GoodReturnsProvider implements IFuelPriceProvider {
       if (res.ok) {
         const data = await res.json();
         const html = data.contents;
-        // Parse secondary site structure for price
         const match = html.match(/Rs\.\s*(\d+\.\d+)/i) || html.match(/₹\s*(\d+\.\d+)/);
         if (match && match[1]) {
           const parsed = parseFloat(match[1]);
@@ -137,7 +156,6 @@ export class GoodReturnsProvider implements IFuelPriceProvider {
       console.warn('GoodReturns aggregator fetch failed:', e);
     }
 
-    // Default secondary fallback rates
     let rate = 104.30;
     if (query.fuelType === 'DIESEL') rate = 92.60;
     if (query.fuelType === 'CNG') rate = 85.20;
@@ -158,7 +176,7 @@ class FuelPriceService {
   ];
 
   /**
-   * Retrieves the latest location-specific fuel price from mockStorage or refreshes it.
+   * Retrieves the latest location-specific fuel price from Supabase or refreshes it.
    */
   async getFuelPrice(query: FuelPriceQuery): Promise<FuelPrice> {
     const fuelType = query.fuelType;
@@ -168,10 +186,14 @@ class FuelPriceService {
     const city = query.city || 'Kozhikode';
     const pincode = query.pincode || '';
 
-    // Check if we have it stored in localStorage already
-    let cached = mockStorage.getFuelPrice(fuelType, state, city);
-    
-    // If not cached in localStorage, try loading from static daily json first
+    const { data: cached } = await supabase
+      .from('fuel_prices')
+      .select('*')
+      .eq('fuel_type', fuelType)
+      .eq('state', state)
+      .eq('city', city)
+      .single();
+
     if (!cached) {
       try {
         const baseUrl = typeof window !== 'undefined' ? '' : 'http://localhost:3000';
@@ -179,10 +201,21 @@ class FuelPriceService {
         if (res.ok) {
           const list = await res.json();
           if (Array.isArray(list)) {
-            for (const item of list) {
-              mockStorage.saveFuelPrice(item);
+            await supabase.from('fuel_prices').upsert(list, { onConflict: 'state,district,city,fuel_type' });
+            const { data: reloaded } = await supabase
+              .from('fuel_prices')
+              .select('*')
+              .eq('fuel_type', fuelType)
+              .eq('state', state)
+              .eq('city', city)
+              .single();
+            if (reloaded) {
+              const diffHours = (Date.now() - new Date(reloaded.fetched_at).getTime()) / 3600000;
+              if (diffHours < 24) return mapFuelPrice(reloaded);
+              const stale = { ...reloaded, status: 'STALE' as FuelPriceStatus };
+              await supabase.from('fuel_prices').upsert(stale, { onConflict: 'state,district,city,fuel_type' });
+              return mapFuelPrice(stale);
             }
-            cached = mockStorage.getFuelPrice(fuelType, state, city);
           }
         }
       } catch (err) {
@@ -191,23 +224,16 @@ class FuelPriceService {
     }
 
     if (cached) {
-      // Stale data check: if fetched_at is older than 24 hours
-      const diffHours = (Date.now() - new Date(cached.fetchedAt).getTime()) / 3600000;
+      const diffHours = (Date.now() - new Date(cached.fetched_at).getTime()) / 3600000;
       if (diffHours < 24) {
-        return cached;
+        return mapFuelPrice(cached);
       }
-      // If older than 24h, mark as stale but return it unless updated
-      const updatedCached = {
-        ...cached,
-        status: 'STALE' as FuelPriceStatus
-      };
-      mockStorage.saveFuelPrice(updatedCached);
-      return updatedCached;
+      const updatedCached = { ...cached, status: 'STALE' as FuelPriceStatus };
+      await supabase.from('fuel_prices').upsert(updatedCached, { onConflict: 'state,district,city,fuel_type' });
+      return mapFuelPrice(updatedCached);
     }
 
-    // If still not available, fetch live rates
     return this.refreshSinglePrice({ fuelType, country, state, district, city, pincode });
-
   }
 
   /**
@@ -219,14 +245,12 @@ class FuelPriceService {
     let urlUsed = '';
     let fallbackReason = '';
 
-    // Chain execution by priority order
     const sortedProviders = [...this.providers].sort((a, b) => a.priority - b.priority);
 
     for (const provider of sortedProviders) {
       try {
         const result = await provider.fetchPrice(query);
         
-        // --- VALIDATION ENGINE ---
         if (result.price <= 0) {
           throw new Error('Price must be greater than zero');
         }
@@ -234,7 +258,7 @@ class FuelPriceService {
         priceFound = result.price;
         selectedProvider = provider;
         urlUsed = result.urlUsed;
-        break; // Successfully got and validated price
+        break;
       } catch (err: any) {
         fallbackReason += `[${provider.name} failed: ${err.message || err}] `;
         console.warn(`Provider ${provider.name} failed, trying next fallback...`);
@@ -242,17 +266,16 @@ class FuelPriceService {
     }
 
     if (!selectedProvider || priceFound <= 0) {
-      // All sources failed
-      mockStorage.addFuelPriceAuditLog({
-        eventType: 'FUEL_PRICE_UPDATE_FAILED',
-        fuelType: query.fuelType,
+      await supabase.from('fuel_price_audit_log').insert({
+        event_type: 'FUEL_PRICE_UPDATE_FAILED',
+        fuel_type: query.fuelType,
         country: query.country,
         state: query.state,
         district: query.district,
         city: query.city,
-        sourceName: 'ALL_PROVIDERS',
+        source_name: 'ALL_PROVIDERS',
         status: 'FAILED',
-        errorMessage: 'All providers failed validation or fetch: ' + fallbackReason
+        error_message: 'All providers failed validation or fetch: ' + fallbackReason
       });
 
       throw new Error(`Fuel price temporarily unavailable for ${query.city}, ${query.state}.`);
@@ -281,46 +304,48 @@ class FuelPriceService {
       fallbackReason: selectedProvider.priority > 1 ? fallbackReason : undefined,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      // Legacy compatibility
       source: selectedProvider.name,
       effectiveAt: new Date().toISOString()
     };
 
-    // Check if price changed before logging history
-    const oldPrice = mockStorage.getFuelPrice(query.fuelType, query.state, query.city);
-    const hasChanged = !oldPrice || oldPrice.priceRupees !== priceFound;
+    const { data: oldPrice } = await supabase
+      .from('fuel_prices')
+      .select('*')
+      .eq('fuel_type', query.fuelType)
+      .eq('state', query.state)
+      .eq('city', query.city)
+      .single();
+    const hasChanged = !oldPrice || oldPrice.price_rupees !== priceFound;
 
-    // Save current rate
-    mockStorage.saveFuelPrice(newPriceRecord);
+    await supabase.from('fuel_prices').upsert(newPriceRecord, { onConflict: 'state,district,city,fuel_type' });
 
     if (hasChanged) {
-      mockStorage.addFuelPriceHistoryItem({
-        fuelPriceId: newPriceRecord.id,
-        fuelType: query.fuelType,
+      await supabase.from('fuel_price_history').insert({
+        fuel_price_id: newPriceRecord.id,
+        fuel_type: query.fuelType,
         country: query.country,
         state: query.state,
         district: query.district,
         city: query.city,
         pincode: query.pincode,
-        priceRupees: priceFound,
-        pricePerUnitPaise: Math.round(priceFound * 100),
+        price_rupees: priceFound,
+        price_per_unit_paise: Math.round(priceFound * 100),
         unit,
         currency: 'INR',
-        sourceName: selectedProvider.name,
-        effectiveDate: todayStr
+        source_name: selectedProvider.name,
+        effective_date: todayStr
       });
 
-
-      mockStorage.addFuelPriceAuditLog({
-        eventType: 'FUEL_PRICE_UPDATED',
-        fuelType: query.fuelType,
+      await supabase.from('fuel_price_audit_log').insert({
+        event_type: 'FUEL_PRICE_UPDATED',
+        fuel_type: query.fuelType,
         country: query.country,
         state: query.state,
         district: query.district,
         city: query.city,
-        oldPriceRupees: oldPrice?.priceRupees,
-        newPriceRupees: priceFound,
-        sourceName: selectedProvider.name,
+        old_price_rupees: oldPrice?.price_rupees,
+        new_price_rupees: priceFound,
+        source_name: selectedProvider.name,
         status: 'SUCCESS'
       });
     }
@@ -394,24 +419,34 @@ class FuelPriceService {
   /**
    * Gets list of historical price data.
    */
-  getHistory(): FuelPriceHistoryItem[] {
-    return mockStorage.getFuelPriceHistory();
+  async getHistory(): Promise<FuelPriceHistoryItem[]> {
+    const { data } = await supabase
+      .from('fuel_price_history')
+      .select('*')
+      .order('recorded_at', { ascending: false });
+    return (data as FuelPriceHistoryItem[]) || [];
   }
 
   /**
    * Admin manual override.
    */
-  updateManualOverride(
+  async updateManualOverride(
     fuelType: FuelType,
     priceRupees: number,
     state: string = 'Kerala',
     city: string = 'Kozhikode'
-  ): FuelPrice {
+  ): Promise<FuelPrice> {
     const paise = Math.round(priceRupees * 100);
     const todayStr = new Date().toISOString().slice(0, 10);
     const unit = fuelType === 'CNG' ? 'KG' : 'LITRE';
 
-    const oldPrice = mockStorage.getFuelPrice(fuelType, state, city);
+    const { data: oldPrice } = await supabase
+      .from('fuel_prices')
+      .select('*')
+      .eq('fuel_type', fuelType)
+      .eq('state', state)
+      .eq('city', city)
+      .single();
 
     const overrideRecord: FuelPrice = {
       id: `fp_manual_${Date.now()}`,
@@ -429,37 +464,35 @@ class FuelPriceService {
       status: 'LIVE',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      // Legacy compatibility
       source: 'Manual Admin Override',
       effectiveAt: new Date().toISOString()
     };
 
-    mockStorage.saveFuelPrice(overrideRecord);
+    await supabase.from('fuel_prices').upsert(overrideRecord, { onConflict: 'state,district,city,fuel_type' });
 
-    mockStorage.addFuelPriceHistoryItem({
-      fuelPriceId: overrideRecord.id,
-      fuelType,
+    await supabase.from('fuel_price_history').insert({
+      fuel_price_id: overrideRecord.id,
+      fuel_type: fuelType,
       country: 'India',
       state,
       city,
-      priceRupees,
-      pricePerUnitPaise: paise,
+      price_rupees: priceRupees,
+      price_per_unit_paise: paise,
       unit,
       currency: 'INR',
-      sourceName: 'Manual Admin Override',
-      effectiveDate: todayStr
+      source_name: 'Manual Admin Override',
+      effective_date: todayStr
     });
 
-
-    mockStorage.addFuelPriceAuditLog({
-      eventType: 'FUEL_PRICE_UPDATED',
-      fuelType,
+    await supabase.from('fuel_price_audit_log').insert({
+      event_type: 'FUEL_PRICE_UPDATED',
+      fuel_type: fuelType,
       country: 'India',
       state,
       city,
-      oldPriceRupees: oldPrice?.priceRupees,
-      newPriceRupees: priceRupees,
-      sourceName: 'Manual Admin Override',
+      old_price_rupees: oldPrice?.price_rupees,
+      new_price_rupees: priceRupees,
+      source_name: 'Manual Admin Override',
       status: 'SUCCESS'
     });
 
@@ -496,11 +529,17 @@ class FuelPriceService {
   }
 
   /**
-   * Gets a price synchronously from the local cache. Returns null if not cached.
+   * Gets a price from Supabase. Returns null if not found.
    */
-  getCachedPrice(fuelType: FuelType, state: string = 'Kerala', city: string = 'Kozhikode'): number | null {
-    const cached = mockStorage.getFuelPrice(fuelType, state, city);
-    return cached ? cached.priceRupees : null;
+  async getCachedPrice(fuelType: FuelType, state: string = 'Kerala', city: string = 'Kozhikode'): Promise<number | null> {
+    const { data } = await supabase
+      .from('fuel_prices')
+      .select('*')
+      .eq('fuel_type', fuelType)
+      .eq('state', state)
+      .eq('city', city)
+      .single();
+    return data ? data.price_rupees : null;
   }
 }
 

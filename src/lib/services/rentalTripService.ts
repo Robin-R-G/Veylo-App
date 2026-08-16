@@ -1,7 +1,8 @@
 import { RentalTrip, GPSPoint, TripStatus, Invoice, Vehicle, FuelPriceSnapshot } from '@/types';
-import { mockStorage } from './mockStorage';
+import { createClient } from '@/lib/supabase/client';
 import { filterAndValidateGpsPoint } from './gpsTrackingEngine';
 import { generateUpiDeepLink } from './financialEngine';
+import { computePlatformFee } from './platformEconomics';
 import { authService } from './authService';
 import { fuelPriceService } from './fuelPriceService';
 
@@ -9,13 +10,20 @@ export class RentalTripService {
   /**
    * Starts a new rental trip for a rider on a verified vehicle.
    */
-  startTrip(params: {
+  async startTrip(params: {
     vehicleId: string;
     riderName: string;
     riderPhone: string;
     startCoordinates?: { lat: number; lng: number };
-  }): RentalTrip {
-    const vehicle = mockStorage.getVehicleById(params.vehicleId);
+  }): Promise<RentalTrip> {
+    const supabase = createClient();
+
+    const { data: vehicle } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('id', params.vehicleId)
+      .single();
+
     if (!vehicle) {
       throw new Error('Vehicle not found.');
     }
@@ -24,15 +32,17 @@ export class RentalTripService {
       throw new Error(`Vehicle is currently ${vehicle.status}. Only available vehicles can be rented.`);
     }
 
-    // Use auth session if available, otherwise use provided params
     const session = authService.getSession();
     const riderId = session?.userId || `rider_${Date.now()}`;
     const riderName = (session?.name || params.riderName).trim() || 'Rider';
     const riderPhone = (session?.phone || params.riderPhone).trim() || '+91 94000 11223';
 
-    const state = mockStorage.getState();
-    const tripId = `TRIP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(state.rentalTrips?.length ? state.rentalTrips.length + 1 : 1).padStart(3, '0')}`;
-    
+    const { count: tripCount } = await supabase
+      .from('rental_trips')
+      .select('id', { count: 'exact', head: true });
+
+    const tripId = `TRIP-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String((tripCount || 0) + 1).padStart(3, '0')}`;
+
     const initialPoint: GPSPoint | undefined = params.startCoordinates
       ? {
           latitude: params.startCoordinates.lat,
@@ -42,6 +52,12 @@ export class RentalTripService {
         }
       : undefined;
 
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('upi_id, upi_payee_name')
+      .eq('id', vehicle.organizationId)
+      .maybeSingle();
+
     const newTrip: RentalTrip = {
       id: tripId,
       vehicleId: vehicle.id,
@@ -50,11 +66,11 @@ export class RentalTripService {
       vehicleType: vehicle.vehicleType,
       ownerId: vehicle.ownerId,
       ownerName: 'Robin (Owner)',
-      ownerUpiId: vehicle.ownerUpiId || state.organization.upiId || 'vehicleowner@upi',
+      ownerUpiId: vehicle.ownerUpiId || org?.upi_id || 'vehicleowner@upi',
       riderId,
       riderName,
       riderPhone,
-      
+
       startTime: new Date().toISOString(),
       durationSeconds: 0,
 
@@ -80,11 +96,12 @@ export class RentalTripService {
       updatedAt: new Date().toISOString(),
     };
 
-    // Update state
-    mockStorage.addRentalTrip(newTrip);
+    await supabase.from('rental_trips').insert(newTrip);
 
-    // Update vehicle status to IN_USE
-    mockStorage.updateVehicleStatus(vehicle.id, 'IN_USE');
+    await supabase
+      .from('vehicles')
+      .update({ status: 'IN_USE', updated_at: new Date().toISOString() })
+      .eq('id', vehicle.id);
 
     return newTrip;
   }
@@ -92,8 +109,15 @@ export class RentalTripService {
   /**
    * Ingests a new GPS reading during an active trip.
    */
-  ingestGpsPoint(tripId: string, point: GPSPoint): RentalTrip {
-    const trip = mockStorage.getRentalTripById(tripId);
+  async ingestGpsPoint(tripId: string, point: GPSPoint): Promise<RentalTrip> {
+    const supabase = createClient();
+
+    const { data: trip } = await supabase
+      .from('rental_trips')
+      .select('*')
+      .eq('id', tripId)
+      .single();
+
     if (!trip) {
       throw new Error(`Trip ${tripId} not found.`);
     }
@@ -136,15 +160,26 @@ export class RentalTripService {
       updatedAt: new Date().toISOString(),
     };
 
-    mockStorage.updateRentalTrip(updatedTrip);
+    await supabase
+      .from('rental_trips')
+      .update(updatedTrip)
+      .eq('id', tripId);
+
     return updatedTrip;
   }
 
   /**
    * Ends an active rental trip and transitions to CONFIRMATION_PENDING.
    */
-  endTrip(tripId: string, manualDistanceOverrideKm?: number): RentalTrip {
-    const trip = mockStorage.getRentalTripById(tripId);
+  async endTrip(tripId: string, manualDistanceOverrideKm?: number): Promise<RentalTrip> {
+    const supabase = createClient();
+
+    const { data: trip } = await supabase
+      .from('rental_trips')
+      .select('*')
+      .eq('id', tripId)
+      .single();
+
     if (!trip) {
       throw new Error(`Trip ${tripId} not found.`);
     }
@@ -170,42 +205,103 @@ export class RentalTripService {
       updatedAt: new Date().toISOString(),
     };
 
-    mockStorage.updateRentalTrip(updatedTrip);
+    await supabase
+      .from('rental_trips')
+      .update(updatedTrip)
+      .eq('id', tripId);
+
     return updatedTrip;
   }
 
   /**
    * Confirms the trip, generates the invoice, creates UPI deep-link, and updates the vehicle digital mileage ledger.
    */
-  confirmTripAndGenerateInvoice(tripId: string): { trip: RentalTrip; invoice: Invoice } {
-    const trip = mockStorage.getRentalTripById(tripId);
+  async confirmTripAndGenerateInvoice(tripId: string): Promise<{ trip: RentalTrip; invoice: Invoice }> {
+    const supabase = createClient();
+
+    const { data: trip } = await supabase
+      .from('rental_trips')
+      .select('*')
+      .eq('id', tripId)
+      .single();
+
     if (!trip) {
       throw new Error(`Trip ${tripId} not found.`);
     }
 
-    const state = mockStorage.getState();
-    const invNumber = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(state.invoices.length + 1).padStart(3, '0')}`;
+    const { count: invoiceCount } = await supabase
+      .from('invoices')
+      .select('id', { count: 'exact', head: true });
+
+    const invNumber = `INV-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String((invoiceCount || 0) + 1).padStart(3, '0')}`;
+
+    const { data: monetizationData } = await supabase
+      .from('platform_settings')
+      .select('value')
+      .eq('key', 'monetization')
+      .single();
+
+    const monetization = monetizationData?.value || {
+      platformFeeEnabled: false,
+      platformFeeType: 'NONE',
+      platformFeeValue: 0,
+      advertisingEnabled: true,
+      trialDays: 14,
+    };
+
+    const platformFeeRupees = computePlatformFee(trip.distanceChargeRupees, monetization);
+
+    const finalTotal = trip.totalAmountRupees + platformFeeRupees;
 
     const upiLink = generateUpiDeepLink({
       payeeUpiId: trip.ownerUpiId || 'vehicleowner@upi',
       payeeName: trip.ownerName || 'Vehicle Owner',
-      amountRupees: trip.totalAmountRupees,
+      amountRupees: finalTotal,
       transactionNote: `Rental ${trip.vehicleRegNumber} (${trip.gpsDistanceKm} km)`,
       referenceId: invNumber,
     });
 
-    const vehicle = mockStorage.getVehicleById(trip.vehicleId);
+    const { data: vehicle } = await supabase
+      .from('vehicles')
+      .select('*')
+      .eq('id', trip.vehicleId)
+      .single();
+
     let priceSnapshot: FuelPriceSnapshot | undefined = undefined;
-    
+
     if (vehicle) {
       const stateName = vehicle.state || 'Kerala';
       const cityName = vehicle.city || 'Kozhikode';
-      const fp = mockStorage.getFuelPrice(vehicle.fuelType, stateName, cityName)
-        || mockStorage.getFuelPrice(vehicle.fuelType, 'Kerala', 'Kozhikode');
+
+      let { data: fp } = await supabase
+        .from('fuel_prices')
+        .select('*')
+        .eq('fuel_type', vehicle.fuelType)
+        .eq('state', stateName)
+        .eq('city', cityName)
+        .maybeSingle();
+
+      if (!fp) {
+        const fallback = await supabase
+          .from('fuel_prices')
+          .select('*')
+          .eq('fuel_type', vehicle.fuelType)
+          .eq('state', 'Kerala')
+          .eq('city', 'Kozhikode')
+          .maybeSingle();
+        fp = fallback.data;
+      }
+
       if (fp) {
         priceSnapshot = fuelPriceService.createPriceSnapshot(fp);
       }
     }
+
+    const { data: org } = await supabase
+      .from('organizations')
+      .select('upi_id, upi_payee_name')
+      .eq('id', vehicle?.organizationId || '')
+      .maybeSingle();
 
     const newInvoice: Invoice = {
       id: `inv_${Date.now()}`,
@@ -226,9 +322,10 @@ export class RentalTripService {
       additionalChargesRupees: trip.otherChargesRupees,
       subtotalRupees: trip.distanceChargeRupees,
       taxRupees: 0,
-      totalRupees: trip.totalAmountRupees,
-      payeeUpiId: trip.ownerUpiId || state.organization.upiId || 'vehicleowner@upi',
-      payeeName: trip.ownerName || state.organization.upiPayeeName || 'Vehicle Owner',
+      totalRupees: finalTotal,
+      platformFeeRupees,
+      payeeUpiId: trip.ownerUpiId || org?.upi_id || 'vehicleowner@upi',
+      payeeName: trip.ownerName || org?.upi_payee_name || 'Vehicle Owner',
       upiDeepLink: upiLink,
 
       paymentStatus: 'PENDING',
@@ -239,12 +336,32 @@ export class RentalTripService {
       notes: `GPS Distance: ${trip.gpsDistanceKm} km @ ₹${trip.ratePerKmRupees}/km. Vehicle: ${trip.vehicleRegNumber}`,
     };
 
-    mockStorage.addInvoice(newInvoice);
+    await supabase.from('invoices').insert(newInvoice);
 
-    // Update vehicle's permanent currentOdometer and estimatedCurrentOdometer
-    mockStorage.updateVehicleOdometer(trip.vehicleId, trip.estimatedEndOdometer, 'GPS_RIDE_COMPLETED', trip.id);
+    // Update vehicle odometer
+    if (vehicle) {
+      const prev = vehicle.currentOdometer;
+      await supabase
+        .from('vehicles')
+        .update({
+          current_omdometer: trip.estimatedEndOdometer,
+          estimated_current_omdometer: trip.estimatedEndOdometer,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', trip.vehicleId);
 
-    // Transition trip state to INVOICE_GENERATED / PAYMENT_PENDING
+      await supabase.from('odometer_history').insert({
+        vehicle_id: trip.vehicleId,
+        previous_reading: prev,
+        new_reading: trip.estimatedEndOdometer,
+        difference: Math.round((trip.estimatedEndOdometer - prev) * 100) / 100,
+        reason: 'GPS_RIDE_COMPLETED',
+        trip_id: trip.id,
+        notes: 'Automatic GPS tracking update',
+        timestamp: new Date().toISOString(),
+      });
+    }
+
     const updatedTrip: RentalTrip = {
       ...trip,
       invoiceId: newInvoice.id,
@@ -253,7 +370,10 @@ export class RentalTripService {
       updatedAt: new Date().toISOString(),
     };
 
-    mockStorage.updateRentalTrip(updatedTrip);
+    await supabase
+      .from('rental_trips')
+      .update(updatedTrip)
+      .eq('id', tripId);
 
     return { trip: updatedTrip, invoice: newInvoice };
   }
@@ -261,18 +381,36 @@ export class RentalTripService {
   /**
    * Marks a trip payment as verified/paid and frees the vehicle back to AVAILABLE.
    */
-  verifyPayment(tripId: string, txnReference?: string): RentalTrip {
-    const trip = mockStorage.getRentalTripById(tripId);
+  async verifyPayment(tripId: string, txnReference?: string): Promise<RentalTrip> {
+    const supabase = createClient();
+
+    const { data: trip } = await supabase
+      .from('rental_trips')
+      .select('*')
+      .eq('id', tripId)
+      .single();
+
     if (!trip) {
       throw new Error(`Trip ${tripId} not found.`);
     }
 
     if (trip.invoiceId) {
-      mockStorage.updateInvoicePaymentStatus(trip.invoiceId, 'PAID', 'UPI_INTENT', txnReference || `UPI_${Date.now()}`);
+      await supabase
+        .from('invoices')
+        .update({
+          paymentStatus: 'PAID',
+          paymentMethod: 'UPI_INTENT',
+          upiTransactionRef: txnReference || `UPI_${Date.now()}`,
+          paidAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+        .eq('id', trip.invoiceId);
     }
 
-    // Free vehicle back to AVAILABLE
-    mockStorage.updateVehicleStatus(trip.vehicleId, 'AVAILABLE');
+    await supabase
+      .from('vehicles')
+      .update({ status: 'AVAILABLE', updated_at: new Date().toISOString() })
+      .eq('id', trip.vehicleId);
 
     const completedTrip: RentalTrip = {
       ...trip,
@@ -283,7 +421,11 @@ export class RentalTripService {
       updatedAt: new Date().toISOString(),
     };
 
-    mockStorage.updateRentalTrip(completedTrip);
+    await supabase
+      .from('rental_trips')
+      .update(completedTrip)
+      .eq('id', tripId);
+
     return completedTrip;
   }
 }

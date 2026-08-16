@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getRentalTripById } from '@/lib/services/supabase/data';
 import { rentalTripService } from '@/lib/services/rentalTripService';
 import { RentalTrip } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
@@ -20,12 +20,15 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
 
   useEffect(() => {
     setMounted(true);
-    const t = mockStorage.getRentalTripById(tripId);
-    if (t) {
-      setTrip(t);
-      const elapsed = Math.floor((Date.now() - new Date(t.startTime).getTime()) / 1000);
-      setSecondsElapsed(Math.max(0, elapsed));
+    async function load() {
+      const t = await getRentalTripById(tripId);
+      if (t) {
+        setTrip(t);
+        const elapsed = Math.floor((Date.now() - new Date(t.startTime).getTime()) / 1000);
+        setSecondsElapsed(Math.max(0, elapsed));
+      }
     }
+    load();
   }, [tripId]);
 
   // Real-time Timer Tick
@@ -46,8 +49,8 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
     let watchId: number | null = null;
     if (typeof window !== 'undefined' && 'geolocation' in navigator) {
       watchId = navigator.geolocation.watchPosition(
-        (pos) => {
-          const updated = rentalTripService.ingestGpsPoint(trip.id, {
+        async (pos) => {
+          const updated = await rentalTripService.ingestGpsPoint(trip.id, {
             latitude: pos.coords.latitude,
             longitude: pos.coords.longitude,
             accuracy: pos.coords.accuracy,
@@ -73,19 +76,18 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
   useEffect(() => {
     if (!isSimulating || !trip) return;
 
-    const simInterval = setInterval(() => {
+    const simInterval = setInterval(async () => {
       setRouteIndex((prevIdx) => {
         const nextIdx = (prevIdx + 1) % KOZHIKODE_SAMPLE_ROUTE.length;
         const pt = KOZHIKODE_SAMPLE_ROUTE[nextIdx];
 
-        const updated = rentalTripService.ingestGpsPoint(trip.id, {
+        rentalTripService.ingestGpsPoint(trip.id, {
           latitude: pt.lat,
           longitude: pt.lng,
           accuracy: 5,
           speed: 42,
           timestamp: Date.now(),
-        });
-        if (updated) setTrip(updated);
+        }).then(updated => { if (updated) setTrip(updated); });
 
         return nextIdx;
       });
@@ -113,14 +115,14 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
     return `${mins}m ${secs}s`;
   };
 
-  const handleEndRide = () => {
-    rentalTripService.endTrip(trip.id);
+  const handleEndRide = async () => {
+    await rentalTripService.endTrip(trip.id);
     router.push(`/rider/trip/${trip.id}/confirm`);
   };
 
   // Quick 25.1 km simulate jump (Prompt Scenario)
-  const handleSimulateTarget25km = () => {
-    const updated = rentalTripService.endTrip(trip.id, 25.1);
+  const handleSimulateTarget25km = async () => {
+    const updated = await rentalTripService.endTrip(trip.id, 25.1);
     setTrip(updated);
     router.push(`/rider/trip/${trip.id}/confirm`);
   };

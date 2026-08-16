@@ -22,7 +22,14 @@ import {
   FuelPriceAuditLog,
   FuelType,
   PaymentAttempt,
-  UpiStatus
+  UpiStatus,
+  SaaSPlan,
+  Subscription,
+  PlatformRevenueLog,
+  PaymentEvent,
+  PlatformMonetizationSettings,
+  SubscriptionStatus,
+  PlatformRevenueType
 } from '@/types';
 
 
@@ -49,6 +56,11 @@ export interface AppState {
   fuelPriceHistory: FuelPriceHistoryItem[];
   fuelPriceAuditLogs: FuelPriceAuditLog[];
   paymentAttempts: PaymentAttempt[];
+  plans: SaaSPlan[];
+  subscriptions: Subscription[];
+  platformRevenue: PlatformRevenueLog[];
+  paymentEvents: PaymentEvent[];
+  monetizationSettings: PlatformMonetizationSettings;
 }
 
 
@@ -384,7 +396,96 @@ const INITIAL_STATE: AppState = {
     }
   ],
   fuelPriceAuditLogs: [],
-  paymentAttempts: []
+  paymentAttempts: [],
+  plans: [
+    {
+      id: 'FREE',
+      name: 'Free Starter Plan',
+      pricePaise: 0,
+      priceRupees: 0.00,
+      billingInterval: 'MONTHLY',
+      vehicleLimit: 2,
+      staffLimit: 0,
+      gpsEnabled: false,
+      advancedReports: false,
+      customBranding: false,
+      adsEnabled: true,
+      prioritySupport: false,
+      createdAt: '2026-08-15T00:00:00Z',
+      updatedAt: '2026-08-15T00:00:00Z'
+    },
+    {
+      id: 'STARTER',
+      name: 'Starter Plan',
+      pricePaise: 29900,
+      priceRupees: 299.00,
+      billingInterval: 'MONTHLY',
+      vehicleLimit: 5,
+      staffLimit: 0,
+      gpsEnabled: true,
+      advancedReports: false,
+      customBranding: false,
+      adsEnabled: true,
+      prioritySupport: false,
+      createdAt: '2026-08-15T00:00:00Z',
+      updatedAt: '2026-08-15T00:00:00Z'
+    },
+    {
+      id: 'PRO',
+      name: 'Professional Plan',
+      pricePaise: 79900,
+      priceRupees: 799.00,
+      billingInterval: 'MONTHLY',
+      vehicleLimit: 20,
+      staffLimit: 3,
+      gpsEnabled: true,
+      advancedReports: true,
+      customBranding: true,
+      adsEnabled: false,
+      prioritySupport: true,
+      createdAt: '2026-08-15T00:00:00Z',
+      updatedAt: '2026-08-15T00:00:00Z'
+    },
+    {
+      id: 'BUSINESS',
+      name: 'Enterprise Business Plan',
+      pricePaise: 149900,
+      priceRupees: 1499.00,
+      billingInterval: 'MONTHLY',
+      vehicleLimit: 100,
+      staffLimit: 10,
+      gpsEnabled: true,
+      advancedReports: true,
+      customBranding: true,
+      adsEnabled: false,
+      prioritySupport: true,
+      createdAt: '2026-08-15T00:00:00Z',
+      updatedAt: '2026-08-15T00:00:00Z'
+    }
+  ],
+  subscriptions: [
+    {
+      id: 'sub_init_free',
+      organizationId: 'org_demo_1',
+      planId: 'FREE',
+      status: 'ACTIVE',
+      startedAt: '2026-08-15T00:00:00Z',
+      currentPeriodStart: '2026-08-15T00:00:00Z',
+      currentPeriodEnd: '2026-09-15T00:00:00Z',
+      provider: 'MOCK',
+      createdAt: '2026-08-15T00:00:00Z',
+      updatedAt: '2026-08-15T00:00:00Z'
+    }
+  ],
+  platformRevenue: [],
+  paymentEvents: [],
+  monetizationSettings: {
+    platformFeeEnabled: false,
+    platformFeeType: 'NONE',
+    platformFeeValue: 0,
+    advertisingEnabled: true,
+    trialDays: 14
+  }
 };
 
 class MockStorageService {
@@ -418,6 +519,34 @@ class MockStorageService {
       if (parsed.organization && !parsed.organization.upiStatus) {
         parsed.organization.upiStatus = parsed.organization.upiId ? 'ACTIVE' : 'NOT_CONFIGURED';
       }
+      if (!parsed.plans || parsed.plans.length === 0) {
+        parsed.plans = INITIAL_STATE.plans;
+      }
+      if (!parsed.subscriptions || parsed.subscriptions.length === 0) {
+        parsed.subscriptions = [
+          {
+            id: `sub_${Date.now()}`,
+            organizationId: parsed.organization?.id || 'org_demo_1',
+            planId: 'FREE',
+            status: 'ACTIVE',
+            startedAt: new Date().toISOString(),
+            currentPeriodStart: new Date().toISOString(),
+            currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+            provider: 'MOCK',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          }
+        ];
+      }
+      if (!parsed.platformRevenue) {
+        parsed.platformRevenue = [];
+      }
+      if (!parsed.paymentEvents) {
+        parsed.paymentEvents = [];
+      }
+      if (!parsed.monetizationSettings) {
+        parsed.monetizationSettings = INITIAL_STATE.monetizationSettings;
+      }
       return parsed;
     } catch {
       return INITIAL_STATE;
@@ -427,7 +556,8 @@ class MockStorageService {
 
 
 
-  private saveStore(state: AppState) {
+
+  saveStore(state: AppState) {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -814,6 +944,16 @@ class MockStorageService {
     this.saveStore(store);
   }
 
+  /** Toggle an ad placement's enabled state (admin monetization settings). */
+  updateAdConfiguration(placement: string, enabled: boolean) {
+    const store = this.getStore();
+    const cfg = store.adConfigurations.find(a => a.placement === placement);
+    if (cfg) {
+      cfg.enabled = enabled;
+      this.saveStore(store);
+    }
+  }
+
   // --- RIDER PROFILES ---
   getRiders(): RiderProfile[] {
     return this.getStore().riders || [];
@@ -1006,6 +1146,115 @@ class MockStorageService {
     
     this.saveStore(store);
     return attempt;
+  }
+
+  // --- SAAS PLANS CRUD ---
+  getPlans(): SaaSPlan[] {
+    return this.getStore().plans || [];
+  }
+
+  savePlan(plan: SaaSPlan): SaaSPlan {
+    const store = this.getStore();
+    if (!store.plans) store.plans = [];
+    const idx = store.plans.findIndex(p => p.id === plan.id);
+    if (idx !== -1) {
+      store.plans[idx] = { ...plan, updatedAt: new Date().toISOString() };
+    } else {
+      store.plans.push({ ...plan, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    }
+    this.saveStore(store);
+    return plan;
+  }
+
+  // --- SUBSCRIPTIONS CRUD ---
+  getSubscriptions(): Subscription[] {
+    return this.getStore().subscriptions || [];
+  }
+
+  getSubscriptionForOrg(orgId: string): Subscription | undefined {
+    return this.getSubscriptions().find(s => s.organizationId === orgId);
+  }
+
+  saveSubscription(sub: Subscription): Subscription {
+    const store = this.getStore();
+    if (!store.subscriptions) store.subscriptions = [];
+    const idx = store.subscriptions.findIndex(s => s.id === sub.id || s.organizationId === sub.organizationId);
+    if (idx !== -1) {
+      store.subscriptions[idx] = { ...sub, updatedAt: new Date().toISOString() };
+    } else {
+      store.subscriptions.push({ ...sub, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    }
+    this.saveStore(store);
+    return sub;
+  }
+
+  // --- PLATFORM REVENUE CRUD ---
+  getPlatformRevenue(): PlatformRevenueLog[] {
+    return this.getStore().platformRevenue || [];
+  }
+
+  addPlatformRevenueLog(log: Omit<PlatformRevenueLog, 'id' | 'createdAt'>): PlatformRevenueLog {
+    const store = this.getStore();
+    if (!store.platformRevenue) store.platformRevenue = [];
+    
+    const newLog: PlatformRevenueLog = {
+      ...log,
+      id: `rev_${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    
+    store.platformRevenue.unshift(newLog);
+    this.saveStore(store);
+    return newLog;
+  }
+
+  // Idempotent: skips if a revenue log with the same reference_id already exists.
+  // This is how platform fees and subscription payments are recorded exactly once.
+  addPlatformRevenueLogIfNew(log: Omit<PlatformRevenueLog, 'id' | 'createdAt'>): PlatformRevenueLog | null {
+    const existing = this.getPlatformRevenue();
+    if (log.referenceId && existing.some(e => e.referenceId === log.referenceId)) {
+      return null;
+    }
+    return this.addPlatformRevenueLog(log);
+  }
+
+  // --- PAYMENT WEBHOOK EVENTS ---
+  getPaymentEvents(): PaymentEvent[] {
+    return this.getStore().paymentEvents || [];
+  }
+
+  addPaymentEvent(evt: Omit<PaymentEvent, 'id' | 'processedAt'>): PaymentEvent {
+    const store = this.getStore();
+    if (!store.paymentEvents) store.paymentEvents = [];
+    
+    const newEvt: PaymentEvent = {
+      ...evt,
+      id: `evt_${Date.now()}`,
+      processedAt: new Date().toISOString()
+    };
+    
+    store.paymentEvents.unshift(newEvt);
+    this.saveStore(store);
+    return newEvt;
+  }
+
+  // --- MONETIZATION SETTINGS ---
+  getMonetizationSettings(): PlatformMonetizationSettings {
+    const s = this.getStore().monetizationSettings || {
+      platformFeeEnabled: false,
+      platformFeeType: 'NONE',
+      platformFeeValue: 0,
+      advertisingEnabled: true,
+      trialDays: 14
+    };
+    if (s.trialDays === undefined) s.trialDays = 14;
+    return s;
+  }
+
+  saveMonetizationSettings(settings: PlatformMonetizationSettings) {
+    const store = this.getStore();
+    store.monetizationSettings = settings;
+    this.saveStore(store);
   }
 }
 

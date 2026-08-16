@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getOrganization } from '@/lib/services/supabase/data';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
+import { supabase } from '@/lib/services/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Organization } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -36,46 +38,50 @@ export default function SettingsClient() {
       router.replace('/login');
       return;
     }
-    const state = mockStorage.getState();
-    const o = state.organization;
-    setOrg(o);
-    setOrgName(o.name || '');
-    setBusinessName(o.businessName || '');
-    setPhone(o.phone || '');
-    setEmail(o.email || '');
-    setDefaultState(o.defaultState || 'Kerala');
-    setDefaultCity(o.defaultCity || 'Kozhikode');
-    setInvoicePrefix(o.invoicePrefix || 'INV');
-    setUpiId(o.upiId || '');
-    setUpiPayeeName(o.upiPayeeName || '');
-    setUpiEnabled(o.upiEnabled !== false);
-    setTaxEnabled(o.taxEnabled || false);
-    setGstin(o.gstin || '');
+    (async () => {
+      const orgId = await supabaseAuth.getOrganizationId();
+      if (!orgId) return;
+      const o = await getOrganization(orgId);
+      if (!o) return;
+      setOrg(o);
+      setOrgName(o.name || '');
+      setBusinessName(o.businessName || '');
+      setPhone(o.phone || '');
+      setEmail(o.email || '');
+      setDefaultState(o.defaultState || 'Kerala');
+      setDefaultCity(o.defaultCity || 'Kozhikode');
+      setInvoicePrefix(o.invoicePrefix || 'INV');
+      setUpiId(o.upiId || '');
+      setUpiPayeeName(o.upiPayeeName || '');
+      setUpiEnabled(o.upiEnabled !== false);
+      setTaxEnabled(o.taxEnabled || false);
+      setGstin(o.gstin || '');
+    })();
   }, [router]);
 
   if (!mounted) return null;
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Save organization settings
-    const store = mockStorage.getState();
-    store.organization = {
-      ...store.organization,
+    const orgId = await supabaseAuth.getOrganizationId();
+    if (!orgId) return;
+    await supabase.from('organizations').update({
       name: orgName,
-      businessName,
+      business_name: businessName,
       phone,
       email,
-      defaultState,
-      defaultCity,
-      invoicePrefix,
-      upiId,
-      upiPayeeName,
-      upiEnabled,
-      taxEnabled,
+      default_state: defaultState,
+      default_city: defaultCity,
+      invoice_prefix: invoicePrefix,
+      tax_enabled: taxEnabled,
       gstin: taxEnabled ? gstin : undefined,
-    };
-    // Use the public API to save UPI settings
-    mockStorage.updateOwnerUpiSettings(upiId, upiPayeeName, upiEnabled);
+    }).eq('id', orgId);
+    await supabase.from('payment_settings').upsert({
+      organization_id: orgId,
+      upi_id: upiId,
+      payee_name: upiPayeeName,
+      status: upiId ? 'CONFIGURED' : 'NOT_CONFIGURED',
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -94,7 +100,28 @@ export default function SettingsClient() {
         backHref="/dashboard"
       />
 
+      {/* Subscriptions & Billing link */}
+      <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-primary text-lg">credit_card</span>
+            SaaS Plan Subscriptions
+          </h2>
+          <Link
+            href="/settings/billing"
+            className="px-4 py-2.5 rounded-xl border border-primary text-primary font-bold text-xs hover:bg-primary hover:text-on-primary transition-all flex items-center gap-1.5"
+          >
+            <span className="material-symbols-outlined text-sm">payments</span>
+            Manage Subscription
+          </Link>
+        </div>
+        <p className="text-xs text-on-surface-variant leading-relaxed">
+          Upgrade to Starter, Pro, or Enterprise Business plans. Unlock advanced reports, custom domain white-labeling, staff permissions, and higher vehicle limits.
+        </p>
+      </div>
+
       <form onSubmit={handleSave} className="space-y-6">
+
 
         {/* Organization Details */}
         <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-4">

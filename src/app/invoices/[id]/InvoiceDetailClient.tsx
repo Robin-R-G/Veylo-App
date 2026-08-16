@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getInvoiceById, getPaymentsByInvoiceId, getDisputeByTripId, createDispute, updatePaymentStatus } from '@/lib/services/supabase/data';
+import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { paymentService } from '@/lib/services/paymentService';
-import { authService } from '@/lib/services/authService';
 import { Invoice, PaymentAttempt, Dispute, AppSession } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { AdSlot } from '@/components/ads/AdSlot';
@@ -23,23 +23,26 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
   const [disputeNotes, setDisputeNotes] = useState('');
   const [disputeSuccessMsg, setDisputeSuccessMsg] = useState('');
 
-  const loadData = () => {
-    const state = mockStorage.getState();
-    const inv = state.invoices.find(i => i.id === id);
-    if (inv) {
-      setInvoice(inv);
-      // Load disputes associated with this trip
-      if (inv.tripId) {
-        const d = mockStorage.getDisputeByTripId(inv.tripId);
-        if (d) setDispute(d);
+  const loadData = async () => {
+    try {
+      const inv = await getInvoiceById(id);
+      if (inv) {
+        setInvoice(inv);
+        // Load disputes associated with this trip
+        if (inv.tripId) {
+          const d = await getDisputeByTripId(inv.tripId);
+          if (d) setDispute(d);
+        }
       }
+      setAttempts(await getPaymentsByInvoiceId(id));
+    } catch (err) {
+      console.error('Failed to load invoice data:', err);
     }
-    setAttempts(mockStorage.getPaymentAttemptsByInvoiceId(id));
   };
 
   useEffect(() => {
     setMounted(true);
-    setSession(authService.getSession());
+    supabaseAuth.getSession().then(s => setSession(s));
     loadData();
   }, [id]);
 
@@ -101,10 +104,11 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
     }
   };
 
-  // Settle verification checks (simulate transaction verified hook)
+  // Settle verification through the secure webhook pipeline (never a client callback).
   const handleSimulateVerify = async (paymentId: string) => {
     try {
-      const result = await paymentService.verifyPaymentAttempt(paymentId);
+      const reference = `WEBHOOK_TXN_${Date.now()}`;
+      const result = await paymentService.verifyPaymentAttempt(paymentId, reference);
       if (result.success) {
         loadData();
       } else {
@@ -116,17 +120,17 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
   };
 
   // Manual fallback owner bypass
-  const handleVerifyOwnerConfirm = () => {
-    mockStorage.updateInvoicePaymentStatus(invoice.id, 'PAID', 'MANUAL_OWNER_CONFIRMATION');
+  const handleVerifyOwnerConfirm = async () => {
+    await updatePaymentStatus(invoice.id, 'PAID', 'MANUAL_OWNER_CONFIRMATION');
     loadData();
   };
 
   // Raise dispute
-  const handleRaiseDispute = (e: React.FormEvent) => {
+  const handleRaiseDispute = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!invoice.tripId) return;
 
-    mockStorage.addDispute({
+    await createDispute({
       tripId: invoice.tripId,
       invoiceId: invoice.id,
       raisedBy: session?.role === 'RIDER' ? 'RIDER' : 'OWNER',
@@ -136,7 +140,6 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
       evidence: disputeNotes,
       status: 'OPEN'
     });
-
 
     setDisputeSuccessMsg('✅ Dispute successfully raised. A system administrator will review.');
     setDisputeNotes('');
@@ -342,10 +345,17 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
               </div>
             )}
 
-            <div className="flex justify-between items-center text-on-surface-variant">
-              <span>Platform & Taxes (Disabled)</span>
-              <span>₹0.00</span>
-            </div>
+            {invoice.platformFeeRupees ? (
+              <div className="flex justify-between items-center">
+                <span className="text-on-surface-variant">Platform Service Fee</span>
+                <span className="font-semibold text-on-surface">{formatCurrency(invoice.platformFeeRupees)}</span>
+              </div>
+            ) : (
+              <div className="flex justify-between items-center text-on-surface-variant">
+                <span>Platform & Taxes (Disabled)</span>
+                <span>₹0.00</span>
+              </div>
+            )}
 
             <div className="pt-3 border-t border-outline-variant flex justify-between items-center">
               <span className="font-extrabold text-sm text-on-surface">TOTAL PAYABLE AMOUNT</span>

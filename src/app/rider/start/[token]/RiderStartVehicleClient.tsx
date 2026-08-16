@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { getVehicleById, findVehicleByRegNumber } from '@/lib/services/supabase/data';
 import { rentalTripService } from '@/lib/services/rentalTripService';
 import { Vehicle } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -22,11 +22,11 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
 
   useEffect(() => {
     setMounted(true);
-    // Find vehicle by securePublicId or ID or Reg
-    const v = mockStorage.getVehicleById(token) || mockStorage.findVehicleByRegNumber(token);
-    if (v) {
-      setVehicle(v);
+    async function load() {
+      const v = await getVehicleById(token) || await findVehicleByRegNumber(token);
+      if (v) setVehicle(v);
     }
+    load();
   }, [token]);
 
   if (!mounted || !vehicle) {
@@ -61,7 +61,6 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
     setIsStarting(true);
 
     try {
-      // 1. Request GPS Permission (Simulated or Real Geolocation)
       let initialLat = KOZHIKODE_SAMPLE_ROUTE[0].lat;
       let initialLng = KOZHIKODE_SAMPLE_ROUTE[0].lng;
 
@@ -74,13 +73,11 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
           initialLng = pos.coords.longitude;
           setLocationGranted(true);
         } catch {
-          // Default fallback coordinates if user denies browser prompt
           setLocationGranted(true);
         }
       }
 
-      // 2. Start Trip in State Machine
-      const trip = rentalTripService.startTrip({
+      const trip = await rentalTripService.startTrip({
         vehicleId: vehicle.id,
         riderName,
         riderPhone,

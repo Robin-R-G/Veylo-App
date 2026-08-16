@@ -40,7 +40,11 @@ export type PaymentStatus =
   | 'FAILED' 
   | 'CANCELLED' 
   | 'REFUNDED' 
-  | 'UNDER_REVIEW';
+  | 'UNDER_REVIEW'
+  | 'CASH_PENDING'
+  | 'CASH_REPORTED'
+  | 'CASH_CONFIRMED'
+  | 'CASH_REJECTED';
 
 
 export type TripStatus =
@@ -420,6 +424,7 @@ export interface Invoice {
   issuedAt: string;
   paidAt?: string;
   notes?: string;
+  platformFeeRupees?: number;
 }
 
 export interface MaintenanceRecord {
@@ -493,3 +498,69 @@ export interface PlanEntitlements {
   allowAdvancedAnalytics: boolean;
   allowTripEstimator: boolean;
 }
+
+export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
+
+export type PlatformRevenueType = 'SUBSCRIPTION' | 'PLATFORM_FEE' | 'PREMIUM_FEATURE' | 'ADVERTISING' | 'OTHER';
+
+export interface SaaSPlan {
+  id: string;
+  name: string;
+  pricePaise: number;
+  priceRupees: number;
+  billingInterval: 'MONTHLY' | 'YEARLY';
+  vehicleLimit: number;
+  staffLimit: number;
+  gpsEnabled: boolean;
+  advancedReports: boolean;
+  customBranding: boolean;
+  adsEnabled: boolean;
+  prioritySupport: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Subscription {
+  id: string;
+  organizationId: string;
+  planId: string;
+  status: SubscriptionStatus;
+  startedAt: string;
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  cancelledAt?: string;
+  provider: string;
+  providerSubscriptionId?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PlatformRevenueLog {
+  id: string;
+  organizationId?: string;
+  amountPaise: number;
+  amountRupees: number;
+  currency: string;
+  revenueType: PlatformRevenueType;
+  referenceId?: string;
+  createdAt: string;
+}
+
+export interface PaymentEvent {
+  id: string;
+  eventId: string;
+  provider: string;
+  eventType: string;
+  payload: any;
+  processedAt: string;
+}
+
+export interface PlatformMonetizationSettings {
+  platformFeeEnabled: boolean;
+  platformFeeType: 'PERCENTAGE' | 'FIXED' | 'NONE';
+  platformFeeValue: number;
+  advertisingEnabled: boolean;
+  /** Configurable trial length in days (0 = no trial). Never hardcoded in app logic. */
+  trialDays: number;
+}
+

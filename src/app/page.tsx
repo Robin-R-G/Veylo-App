@@ -14,8 +14,9 @@ export default function LandingPage() {
   const [fuelPrice, setFuelPrice] = useState<number>(0);
 
   useEffect(() => {
-    const rate = fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode') || 104.20;
-    setFuelPrice(rate);
+    fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode').then(rate => {
+      setFuelPrice(rate || 104.20);
+    });
   }, []);
 
 

@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { createClient } from '@/lib/supabase/client';
+import { getActiveRentalTrips, findVehicleByRegNumber } from '@/lib/services/supabase/data';
 import { Vehicle, RentalTrip } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -17,14 +18,21 @@ export default function RiderPortalPage() {
 
   useEffect(() => {
     setMounted(true);
-    const state = mockStorage.getState();
-    setAvailableVehicles(state.vehicles);
-    setActiveTrips(mockStorage.getActiveRentalTrips());
+    async function load() {
+      const supabase = createClient();
+      const [trips, { data: vData }] = await Promise.all([
+        getActiveRentalTrips(),
+        supabase.from('vehicles').select('*').eq('status', 'AVAILABLE'),
+      ]);
+      setAvailableVehicles((vData as Vehicle[]) || []);
+      setActiveTrips(trips);
+    }
+    load();
   }, []);
 
   if (!mounted) return null;
 
-  const handleFindVehicle = (e: React.FormEvent) => {
+  const handleFindVehicle = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
@@ -33,7 +41,7 @@ export default function RiderPortalPage() {
       return;
     }
 
-    const found = mockStorage.findVehicleByRegNumber(vehicleReg);
+    const found = await findVehicleByRegNumber(vehicleReg);
     if (!found) {
       setErrorMsg(`Vehicle "${vehicleReg.toUpperCase()}" not found. Please verify the registration number.`);
       return;

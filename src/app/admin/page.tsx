@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { mockStorage } from '@/lib/services/mockStorage';
+import { createClient } from '@/lib/supabase/client';
 import { FeatureFlags, AdConfiguration } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -26,17 +26,29 @@ export default function AdminControlPage() {
 
   useEffect(() => {
     setMounted(true);
-    const state = mockStorage.getState();
-    setFeatureFlags(state.featureFlags);
-    setAdConfigs(state.adConfigurations);
+    const supabase = createClient();
+
+    async function load() {
+      const [flagsRes, adsRes] = await Promise.all([
+        supabase.from('platform_settings').select('value').eq('key', 'feature_flags').single(),
+        supabase.from('ad_configurations').select('*').order('placement'),
+      ]);
+
+      if (flagsRes.data?.value) setFeatureFlags(flagsRes.data.value as FeatureFlags);
+      if (adsRes.data) setAdConfigs(adsRes.data as AdConfiguration[]);
+    }
+
+    load();
   }, []);
 
   if (!mounted) return null;
 
-  const toggleFlag = (key: keyof FeatureFlags) => {
+  const toggleFlag = async (key: keyof FeatureFlags) => {
     const updated = { ...featureFlags, [key]: !featureFlags[key] };
     setFeatureFlags(updated);
-    mockStorage.updateFeatureFlags(updated);
+
+    const supabase = createClient();
+    await supabase.from('platform_settings').upsert({ key: 'feature_flags', value: updated });
 
     setSaveSuccessMsg(`Feature flag '${key}' updated.`);
     setTimeout(() => setSaveSuccessMsg(''), 2500);
