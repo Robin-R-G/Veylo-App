@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { PlanTier, AppSession, Organization } from '@/types';
+import { VeyloLogo } from '@/components/ui/VeyloLogo';
 
 export const Navbar: React.FC = () => {
   const pathname = usePathname();
@@ -64,12 +65,11 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="h-16 px-4 sm:px-6 lg:px-8 sticky top-0 z-40 bg-surface/90 backdrop-blur-md border-b border-outline-variant flex items-center justify-between transition-all w-full">
-      
       {/* Brand / Logo */}
       <div className="flex items-center gap-3">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-8 h-8 rounded-lg bg-primary text-on-primary font-bold flex items-center justify-center text-sm shadow">
-            VL
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <div className="w-9 h-9 rounded-xl bg-primary text-on-primary flex items-center justify-center p-1.5 shadow-sm group-hover:scale-105 transition-transform">
+            <VeyloLogo className="w-full h-full" color="white" />
           </div>
           <div>
             <span className="text-lg font-extrabold text-primary tracking-tight block leading-tight">

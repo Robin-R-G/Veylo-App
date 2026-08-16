@@ -8,6 +8,7 @@ import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngi
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { getVehicleById } from '@/lib/services/supabase/data';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { VeyloLogo } from '@/components/ui/VeyloLogo';
 
 function getSupabase() {
   return createClient();
@@ -157,8 +158,8 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
       
       {/* Contextual Header */}
       <div className="text-center w-full">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-800 mb-2 shadow-sm">
-          <span className="material-symbols-outlined text-3xl">check_circle</span>
+        <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-on-primary mb-2 shadow-md p-3 mx-auto">
+          <VeyloLogo className="w-full h-full" color="white" />
         </div>
         <h1 className="font-bold text-2xl text-on-background">Vehicle Found</h1>
         <p className="text-sm text-on-surface-variant mt-1">Ready to start your ride entry with Veylo.</p>

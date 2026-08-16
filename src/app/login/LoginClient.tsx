@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
+import { VeyloLogo } from '@/components/ui/VeyloLogo';
 
 type Tab = 'owner' | 'rider';
 
@@ -75,8 +76,8 @@ export default function LoginClient() {
 
         {/* Branding */}
         <div className="text-center space-y-2">
-          <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto shadow-sm">
-            <span className="material-symbols-outlined text-primary text-3xl">directions_car</span>
+          <div className="w-16 h-16 rounded-2xl bg-primary text-on-primary p-3 flex items-center justify-center mx-auto shadow-md">
+            <VeyloLogo className="w-full h-full" color="white" />
           </div>
           <h1 className="text-3xl font-extrabold text-on-background tracking-tight">Veylo</h1>
           <p className="text-sm text-on-surface-variant">Move. Track. Pay.</p>

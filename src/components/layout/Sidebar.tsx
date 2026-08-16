@@ -6,6 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { isRouteActive } from '@/lib/navigation';
 import { authService } from '@/lib/services/authService';
 import { AppSession } from '@/types';
+import { VeyloLogo } from '@/components/ui/VeyloLogo';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname();
@@ -44,8 +45,8 @@ export const Sidebar: React.FC = () => {
       
       {/* Brand Header */}
       <div className="px-6 mb-6 flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-on-primary font-extrabold text-base shadow">
-          VL
+        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center p-2 shadow-md text-on-primary">
+          <VeyloLogo className="w-full h-full" color="white" />
         </div>
         <div>
           <h1 className="text-xl font-extrabold text-primary tracking-tight leading-tight">Veylo</h1>
