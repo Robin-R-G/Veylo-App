@@ -82,14 +82,12 @@ export const Navbar: React.FC = () => {
         </Link>
       </div>
 
-      {/* Desktop Links (If Landing Page) */}
-      {isLandingPage && (
-        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-on-surface-variant">
-          <a href="#how-it-works" className="hover:text-primary transition-colors">How It Works</a>
-          <a href="#features" className="hover:text-primary transition-colors">Features</a>
-          <a href="#pricing" className="hover:text-primary transition-colors">Pricing</a>
-        </div>
-      )}
+      {/* Desktop Navigation Links */}
+      <div className="hidden md:flex items-center gap-6 text-sm font-medium text-on-surface-variant">
+        <Link href="/#how-it-works" className="hover:text-primary transition-colors">How It Works</Link>
+        <Link href="/#features" className="hover:text-primary transition-colors">Features</Link>
+        <Link href="/#pricing" className="hover:text-primary transition-colors">Pricing</Link>
+      </div>
 
       {/* Right Action Bar */}
       <div className="flex items-center gap-3">

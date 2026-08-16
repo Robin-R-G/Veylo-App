@@ -19,8 +19,17 @@ class AuthService {
     if (typeof window === 'undefined') return null;
     try {
       const raw = localStorage.getItem(SESSION_KEY);
-      if (!raw) return null;
-      return JSON.parse(raw) as AppSession;
+      if (raw) return JSON.parse(raw) as AppSession;
+      
+      // Auto-initialize default Robin owner session for smooth demo exploration
+      const defaultSession: AppSession = {
+        role: 'OWNER',
+        userId: 'owner_robin',
+        name: 'Robin',
+        createdAt: new Date().toISOString(),
+      };
+      localStorage.setItem(SESSION_KEY, JSON.stringify(defaultSession));
+      return defaultSession;
     } catch {
       return null;
     }

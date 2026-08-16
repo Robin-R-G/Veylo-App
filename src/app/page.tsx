@@ -174,6 +174,135 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Features Section */}
+      <section className="py-12 bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-sm space-y-8" id="features">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary-container/30 px-3 py-1 rounded-full">Features</span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-on-surface">Everything Needed for Modern Vehicle Operations</h2>
+          <p className="text-sm text-on-surface-variant max-w-2xl mx-auto">
+            From single-vehicle tracking to full-fleet monetization and UPI settlements.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-xl bg-surface-container-low border border-outline-variant space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+              <span className="material-symbols-outlined">qr_code_scanner</span>
+            </div>
+            <h3 className="font-bold text-base text-on-surface">Instant QR Rider Entry</h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Place QR stickers on your vehicles. Riders scan to start trips instantly with odometer validation and zero setup.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-surface-container-low border border-outline-variant space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+              <span className="material-symbols-outlined">local_gas_station</span>
+            </div>
+            <h3 className="font-bold text-base text-on-surface">Live Fuel Price Engine</h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Auto-fetch official state and city rates for Petrol, Diesel, and CNG to calculate exact trip costs without manual math.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-xl bg-surface-container-low border border-outline-variant space-y-3">
+            <div className="w-10 h-10 rounded-lg bg-primary text-on-primary flex items-center justify-center">
+              <span className="material-symbols-outlined">receipt_long</span>
+            </div>
+            <h3 className="font-bold text-base text-on-surface">Automated UPI Billing</h3>
+            <p className="text-xs text-on-surface-variant leading-relaxed">
+              Generate transparent usage invoices with breakdown of fuel, platform fee, tax, and direct UPI QR pay buttons.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-12 bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-sm space-y-8" id="pricing">
+        <div className="text-center space-y-2">
+          <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary-container/30 px-3 py-1 rounded-full">Pricing</span>
+          <h2 className="text-2xl sm:text-3xl font-bold text-on-surface">Simple, Transparent Subscription Plans</h2>
+          <p className="text-sm text-on-surface-variant max-w-2xl mx-auto">
+            Choose the plan that fits your vehicle fleet size. Upgrade or downgrade anytime.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          {/* Free Tier */}
+          <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg text-on-surface">Free</span>
+                <span className="text-xs font-bold px-2.5 py-1 rounded bg-surface-container text-on-surface">Starter</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-extrabold text-on-surface">₹0</span>
+                <span className="text-xs text-on-surface-variant">/ month</span>
+              </div>
+              <p className="text-xs text-on-surface-variant">Perfect for individual vehicle owners trying out Veylo.</p>
+              <ul className="space-y-2 text-xs text-on-surface-variant pt-2 border-t border-outline-variant">
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> 1 Registered Vehicle</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> Basic ODO & Fuel Cost Calc</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> QR Code Entry</li>
+              </ul>
+            </div>
+            <Link href="/dashboard" className="w-full py-3 text-center rounded-xl border border-outline-variant font-bold text-xs text-primary hover:bg-surface-container transition-all">
+              GET STARTED FREE
+            </Link>
+          </div>
+
+          {/* Pro Tier (Popular) */}
+          <div className="p-6 rounded-2xl bg-primary text-on-primary border-2 border-primary shadow-lg flex flex-col justify-between space-y-6 relative overflow-hidden">
+            <div className="absolute top-3 right-3 bg-secondary-container text-on-secondary-container text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">
+              POPULAR
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg">Pro</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-extrabold">₹499</span>
+                <span className="text-xs opacity-80">/ month</span>
+              </div>
+              <p className="text-xs opacity-80">Ideal for small fleet owners managing up to 5 vehicles.</p>
+              <ul className="space-y-2 text-xs opacity-90 pt-2 border-t border-white/20">
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-300">check</span> Up to 5 Vehicles</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-300">check</span> Real-time Live Fuel Rates</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-300">check</span> Automated Usage Invoices</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-300">check</span> Instant UPI QR Payment Link</li>
+              </ul>
+            </div>
+            <Link href="/settings/billing" className="w-full py-3 text-center rounded-xl bg-on-primary text-primary font-bold text-xs uppercase hover:bg-surface-bright transition-all shadow">
+              UPGRADE TO PRO
+            </Link>
+          </div>
+
+          {/* Business Tier */}
+          <div className="p-6 rounded-2xl bg-surface-container-lowest border border-outline-variant flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="font-bold text-lg text-on-surface">Business</span>
+                <span className="text-xs font-bold px-2.5 py-1 rounded bg-tertiary-container text-on-tertiary-container">Fleet Scale</span>
+              </div>
+              <div className="flex items-baseline gap-1">
+                <span className="text-3xl font-extrabold text-on-surface">₹1,499</span>
+                <span className="text-xs text-on-surface-variant">/ month</span>
+              </div>
+              <p className="text-xs text-on-surface-variant">Full suite for commercial fleet operators & rental companies.</p>
+              <ul className="space-y-2 text-xs text-on-surface-variant pt-2 border-t border-outline-variant">
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> Unlimited Vehicles</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> Priority Maintenance Engine</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> Monetization & Revenue Analytics</li>
+                <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> Dedicated Support & Custom Export</li>
+              </ul>
+            </div>
+            <Link href="/settings/billing" className="w-full py-3 text-center rounded-xl border border-outline-variant font-bold text-xs text-primary hover:bg-surface-container transition-all">
+              CONTACT FLEET SALES
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Ad Slot */}
       <AdSlot placement="public-page-bottom" />
     </div>
