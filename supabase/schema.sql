@@ -464,6 +464,16 @@ CREATE TABLE IF NOT EXISTS public.payment_attempts (
 CREATE INDEX IF NOT EXISTS idx_payment_attempts_invoice ON public.payment_attempts(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payment_attempts_trip ON public.payment_attempts(trip_id);
 CREATE INDEX IF NOT EXISTS idx_payment_attempts_status ON public.payment_attempts(status);
+CREATE INDEX IF NOT EXISTS idx_payment_attempts_owner ON public.payment_attempts(owner_id);
+CREATE INDEX IF NOT EXISTS idx_payment_attempts_rider ON public.payment_attempts(rider_id);
+CREATE INDEX IF NOT EXISTS idx_payment_attempts_created ON public.payment_attempts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_invoices_owner ON public.invoices(owner_id);
+CREATE INDEX IF NOT EXISTS idx_invoices_created ON public.invoices(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_rental_trips_owner ON public.rental_trips(owner_id);
+CREATE INDEX IF NOT EXISTS idx_rental_trips_created ON public.rental_trips(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_odometer_history_timestamp ON public.odometer_history(timestamp DESC);
+CREATE INDEX IF NOT EXISTS idx_maintenance_vehicle_date ON public.maintenance_records(vehicle_id, service_date DESC);
+CREATE INDEX IF NOT EXISTS idx_issues_vehicle_status ON public.issues(vehicle_id, status);
 
 -- =============================================================================
 -- 10. PAYMENT EVENTS (immutable audit log)

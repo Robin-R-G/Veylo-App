@@ -68,6 +68,11 @@ export default function DisputesClient() {
   const openCount = disputes.filter(d => d.status === 'OPEN').length;
   const underReviewCount = disputes.filter(d => d.status === 'UNDER_REVIEW').length;
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
+  const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+  const paginatedDisputes = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -84,7 +89,7 @@ export default function DisputesClient() {
           return (
             <button
               key={status}
-              onClick={() => setFilter(status)}
+              onClick={() => { setFilter(status); setCurrentPage(1); }}
               className={`p-3 rounded-xl border text-center transition-all ${
                 filter === status
                   ? 'border-primary bg-primary/10'
@@ -112,7 +117,7 @@ export default function DisputesClient() {
           </div>
         )}
 
-        {filtered.map(dispute => (
+        {paginatedDisputes.map(dispute => (
           <div
             key={dispute.id}
             className="bg-surface rounded-xl border border-outline-variant p-4 shadow-sm hover:border-primary transition-all"
@@ -212,6 +217,31 @@ export default function DisputesClient() {
             )}
           </div>
         ))}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t border-outline-variant text-xs">
+            <span className="text-on-surface-variant">
+              Showing Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({filtered.length} total)
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface text-on-surface disabled:opacity-40 font-bold hover:bg-surface-container-low transition-all"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-3 py-1.5 rounded-lg border border-outline-variant bg-surface text-on-surface disabled:opacity-40 font-bold hover:bg-surface-container-low transition-all"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
