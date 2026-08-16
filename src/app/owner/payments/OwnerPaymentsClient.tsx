@@ -17,6 +17,7 @@ export default function OwnerPaymentsClient() {
   const [org, setOrg] = useState<Organization | null>(null);
   const [summary, setSummary] = useState({ todayRupees: 0, thisMonthRupees: 0, pendingRupees: 0, paidRupees: 0, totalRupees: 0 });
   const [history, setHistory] = useState<any[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     (async () => {
@@ -52,6 +53,10 @@ export default function OwnerPaymentsClient() {
 
   if (!mounted || !session) return null;
 
+  const pageSize = 20;
+  const totalPages = Math.ceil(history.length / pageSize) || 1;
+  const paginatedHistory = history.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   const statusBadge = (status: string) => {
     const cls =
       status === 'PAID' ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
@@ -61,57 +66,6 @@ export default function OwnerPaymentsClient() {
       : 'bg-amber-100 text-amber-800 border-amber-300';
     return `px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${cls}`;
   };
-
-  return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Owner Payments"
-        subtitle="Your rental earnings — completely separate from SaaS platform revenue"
-        icon="account_balance_wallet"
-        backHref="/dashboard"
-        action={
-          <Link
-            href="/settings/payment"
-            className="px-4 py-2.5 rounded-xl border border-primary text-primary font-bold text-xs flex items-center gap-1.5 hover:bg-primary hover:text-on-primary transition-all"
-          >
-            <span className="material-symbols-outlined text-sm">payments</span>
-            UPI Settings
-          </Link>
-        }
-      />
-
-      {/* Revenue separation banner */}
-      <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-xs flex items-start gap-3">
-        <span className="material-symbols-outlined text-primary text-base">account_balance</span>
-        <p className="text-on-surface-variant leading-relaxed">
-          This page shows <strong className="text-on-surface">your vehicle rental money</strong>. Subscriptions and
-          platform fees paid to Veylo are recorded separately on the admin revenue dashboard and never appear here.
-        </p>
-      </div>
-
-      {/* UPI destination card */}
-      {org && (
-        <div className="bg-surface rounded-2xl border border-outline-variant p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Payment Destination</span>
-            <span className="font-mono font-extrabold text-lg text-primary mt-1 block">{org.upiId || 'Not configured'}</span>
-            <span className="text-[11px] text-on-surface-variant">{org.upiPayeeName || 'Vehicle Owner'}</span>
-          </div>
-          <div className="text-right">
-            <span className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase ${org.upiStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
-              {org.upiStatus || 'NOT_CONFIGURED'}
-            </span>
-            <p className="text-[10px] text-on-surface-variant mt-1.5">
-              Riders pay this UPI directly. Veylo never routes or holds owner money.
-            </p>
-          </div>
-        </div>
-      )}
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 20;
-  const totalPages = Math.ceil(history.length / pageSize) || 1;
-  const paginatedHistory = history.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   return (
     <div className="space-y-6">
