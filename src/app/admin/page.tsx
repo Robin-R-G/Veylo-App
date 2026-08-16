@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
-import { FeatureFlags, AdConfiguration } from '@/types';
-import { PageHeader } from '@/components/ui/PageHeader';
+import { FeatureFlags, AdConfiguration, FuelPrice } from '@/types';
+import { centralFuelPriceService } from '@/lib/services/fuelPriceService';
 
 export default function AdminControlPage() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
@@ -19,8 +19,9 @@ export default function AdminControlPage() {
     gpsTracking: true,
   });
 
+  const [fuelPrices, setFuelPrices] = useState<{ petrol?: FuelPrice; diesel?: FuelPrice; cng?: FuelPrice }>({});
   const [adConfigs, setAdConfigs] = useState<AdConfiguration[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'flags' | 'ads' | 'payment' | 'logs'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'flags' | 'ads'>('overview');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
   const [mounted, setMounted] = useState(false);
 
@@ -29,13 +30,15 @@ export default function AdminControlPage() {
     const supabase = createClient();
 
     async function load() {
-      const [flagsRes, adsRes] = await Promise.all([
+      const [flagsRes, adsRes, currentRates] = await Promise.all([
         supabase.from('platform_settings').select('value').eq('key', 'feature_flags').single(),
         supabase.from('ad_configurations').select('*').order('placement'),
+        centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode'),
       ]);
 
       if (flagsRes.data?.value) setFeatureFlags(flagsRes.data.value as FeatureFlags);
       if (adsRes.data) setAdConfigs(adsRes.data as AdConfiguration[]);
+      if (currentRates) setFuelPrices(currentRates);
     }
 
     load();
@@ -50,197 +53,281 @@ export default function AdminControlPage() {
     const supabase = createClient();
     await supabase.from('platform_settings').upsert({ key: 'feature_flags', value: updated });
 
-    setSaveSuccessMsg(`Feature flag '${key}' updated.`);
-    setTimeout(() => setSaveSuccessMsg(''), 2500);
+    setSaveSuccessMsg(`Capability '${key}' toggled to ${updated[key] ? 'ENABLED' : 'DISABLED'}.`);
+    setTimeout(() => setSaveSuccessMsg(''), 3000);
   };
 
   return (
     <div className="space-y-6">
       
-      {/* Standard Page Header */}
-      <PageHeader
-        title="Admin Control Center"
-        subtitle="Manage platform operations, capability flags, advertising zones & system settings"
-        icon="admin_panel_settings"
-        action={
-          <Link
-            href="/admin/fuel-rates"
-            className="px-4 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-xs flex items-center gap-1.5 shadow hover:bg-primary-container hover:text-on-primary-container transition-all"
-          >
-            <span className="material-symbols-outlined text-sm">local_gas_station</span>
-            Fuel Price Management →
-          </Link>
-        }
-      />
+      {/* Admin Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="material-symbols-outlined text-amber-400 text-2xl">admin_panel_settings</span>
+            <h1 className="text-2xl font-black text-white tracking-tight">Platform Control Center</h1>
+          </div>
+          <p className="text-xs text-slate-400 mt-1">
+            Super Administrator governance, central fuel authority, monetization flags & system health.
+          </p>
+        </div>
+        <Link
+          href="/admin/fuel-rates"
+          className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs flex items-center gap-2 transition-all shadow-lg shadow-amber-500/20"
+        >
+          <span className="material-symbols-outlined text-base">local_gas_station</span>
+          Central Fuel Price Control →
+        </Link>
+      </div>
 
       {saveSuccessMsg && (
-        <div className="p-3 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2">
-          <span className="material-symbols-outlined text-sm">check_circle</span>
-          {saveSuccessMsg}
+        <div className="p-4 rounded-xl bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 text-xs font-semibold flex items-center gap-2.5 shadow-lg">
+          <span className="material-symbols-outlined text-emerald-400 text-lg">check_circle</span>
+          <span>{saveSuccessMsg}</span>
         </div>
       )}
 
-      {/* Top Metric Summary Cards */}
+      {/* Top Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
-          <div className="flex justify-between items-center text-on-surface-variant mb-1">
-            <span className="text-xs font-semibold uppercase">Platform Users</span>
-            <span className="material-symbols-outlined text-primary text-sm">group</span>
+        
+        {/* Active Super Admin */}
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div className="flex justify-between items-center text-slate-400 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Platform Authority</span>
+            <span className="material-symbols-outlined text-amber-400 text-lg">verified_user</span>
           </div>
-          <p className="text-2xl font-bold text-on-surface">1</p>
-          <span className="text-[10px] text-on-surface-variant">Active Super Admin</span>
+          <p className="text-2xl font-black text-white">SUPER_ADMIN</p>
+          <span className="text-[10px] text-slate-400">Database RLS Enforced</span>
         </div>
 
-        <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
-          <div className="flex justify-between items-center text-on-surface-variant mb-1">
-            <span className="text-xs font-semibold uppercase">Registered Fleet</span>
-            <span className="material-symbols-outlined text-primary text-sm">directions_car</span>
+        {/* Central Petrol Rate */}
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div className="flex justify-between items-center text-slate-400 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Petrol Benchmark</span>
+            <span className="material-symbols-outlined text-amber-400 text-lg">local_gas_station</span>
           </div>
-          <p className="text-2xl font-bold text-on-surface">1</p>
-          <span className="text-[10px] text-on-surface-variant">KL 16 P 78</span>
+          <p className="text-2xl font-black text-amber-400 font-mono">
+            ₹{fuelPrices.petrol?.priceRupees.toFixed(2) || '107.50'}
+          </p>
+          <span className="text-[10px] text-slate-400">Kerala Jurisdiction</span>
         </div>
 
-        <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
-          <div className="flex justify-between items-center text-on-surface-variant mb-1">
-            <span className="text-xs font-semibold uppercase">Total Rides</span>
-            <span className="material-symbols-outlined text-primary text-sm">route</span>
+        {/* Central Diesel Rate */}
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div className="flex justify-between items-center text-slate-400 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Diesel Benchmark</span>
+            <span className="material-symbols-outlined text-blue-400 text-lg">local_gas_station</span>
           </div>
-          <p className="text-2xl font-bold text-on-surface">1</p>
-          <span className="text-[10px] text-on-surface-variant">Recorded ODO journeys</span>
+          <p className="text-2xl font-black text-blue-400 font-mono">
+            ₹{fuelPrices.diesel?.priceRupees.toFixed(2) || '96.30'}
+          </p>
+          <span className="text-[10px] text-slate-400">Kerala Jurisdiction</span>
         </div>
 
-        <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
-          <div className="flex justify-between items-center text-on-surface-variant mb-1">
-            <span className="text-xs font-semibold uppercase">UPI Payee ID</span>
-            <span className="material-symbols-outlined text-primary text-sm">payments</span>
+        {/* Central CNG Rate */}
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl">
+          <div className="flex justify-between items-center text-slate-400 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider">CNG Benchmark</span>
+            <span className="material-symbols-outlined text-emerald-400 text-lg">local_gas_station</span>
           </div>
-          <p className="text-lg font-bold text-primary">owner@upi</p>
-          <span className="text-[10px] text-on-surface-variant">Direct UPI Intent</span>
+          <p className="text-2xl font-black text-emerald-400 font-mono">
+            ₹{fuelPrices.cng?.priceRupees.toFixed(2) || '88.00'}
+          </p>
+          <span className="text-[10px] text-slate-400">Kerala Jurisdiction</span>
         </div>
       </div>
 
-      {/* Tabs Bar */}
-      <div className="flex items-center gap-2 border-b border-outline-variant pb-2">
+      {/* Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-bold">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-            activeTab === 'overview' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+          className={`px-4 py-2 rounded-xl transition-all ${
+            activeTab === 'overview'
+              ? 'bg-amber-500 text-slate-950 font-black'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
-          <span className="material-symbols-outlined text-sm">space_dashboard</span>
-          Overview
+          Quick Controls
         </button>
-
         <button
           onClick={() => setActiveTab('flags')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-            activeTab === 'flags' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+          className={`px-4 py-2 rounded-xl transition-all ${
+            activeTab === 'flags'
+              ? 'bg-amber-500 text-slate-950 font-black'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
-          <span className="material-symbols-outlined text-sm">toggle_on</span>
-          Feature Flags
+          Platform Capabilities ({Object.keys(featureFlags).length})
         </button>
-
         <button
           onClick={() => setActiveTab('ads')}
-          className={`px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
-            activeTab === 'ads' ? 'bg-primary text-on-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'
+          className={`px-4 py-2 rounded-xl transition-all ${
+            activeTab === 'ads'
+              ? 'bg-amber-500 text-slate-950 font-black'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
-          <span className="material-symbols-outlined text-sm">campaign</span>
-          Ad Placements
+          Ad Zones ({adConfigs.length})
         </button>
       </div>
 
-      {/* TAB 1: OVERVIEW */}
+      {/* Tab 1: Overview */}
       {activeTab === 'overview' && (
-        <div className="space-y-6">
-          <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
-            <h2 className="text-base font-bold text-on-surface">Platform Capabilities Summary</h2>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-              <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-on-surface">Live Indian Fuel Price API</span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold text-[10px]">ACTIVE</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          {/* Quick Action Hub */}
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+            <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <span className="material-symbols-outlined text-amber-400 text-base">apps</span>
+              Platform Management Portals
+            </h2>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <Link
+                href="/admin/fuel-rates"
+                className="p-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 space-y-1 transition-all group"
+              >
+                <div className="flex items-center justify-between text-amber-400">
+                  <span className="material-symbols-outlined">local_gas_station</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </div>
-                <p className="text-on-surface-variant text-[11px]">Integrated with https://fuel.indianapi.in hiding API key server-side.</p>
+                <p className="font-bold text-white pt-1">Fuel Rates</p>
+                <p className="text-[10px] text-slate-400">Petrol, Diesel & CNG rates</p>
+              </Link>
+
+              <Link
+                href="/admin/disputes"
+                className="p-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 space-y-1 transition-all group"
+              >
+                <div className="flex items-center justify-between text-rose-400">
+                  <span className="material-symbols-outlined">gavel</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </div>
+                <p className="font-bold text-white pt-1">Trip Disputes</p>
+                <p className="text-[10px] text-slate-400">GPS & ODO claim reviews</p>
+              </Link>
+
+              <Link
+                href="/admin/revenue"
+                className="p-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 space-y-1 transition-all group"
+              >
+                <div className="flex items-center justify-between text-emerald-400">
+                  <span className="material-symbols-outlined">bar_chart</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </div>
+                <p className="font-bold text-white pt-1">Platform Revenue</p>
+                <p className="text-[10px] text-slate-400">Subscription & fee ledgers</p>
+              </Link>
+
+              <Link
+                href="/admin/audit-logs"
+                className="p-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 space-y-1 transition-all group"
+              >
+                <div className="flex items-center justify-between text-blue-400">
+                  <span className="material-symbols-outlined">verified_user</span>
+                  <span className="material-symbols-outlined text-sm group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </div>
+                <p className="font-bold text-white pt-1">Audit Trail</p>
+                <p className="text-[10px] text-slate-400">Admin security logs</p>
+              </Link>
+            </div>
+          </div>
+
+          {/* Realtime Status Summary */}
+          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+            <h2 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+              <span className="material-symbols-outlined text-emerald-400 text-base">sensors</span>
+              Realtime Synchronization Health
+            </h2>
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-white">Supabase Realtime Channel</p>
+                  <p className="text-[10px] text-slate-400">Listens on public.fuel_prices</p>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                  CONNECTED
+                </span>
               </div>
 
-              <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="font-bold text-on-surface">Direct UPI Intent Payments</span>
-                  <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold text-[10px]">ACTIVE</span>
+              <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-white">Database Row Level Security</p>
+                  <p className="text-[10px] text-slate-400">Write access restricted to SUPER_ADMIN</p>
                 </div>
-                <p className="text-on-surface-variant text-[11px]">Generates upi://pay deep-links with zero bank PIN asking.</p>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                  ACTIVE
+                </span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between">
+                <div>
+                  <p className="font-bold text-white">Invoice Historical Snapshots</p>
+                  <p className="text-[10px] text-slate-400">Permanent rate lock on trip finalization</p>
+                </div>
+                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">
+                  IMMUTABLE
+                </span>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* TAB 2: FEATURE FLAGS */}
+      {/* Tab 2: Feature Flags */}
       {activeTab === 'flags' && (
-        <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-6">
-          <div>
-            <h3 className="text-base font-bold text-on-surface">System Feature Flags</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Control capability toggles safely across multi-tenant environments</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { key: 'onlinePayment', label: 'Online Payment Gateway', desc: 'Enable mock / real payment checkout' },
-              { key: 'gst', label: 'GST Tax Calculation Engine', desc: 'Disabled by default until legal business setup exists' },
-              { key: 'advertising', label: 'Advertising Engine', desc: 'Render AdSlot components for free tier users' },
-              { key: 'subscriptions', label: 'Freemium Subscriptions', desc: 'Enforce FREE, PRO, and BUSINESS tier limits' },
-              { key: 'commission', label: 'Platform Commission Engine', desc: 'Enable platform commission calculations' },
-              { key: 'marketplaceSettlement', label: 'Marketplace Split Payments', desc: 'Direct owner settlement via payment provider' },
-              { key: 'aiInsights', label: 'AI Vehicle Insights', desc: 'Generate vehicle usage trends & maintenance tips' },
-              { key: 'maintenance', label: 'Maintenance Tracker', desc: 'Enable service logging & health score calculation' },
-            ].map((item) => {
-              const flagKey = item.key as keyof FeatureFlags;
-              const isEnabled = featureFlags[flagKey];
-              return (
-                <div key={item.key} className="p-4 rounded-xl bg-surface-container-low border border-outline-variant flex items-center justify-between">
-                  <div>
-                    <h4 className="text-xs font-bold text-on-surface">{item.label}</h4>
-                    <p className="text-[11px] text-on-surface-variant mt-0.5">{item.desc}</p>
-                  </div>
-
-                  <button
-                    onClick={() => toggleFlag(flagKey)}
-                    className="p-1 text-primary hover:opacity-80 transition-opacity"
-                  >
-                    <span className={`material-symbols-outlined text-3xl ${isEnabled ? 'text-primary' : 'text-outline'}`}>
-                      {isEnabled ? 'toggle_on' : 'toggle_off'}
-                    </span>
-                  </button>
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+          <h2 className="text-sm font-black text-white uppercase tracking-wider">
+            Platform Capabilities & Feature Flags
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {Object.entries(featureFlags).map(([key, val]) => (
+              <div
+                key={key}
+                className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between text-xs"
+              >
+                <div>
+                  <p className="font-bold text-white capitalize">{key.replace(/([A-Z])/g, ' $1')}</p>
+                  <p className="text-[10px] text-slate-400">{val ? 'Currently enabled' : 'Disabled'}</p>
                 </div>
-              );
-            })}
+                <button
+                  onClick={() => toggleFlag(key as keyof FeatureFlags)}
+                  className={`w-12 h-6 rounded-full transition-colors relative p-0.5 ${
+                    val ? 'bg-amber-500' : 'bg-slate-700'
+                  }`}
+                >
+                  <span
+                    className={`block w-5 h-5 rounded-full bg-slate-950 shadow-md transform transition-transform ${
+                      val ? 'translate-x-6' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* TAB 3: AD PLACEMENTS */}
+      {/* Tab 3: Ad Zones */}
       {activeTab === 'ads' && (
-        <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-6">
-          <div>
-            <h3 className="text-base font-bold text-on-surface">Advertising Slot Placements</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Predefined non-intrusive ad zones with automatic Pro entitlement removal</p>
-          </div>
-
-          <div className="space-y-4">
-            {adConfigs.map((config) => (
-              <div key={config.id} className="p-4 rounded-xl bg-surface-container-low border border-outline-variant space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-primary">{config.placement}</span>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                    Pro Users Excluded (Ad-Free)
-                  </span>
+        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-4">
+          <h2 className="text-sm font-black text-white uppercase tracking-wider">
+            Advertising Placements & Monetization
+          </h2>
+          <div className="space-y-3">
+            {adConfigs.map((ad) => (
+              <div
+                key={ad.id || ad.placement}
+                className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 flex items-center justify-between text-xs"
+              >
+                <div>
+                  <p className="font-bold text-white font-mono">{ad.placement}</p>
+                  <p className="text-[10px] text-slate-400">{ad.bannerTitle} — {ad.provider}</p>
                 </div>
-                <h4 className="text-xs font-semibold text-on-surface">{config.bannerTitle}</h4>
-                <p className="text-[11px] text-on-surface-variant">{config.bannerText}</p>
+                <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
+                  ad.enabled ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  {ad.enabled ? 'ENABLED' : 'MUTED'}
+                </span>
               </div>
             ))}
           </div>

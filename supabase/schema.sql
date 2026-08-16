@@ -807,6 +807,9 @@ ALTER TABLE public.platform_revenue ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_attempts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fuel_prices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fuel_price_history ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.fuel_price_audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Helper function: check if user is org member
 CREATE OR REPLACE FUNCTION public.is_org_member(org_id UUID)
@@ -985,6 +988,24 @@ CREATE POLICY "Admins read audit logs" ON public.audit_logs
 CREATE POLICY "System inserts audit logs" ON public.audit_logs
     FOR INSERT WITH CHECK (true);
 
+-- --- FUEL PRICES ---
+CREATE POLICY "Public and users read fuel prices" ON public.fuel_prices
+    FOR SELECT USING (true);
+CREATE POLICY "Admins manage fuel prices" ON public.fuel_prices
+    FOR ALL USING (public.is_admin());
+
+-- --- FUEL PRICE HISTORY ---
+CREATE POLICY "Authenticated users read fuel price history" ON public.fuel_price_history
+    FOR SELECT USING (auth.role() = 'authenticated' OR public.is_admin());
+CREATE POLICY "Admins manage fuel price history" ON public.fuel_price_history
+    FOR ALL USING (public.is_admin());
+
+-- --- FUEL PRICE AUDIT LOG ---
+CREATE POLICY "Admins read fuel price audit log" ON public.fuel_price_audit_log
+    FOR SELECT USING (public.is_admin());
+CREATE POLICY "System and admins insert fuel price audit log" ON public.fuel_price_audit_log
+    FOR INSERT WITH CHECK (public.is_admin() OR auth.role() = 'authenticated');
+
 -- =============================================================================
 -- 19. TRIGGERS & FUNCTIONS
 -- =============================================================================
@@ -1008,6 +1029,7 @@ CREATE TRIGGER set_rider_profiles_updated_at BEFORE UPDATE ON public.rider_profi
 CREATE TRIGGER set_disputes_updated_at BEFORE UPDATE ON public.disputes FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER set_subscriptions_updated_at BEFORE UPDATE ON public.subscriptions FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 CREATE TRIGGER set_payment_settings_updated_at BEFORE UPDATE ON public.payment_settings FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+CREATE TRIGGER set_fuel_prices_updated_at BEFORE UPDATE ON public.fuel_prices FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 
 -- Auto-create profile on user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -1124,3 +1146,148 @@ BEGIN
     VALUES (p_org_id, p_actor_id, p_action, p_entity_type, p_entity_id, p_details);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- =============================================================================
+-- 20. TRANSACTIONAL PLATFORM ADMIN FUEL RATE UPDATE FUNCTION
+-- =============================================================================
+
+CREATE OR REPLACE FUNCTION public.admin_update_fuel_rates(
+    p_state TEXT,
+    p_district TEXT,
+    p_city TEXT,
+    p_petrol_paise INT,
+    p_diesel_paise INT,
+    p_cng_paise INT,
+    p_source TEXT DEFAULT 'MANUAL_ADMIN',
+    p_source_url TEXT DEFAULT NULL,
+    p_effective_date DATE DEFAULT CURRENT_DATE
+) RETURNS TABLE (
+    fuel_type VARCHAR(20),
+    price_rupees NUMERIC(10,2),
+    price_per_unit_paise INT,
+    unit VARCHAR(10),
+    status VARCHAR(30),
+    updated_at TIMESTAMPTZ
+) AS $$
+DECLARE
+    v_petrol_rupees NUMERIC(10,2);
+    v_diesel_rupees NUMERIC(10,2);
+    v_cng_rupees NUMERIC(10,2);
+    v_old_petrol NUMERIC(10,2);
+    v_old_diesel NUMERIC(10,2);
+    v_old_cng NUMERIC(10,2);
+    v_petrol_id UUID;
+    v_diesel_id UUID;
+    v_cng_id UUID;
+    v_now TIMESTAMPTZ := NOW();
+BEGIN
+    -- 1. Validate inputs (positive integer paise required)
+    IF p_petrol_paise <= 0 OR p_diesel_paise <= 0 OR p_cng_paise <= 0 THEN
+        RAISE EXCEPTION 'Fuel rates must be greater than zero.';
+    END IF;
+
+    v_petrol_rupees := ROUND(p_petrol_paise::NUMERIC / 100.0, 2);
+    v_diesel_rupees := ROUND(p_diesel_paise::NUMERIC / 100.0, 2);
+    v_cng_rupees := ROUND(p_cng_paise::NUMERIC / 100.0, 2);
+
+    -- 2. Read previous values for audit trail
+    SELECT price_rupees INTO v_old_petrol FROM public.fuel_prices WHERE fuel_type = 'PETROL' AND state = p_state AND city = p_city;
+    SELECT price_rupees INTO v_old_diesel FROM public.fuel_prices WHERE fuel_type = 'DIESEL' AND state = p_state AND city = p_city;
+    SELECT price_rupees INTO v_old_cng FROM public.fuel_prices WHERE fuel_type = 'CNG' AND state = p_state AND city = p_city;
+
+    -- 3. Upsert PETROL
+    INSERT INTO public.fuel_prices (
+        country, state, district, city, fuel_type,
+        price_per_unit_paise, price_rupees, unit, currency,
+        effective_date, source_name, source_url, fetched_at, status, updated_at
+    ) VALUES (
+        'India', p_state, p_district, p_city, 'PETROL',
+        p_petrol_paise, v_petrol_rupees, 'LITRE', 'INR',
+        p_effective_date, p_source, p_source_url, v_now, 'LIVE', v_now
+    )
+    ON CONFLICT (state, district, city, fuel_type) DO UPDATE SET
+        price_per_unit_paise = EXCLUDED.price_per_unit_paise,
+        price_rupees = EXCLUDED.price_rupees,
+        source_name = EXCLUDED.source_name,
+        source_url = EXCLUDED.source_url,
+        effective_date = EXCLUDED.effective_date,
+        fetched_at = EXCLUDED.fetched_at,
+        status = 'LIVE',
+        updated_at = v_now
+    RETURNING id INTO v_petrol_id;
+
+    -- 4. Upsert DIESEL
+    INSERT INTO public.fuel_prices (
+        country, state, district, city, fuel_type,
+        price_per_unit_paise, price_rupees, unit, currency,
+        effective_date, source_name, source_url, fetched_at, status, updated_at
+    ) VALUES (
+        'India', p_state, p_district, p_city, 'DIESEL',
+        p_diesel_paise, v_diesel_rupees, 'LITRE', 'INR',
+        p_effective_date, p_source, p_source_url, v_now, 'LIVE', v_now
+    )
+    ON CONFLICT (state, district, city, fuel_type) DO UPDATE SET
+        price_per_unit_paise = EXCLUDED.price_per_unit_paise,
+        price_rupees = EXCLUDED.price_rupees,
+        source_name = EXCLUDED.source_name,
+        source_url = EXCLUDED.source_url,
+        effective_date = EXCLUDED.effective_date,
+        fetched_at = EXCLUDED.fetched_at,
+        status = 'LIVE',
+        updated_at = v_now
+    RETURNING id INTO v_diesel_id;
+
+    -- 5. Upsert CNG
+    INSERT INTO public.fuel_prices (
+        country, state, district, city, fuel_type,
+        price_per_unit_paise, price_rupees, unit, currency,
+        effective_date, source_name, source_url, fetched_at, status, updated_at
+    ) VALUES (
+        'India', p_state, p_district, p_city, 'CNG',
+        p_cng_paise, v_cng_rupees, 'KG', 'INR',
+        p_effective_date, p_source, p_source_url, v_now, 'LIVE', v_now
+    )
+    ON CONFLICT (state, district, city, fuel_type) DO UPDATE SET
+        price_per_unit_paise = EXCLUDED.price_per_unit_paise,
+        price_rupees = EXCLUDED.price_rupees,
+        source_name = EXCLUDED.source_name,
+        source_url = EXCLUDED.source_url,
+        effective_date = EXCLUDED.effective_date,
+        fetched_at = EXCLUDED.fetched_at,
+        status = 'LIVE',
+        updated_at = v_now
+    RETURNING id INTO v_cng_id;
+
+    -- 6. Insert History Records
+    INSERT INTO public.fuel_price_history (
+        fuel_price_id, fuel_type, country, state, district, city,
+        price_per_unit_paise, price_rupees, unit, currency,
+        effective_date, source_name, source_url, recorded_at
+    ) VALUES
+    (v_petrol_id, 'PETROL', 'India', p_state, p_district, p_city, p_petrol_paise, v_petrol_rupees, 'LITRE', 'INR', p_effective_date, p_source, p_source_url, v_now),
+    (v_diesel_id, 'DIESEL', 'India', p_state, p_district, p_city, p_diesel_paise, v_diesel_rupees, 'LITRE', 'INR', p_effective_date, p_source, p_source_url, v_now),
+    (v_cng_id, 'CNG', 'India', p_state, p_district, p_city, p_cng_paise, v_cng_rupees, 'KG', 'INR', p_effective_date, p_source, p_source_url, v_now);
+
+    -- 7. Insert Audit Log
+    INSERT INTO public.fuel_price_audit_log (
+        event_type, fuel_type, country, state, district, city,
+        old_price_rupees, new_price_rupees, source_name, status, created_at
+    ) VALUES
+    ('FUEL_PRICE_UPDATED', 'PETROL', 'India', p_state, p_district, p_city, v_old_petrol, v_petrol_rupees, p_source, 'SUCCESS', v_now),
+    ('FUEL_PRICE_UPDATED', 'DIESEL', 'India', p_state, p_district, p_city, v_old_diesel, v_diesel_rupees, p_source, 'SUCCESS', v_now),
+    ('FUEL_PRICE_UPDATED', 'CNG', 'India', p_state, p_district, p_city, v_old_cng, v_cng_rupees, p_source, 'SUCCESS', v_now);
+
+    -- 8. Return updated records
+    RETURN QUERY
+    SELECT fp.fuel_type, fp.price_rupees, fp.price_per_unit_paise, fp.unit, fp.status, fp.updated_at
+    FROM public.fuel_prices fp
+    WHERE fp.state = p_state AND fp.city = p_city AND fp.fuel_type IN ('PETROL', 'DIESEL', 'CNG');
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Realtime Publication for fuel_prices table
+DO $$ BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.fuel_prices;
+EXCEPTION WHEN duplicate_object OR undefined_object THEN NULL;
+END $$;
+

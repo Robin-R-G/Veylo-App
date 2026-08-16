@@ -6,7 +6,7 @@ import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { getVehicles, getRentalTrips, getInvoices, getPayments, getOrganization } from '@/lib/services/supabase/data';
 import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt, Organization } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
-import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
+import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -14,7 +14,10 @@ export default function OwnerDashboard() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [rentalTrips, setRentalTrips] = useState<RentalTrip[]>([]);
-  const [fuelPrice, setFuelPrice] = useState<FuelPrice | null>(null);
+  const [petrolPrice, setPetrolPrice] = useState<FuelPrice | null>(null);
+  const [dieselPrice, setDieselPrice] = useState<FuelPrice | null>(null);
+  const [cngPrice, setCngPrice] = useState<FuelPrice | null>(null);
+  const [selectedFuelTab, setSelectedFuelTab] = useState<'PETROL' | 'DIESEL' | 'CNG'>('PETROL');
   const [paymentAttempts, setPaymentAttempts] = useState<PaymentAttempt[]>([]);
   const [tier, setTier] = useState<PlanTier>('FREE');
   const [organization, setOrganization] = useState<Organization | null>(null);
@@ -22,11 +25,13 @@ export default function OwnerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
-  const loadFuelRate = async (refresh = false) => {
+  const loadFuelRates = async (refresh = false) => {
     setIsRefreshing(true);
     try {
-      const price = await fuelPriceService.getLatestFuelPrice('PETROL', 'Kerala', 'Kozhikode', refresh);
-      setFuelPrice(price);
+      const { petrol, diesel, cng } = await centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode');
+      setPetrolPrice(petrol);
+      setDieselPrice(diesel);
+      setCngPrice(cng);
     } finally {
       setIsRefreshing(false);
     }
@@ -60,7 +65,16 @@ export default function OwnerDashboard() {
     };
 
     loadData();
-    loadFuelRate();
+    loadFuelRates();
+
+    // Subscribe to realtime central fuel updates
+    const unsubscribe = fuelRealtimeService.subscribe((updated) => {
+      if (updated.fuelType === 'PETROL') setPetrolPrice(updated);
+      if (updated.fuelType === 'DIESEL') setDieselPrice(updated);
+      if (updated.fuelType === 'CNG') setCngPrice(updated);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   if (!mounted || isLoading) return null;
@@ -211,32 +225,47 @@ export default function OwnerDashboard() {
         {/* Metric 3: Live Fuel Rate Widget for Kozhikode, Kerala */}
         <div className="bento-col-4 bg-surface p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between text-on-surface-variant mb-2">
-            <span className="text-xs font-semibold uppercase tracking-wider">Current Petrol Rate</span>
-            <button
-              onClick={() => loadFuelRate(true)}
-              disabled={isRefreshing}
-              className="text-xs text-primary font-semibold hover:underline flex items-center gap-1"
-            >
-              <span className={`material-symbols-outlined text-sm ${isRefreshing ? 'animate-spin' : ''}`}>sync</span>
-              Refresh
-            </button>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                {selectedFuelTab} RATE
+              </span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Real-time central sync active"></span>
+            </div>
+            <div className="flex items-center gap-1">
+              {(['PETROL', 'DIESEL', 'CNG'] as const).map((ft) => (
+                <button
+                  key={ft}
+                  onClick={() => setSelectedFuelTab(ft)}
+                  className={`px-1.5 py-0.5 rounded text-[10px] font-bold transition-all ${
+                    selectedFuelTab === ft
+                      ? 'bg-primary text-on-primary'
+                      : 'text-on-surface-variant hover:bg-surface-container-high'
+                  }`}
+                >
+                  {ft === 'PETROL' ? 'P' : ft === 'DIESEL' ? 'D' : 'CNG'}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div>
-            {fuelPrice && fuelPrice.priceRupees > 0 ? (
-              <>
-                <p className="text-3xl font-extrabold text-primary">
-                  ₹{fuelPrice.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {fuelPrice.unit || 'L'}</span>
+            {(() => {
+              const activeFp = selectedFuelTab === 'PETROL' ? petrolPrice : selectedFuelTab === 'DIESEL' ? dieselPrice : cngPrice;
+              return activeFp && activeFp.priceRupees > 0 ? (
+                <>
+                  <p className="text-3xl font-extrabold text-primary">
+                    ₹{activeFp.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {activeFp.unit || 'L'}</span>
+                  </p>
+                  <p className="text-xs text-on-surface-variant font-medium mt-1">
+                    {activeFp.city}, {activeFp.state} • {activeFp.status === 'LIVE' ? '🟢 Live Central Sync' : '🟡 Verified Rate'}
+                  </p>
+                </>
+              ) : (
+                <p className="text-sm font-semibold text-error">
+                  Fuel price temporarily unavailable
                 </p>
-                <p className="text-xs text-on-surface-variant font-medium mt-1">
-                  {fuelPrice.city}, {fuelPrice.state} • {fuelPrice.status === 'LIVE' ? '🟢 Live rate' : '🟡 Cached rate'} ({fuelPrice.sourceName})
-                </p>
-              </>
-            ) : (
-              <p className="text-sm font-semibold text-error">
-                Fuel price temporarily unavailable
-              </p>
-            )}
+              );
+            })()}
           </div>
         </div>
 

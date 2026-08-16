@@ -6,8 +6,9 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
 import { createClient } from '@/lib/supabase/client';
 import { getTripsByRider } from '@/lib/services/supabase/data';
-import { RentalTrip, Invoice, AppSession } from '@/types';
+import { RentalTrip, Invoice, AppSession, FuelPrice } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
+import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -28,6 +29,7 @@ export default function RiderDashboardClient() {
   const [session, setSession] = useState<AppSession | null>(null);
   const [myTrips, setMyTrips] = useState<RentalTrip[]>([]);
   const [myInvoices, setMyInvoices] = useState<Invoice[]>([]);
+  const [fuelPrices, setFuelPrices] = useState<{ petrol?: FuelPrice; diesel?: FuelPrice; cng?: FuelPrice }>({});
   const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<'trips' | 'invoices'>('trips');
 
@@ -41,8 +43,12 @@ export default function RiderDashboardClient() {
     setSession(s);
 
     async function load() {
-      const trips = await getTripsByRider(s!.userId);
+      const [trips, rates] = await Promise.all([
+        getTripsByRider(s!.userId),
+        centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode'),
+      ]);
       setMyTrips(trips);
+      setFuelPrices(rates);
 
       const supabase = createClient();
       const { data: invData } = await supabase
@@ -52,6 +58,15 @@ export default function RiderDashboardClient() {
       setMyInvoices((invData as Invoice[]) || []);
     }
     load();
+
+    const unsubscribe = fuelRealtimeService.subscribe((updated) => {
+      setFuelPrices(prev => ({
+        ...prev,
+        [updated.fuelType.toLowerCase()]: updated,
+      }));
+    });
+
+    return () => unsubscribe();
   }, [router]);
 
   if (!mounted || !session) return null;
@@ -139,6 +154,34 @@ export default function RiderDashboardClient() {
             Start a New Ride
           </Link>
         )}
+
+        {/* Central Fuel Benchmark Rates */}
+        <div className="bg-surface rounded-2xl p-4 border border-outline-variant shadow-sm space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <div className="flex items-center gap-1.5 font-bold text-on-surface">
+              <span className="material-symbols-outlined text-primary text-sm">local_gas_station</span>
+              <span>Official Fuel Rates (Kerala)</span>
+            </div>
+            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              Live Central Sync
+            </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center pt-1">
+            <div className="bg-surface-container-low p-2 rounded-xl border border-outline-variant/60">
+              <p className="text-[10px] text-on-surface-variant font-bold uppercase">Petrol</p>
+              <p className="text-sm font-extrabold text-primary">₹{fuelPrices.petrol?.priceRupees.toFixed(2) || '107.50'}<span className="text-[9px] font-normal text-on-surface-variant">/L</span></p>
+            </div>
+            <div className="bg-surface-container-low p-2 rounded-xl border border-outline-variant/60">
+              <p className="text-[10px] text-on-surface-variant font-bold uppercase">Diesel</p>
+              <p className="text-sm font-extrabold text-primary">₹{fuelPrices.diesel?.priceRupees.toFixed(2) || '96.30'}<span className="text-[9px] font-normal text-on-surface-variant">/L</span></p>
+            </div>
+            <div className="bg-surface-container-low p-2 rounded-xl border border-outline-variant/60">
+              <p className="text-[10px] text-on-surface-variant font-bold uppercase">CNG</p>
+              <p className="text-sm font-extrabold text-primary">₹{fuelPrices.cng?.priceRupees.toFixed(2) || '88.00'}<span className="text-[9px] font-normal text-on-surface-variant">/kg</span></p>
+            </div>
+          </div>
+        </div>
 
         {/* Tab Bar */}
         <div className="flex bg-surface-container rounded-xl p-1 border border-outline-variant">

@@ -1,26 +1,45 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect } from 'react';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
-import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
-import { useEffect } from 'react';
+import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
+import { FuelType } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 
 export default function TripEstimatorPage() {
   const [startOdo, setStartOdo] = useState<number>(12500);
   const [endOdo, setEndOdo] = useState<number>(12508);
   const [mileage, setMileage] = useState<number>(40);
-  const [fuelPrice, setFuelPrice] = useState<number>(0);
-
-  useEffect(() => {
-    fuelPriceService.getCachedPrice('PETROL', 'Kerala', 'Kozhikode').then(rate => {
-      setFuelPrice(rate || 104.20);
-    });
-  }, []);
-
+  const [fuelType, setFuelType] = useState<FuelType>('PETROL');
+  const [fuelPrice, setFuelPrice] = useState<number>(107.50);
+  const [unit, setUnit] = useState<'LITRE' | 'KG'>('LITRE');
   const [mode, setMode] = useState<'FUEL_COST' | 'PER_KM' | 'FUEL_PLUS_PER_KM'>('FUEL_COST');
   const [perKmRate, setPerKmRate] = useState<number>(3);
+  const [mounted, setMounted] = useState(false);
+
+  const loadRateForType = async (type: FuelType) => {
+    const rate = await centralFuelPriceService.getLatestFuelPrice(type, 'Kerala', 'Kozhikode');
+    if (rate) {
+      setFuelPrice(rate.priceRupees);
+      setUnit(rate.unit);
+    }
+  };
+
+  useEffect(() => {
+    setMounted(true);
+    loadRateForType(fuelType);
+
+    const unsubscribe = fuelRealtimeService.subscribe((updated) => {
+      if (updated.fuelType === fuelType) {
+        setFuelPrice(updated.priceRupees);
+        setUnit(updated.unit);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [fuelType]);
+
+  if (!mounted) return null;
 
   const startNum = Number(startOdo || 0);
   const endNum = Number(endOdo || 0);
@@ -38,16 +57,43 @@ export default function TripEstimatorPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       
-      {/* Standard Page Header */}
+      {/* Page Header */}
       <PageHeader
         title="Trip Cost Estimator"
-        subtitle="Calculate exact fuel expenses, distance, and payable amounts"
+        subtitle="Calculate exact fuel expenses, distance, and payable amounts using live platform benchmark rates"
         backHref="/dashboard"
         icon="calculate"
       />
 
       <div className="bg-surface rounded-xl p-6 border border-outline-variant shadow-sm space-y-6">
         
+        {/* Fuel Type Selector */}
+        <div>
+          <label className="block text-xs font-semibold text-on-surface mb-2">Select Vehicle Fuel Type</label>
+          <div className="grid grid-cols-3 gap-3">
+            {(['PETROL', 'DIESEL', 'CNG'] as FuelType[]).map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => {
+                  setFuelType(type);
+                  if (type === 'CNG') setMileage(30);
+                  else if (type === 'DIESEL') setMileage(18);
+                  else setMileage(40);
+                }}
+                className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  fuelType === type
+                    ? 'bg-primary text-on-primary border-primary shadow-sm'
+                    : 'bg-surface-container-low text-on-surface-variant border-outline-variant hover:bg-surface-container'
+                }`}
+              >
+                <span className="material-symbols-outlined text-sm">local_gas_station</span>
+                {type}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-semibold text-on-surface mb-1">Start Odometer Reading (KM)</label>
@@ -72,7 +118,9 @@ export default function TripEstimatorPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-on-surface mb-1">Vehicle Mileage (km/L)</label>
+            <label className="block text-xs font-semibold text-on-surface mb-1">
+              Vehicle Mileage ({fuelType === 'CNG' ? 'km/kg' : 'km/L'})
+            </label>
             <input
               type="number"
               value={mileage}
@@ -82,14 +130,21 @@ export default function TripEstimatorPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-on-surface mb-1">Current Petrol Price (₹/L)</label>
-            <input
-              type="number"
-              step="0.01"
-              value={fuelPrice}
-              onChange={(e) => setFuelPrice(Number(e.target.value))}
-              className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-emerald-800 text-sm font-bold"
-            />
+            <label className="block text-xs font-semibold text-on-surface mb-1">
+              Platform Canonical {fuelType} Rate (₹/{unit === 'KG' ? 'kg' : 'L'})
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                step="0.01"
+                value={fuelPrice}
+                onChange={(e) => setFuelPrice(Number(e.target.value))}
+                className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-primary text-sm font-bold"
+              />
+              <span className="absolute right-3 top-2.5 text-[10px] font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+                Live
+              </span>
+            </div>
           </div>
         </div>
 
@@ -98,34 +153,47 @@ export default function TripEstimatorPage() {
           <select
             value={mode}
             onChange={(e) => setMode(e.target.value as any)}
-            className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface text-xs font-semibold"
+            className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface text-sm font-semibold"
           >
-            <option value="FUEL_COST">Fuel Cost Only (Actual Fuel Consumed)</option>
-            <option value="PER_KM">Per KM Rate Only (Distance × Rate)</option>
-            <option value="FUEL_PLUS_PER_KM">Fuel Cost + Per KM Surcharge</option>
+            <option value="FUEL_COST">Fuel Expense Only (Mileage & Canonical Fuel Price)</option>
+            <option value="PER_KM">Flat Per-KM Rental Rate</option>
+            <option value="FUEL_PLUS_PER_KM">Combined (Fuel Cost + Per-KM Base Fee)</option>
           </select>
         </div>
 
-        {/* Breakdown Result Box */}
-        <div className="p-5 rounded-xl bg-primary-container text-on-primary-container space-y-3 shadow">
-          <div className="flex justify-between items-center text-xs">
-            <span>Distance Travelled:</span>
-            <span className="font-bold text-white text-sm">{dist} km</span>
+        {mode !== 'FUEL_COST' && (
+          <div>
+            <label className="block text-xs font-semibold text-on-surface mb-1">Per-KM Rental Rate (₹)</label>
+            <input
+              type="number"
+              step="0.5"
+              value={perKmRate}
+              onChange={(e) => setPerKmRate(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface text-sm font-semibold"
+            />
+          </div>
+        )}
+
+        {/* Calculation Result Summary Card */}
+        <div className="p-5 rounded-xl bg-surface-container border border-outline-variant space-y-3">
+          <div className="flex justify-between items-center text-xs text-on-surface-variant">
+            <span>Distance Covered:</span>
+            <span className="font-bold text-on-surface">{dist} km</span>
           </div>
 
-          <div className="flex justify-between items-center text-xs">
-            <span>Fuel Consumed ({mileage} km/L):</span>
-            <span className="font-bold text-white text-sm">{result.estimatedFuelLitres.toFixed(2)} L</span>
+          <div className="flex justify-between items-center text-xs text-on-surface-variant">
+            <span>Fuel Consumed ({fuelType}):</span>
+            <span className="font-bold text-on-surface">{result.estimatedFuelLitres.toFixed(2)} {unit === 'KG' ? 'kg' : 'L'}</span>
           </div>
 
-          <div className="flex justify-between items-center text-xs">
-            <span>Fuel Cost (₹{fuelPrice}/L):</span>
-            <span className="font-bold text-white text-sm">{formatCurrency(result.estimatedFuelCostRupees)}</span>
+          <div className="flex justify-between items-center text-xs text-on-surface-variant">
+            <span>Calculated Fuel Cost:</span>
+            <span className="font-bold text-on-surface">{formatCurrency(result.estimatedFuelCostPaise)}</span>
           </div>
 
-          <div className="pt-3 border-t border-on-primary-container/20 flex justify-between items-center">
-            <span className="text-xs font-bold uppercase tracking-wider">Total Estimated Bill</span>
-            <span className="font-extrabold text-2xl text-white">{formatCurrency(result.totalAmountRupees)}</span>
+          <div className="border-t border-outline-variant pt-3 flex justify-between items-center">
+            <span className="text-sm font-bold text-on-surface">Total Payable Estimate:</span>
+            <span className="text-2xl font-black text-primary">{formatCurrency(result.totalAmountPaise)}</span>
           </div>
         </div>
       </div>

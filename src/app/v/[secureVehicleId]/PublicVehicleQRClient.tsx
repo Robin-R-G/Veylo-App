@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Vehicle, IssueType, IssueSeverity, PricingMode, FuelPrice } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
-import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
+import { fuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { getVehicleById } from '@/lib/services/supabase/data';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { VeyloLogo } from '@/components/ui/VeyloLogo';
@@ -50,14 +50,25 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
 
   useEffect(() => {
     setMounted(true);
+    let activeVehicleFuelType = 'PETROL';
+
     getVehicleById(secureVehicleId)
       .then((data) => {
         if (!data) return;
         setVehicle(data);
+        activeVehicleFuelType = data.fuelType;
         setEndOdometer(String(data.currentOdometer === 12500 ? 12508 : data.currentOdometer + 8));
         loadLatestPrice(data.fuelType, data.state || 'Kerala', data.city || 'Kozhikode');
       })
       .catch(() => {});
+
+    const unsubscribe = fuelRealtimeService.subscribe((updated) => {
+      if (updated.fuelType === activeVehicleFuelType) {
+        setFuelPrice(updated);
+      }
+    });
+
+    return () => unsubscribe();
   }, [secureVehicleId]);
 
   if (!mounted || !vehicle) {

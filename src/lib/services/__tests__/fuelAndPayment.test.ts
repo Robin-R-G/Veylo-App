@@ -4,12 +4,18 @@ import { fuelPriceService } from '../fuelPriceProvider';
 import { mockStorage } from '../mockStorage';
 import { fakeStore } from './fakeSupabase';
 
+import { centralFuelPriceService } from '../fuel/fuelPriceService';
+
 vi.mock('@/lib/supabase/client', async () => {
   const m = await import('./fakeSupabase');
   return { createClient: m.createFakeClient };
 });
 
 describe('Live Indian Fuel Price & Payment Test Suite', () => {
+  beforeEach(() => {
+    fakeStore.reset();
+    centralFuelPriceService.clearCache();
+  });
 
   test('TEST 1 — Prompt Scenario: KL 16 P 78 (8 km @ 40 km/L @ ₹104.20/L)', () => {
     // Start: 12,500 km, End: 12,508 km, Distance: 8 km, Mileage: 40 km/L, Petrol: ₹104.20/L
@@ -177,11 +183,38 @@ describe('Live Indian Fuel Price & Payment Test Suite', () => {
 
   test('TEST 8 — Payment Attempt Verification and State Flow', async () => {
     const { paymentService } = await import('../paymentService');
-    const attempts = fakeStore.tables.payment_attempts;
-    const activeAttempt = attempts[0];
+
+    // Setup invoice + trip
+    fakeStore.tables.invoices = [{
+      id: 'inv_test_999',
+      invoice_number: 'INV-TEST-999',
+      trip_id: 'trip_test_999',
+      organization_id: 'org_test_999',
+      total_rupees: 301.20,
+      status: 'PENDING',
+      payee_upi_id: 'ownername@upi',
+      payee_name: 'Owner Name',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }];
+    fakeStore.tables.rental_trips = [{
+      id: 'trip_test_999',
+      rider_id: 'rider_999',
+      owner_id: 'owner_999',
+      vehicle_id: 'vehicle_999',
+      organization_id: 'org_test_999',
+      status: 'CONFIRMATION_PENDING',
+      payment_status: 'PENDING',
+    }];
+
+    // Initiate payment attempt
+    const init = await paymentService.initiatePaymentAttempt({
+      invoiceId: 'inv_test_999',
+      paymentMethod: 'UPI_DIRECT',
+    });
 
     // Verify payment attempt
-    const result = await paymentService.verifyPaymentAttempt(activeAttempt.payment_id, 'TXN_REF_REAL_123');
+    const result = await paymentService.verifyPaymentAttempt(init.paymentId, 'TXN_REF_REAL_123');
     
     expect(result.success).toBe(true);
     expect(result.attempt.status).toBe('PAID');

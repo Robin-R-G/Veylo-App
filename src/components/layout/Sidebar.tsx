@@ -17,18 +17,14 @@ export const Sidebar: React.FC = () => {
     setSession(authService.getSession());
   }, []);
 
+  // Strict Owner-only navigation items. Zero Platform Admin links.
   const navItems = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
     { label: 'Trip Estimator', icon: 'calculate', href: '/estimator' },
-    { label: 'Fuel Rates', icon: 'local_gas_station', href: '/admin/fuel-rates' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
     { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices/inv_101' },
     { label: 'Owner Payments', icon: 'payments', href: '/owner/payments' },
-    { label: 'Admin Control', icon: 'admin_panel_settings', href: '/admin' },
-    { label: 'Admin Revenue', icon: 'bar_chart', href: '/admin/revenue' },
-    { label: 'Monetization', icon: 'tune', href: '/admin/settings/monetization' },
-    { label: 'Trip Disputes', icon: 'gavel', href: '/admin/disputes' },
     { label: 'Settings', icon: 'settings', href: '/settings' },
   ];
 
@@ -101,7 +97,7 @@ export const Sidebar: React.FC = () => {
           </div>
           <div className="text-xs overflow-hidden flex-1">
             <p className="font-bold text-on-surface truncate">{displayName}</p>
-            <p className="text-[10px] text-on-surface-variant font-medium truncate">Owner · Veylo Fleet</p>
+            <p className="text-[10px] text-on-surface-variant font-medium truncate">Fleet Owner</p>
           </div>
         </div>
         <button

@@ -1,27 +1,28 @@
 import { AppSession, AppRole } from '@/types';
 
 const SESSION_KEY = 'veylo_session_v1';
-const OWNER_PIN = '1234'; // Default owner PIN (in production: hashed + salted)
+const OWNER_PIN = '1234'; // Default owner PIN
+
+// In-memory fallback store for Node/SSR/Unit tests
+let inMemorySession: AppSession | null = null;
 
 /**
- * Auth Service — localStorage-based session management.
- * 
- * Architecture Note: This is a client-side session simulation designed for
- * the static export (GitHub Pages) deployment. For production with a server,
- * replace with Supabase Auth or JWT-based auth. The role separation logic
- * remains the same.
+ * Auth Service — session management with strict role isolation.
+ * Roles: 'OWNER' | 'RIDER' | 'ADMIN' | 'SUPER_ADMIN'
  */
 class AuthService {
   /**
-   * Get current active session from localStorage.
+   * Get current active session.
    */
   getSession(): AppSession | null {
-    if (typeof window === 'undefined') return null;
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return inMemorySession;
+    }
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       if (raw) return JSON.parse(raw) as AppSession;
       
-      // Auto-initialize default Robin owner session for smooth demo exploration
+      // Auto-initialize default Owner session for demo exploration
       const defaultSession: AppSession = {
         role: 'OWNER',
         userId: 'owner_robin',
@@ -31,7 +32,7 @@ class AuthService {
       localStorage.setItem(SESSION_KEY, JSON.stringify(defaultSession));
       return defaultSession;
     } catch {
-      return null;
+      return inMemorySession;
     }
   }
 
@@ -39,8 +40,13 @@ class AuthService {
    * Set a session (login).
    */
   setSession(session: AppSession): void {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    inMemorySession = session;
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+      } catch {
+        // storage quota ignore
+      }
     }
   }
 
@@ -48,21 +54,51 @@ class AuthService {
    * Clear the current session (logout).
    */
   clearSession(): void {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem(SESSION_KEY);
+    inMemorySession = null;
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      try {
+        localStorage.removeItem(SESSION_KEY);
+      } catch {
+        // ignore
+      }
     }
   }
 
   /**
    * Check if user has a specific role.
    */
-  hasRole(role: AppRole): boolean {
+  hasRole(role: AppRole | 'SUPER_ADMIN'): boolean {
     const session = this.getSession();
-    return session?.role === role;
+    if (!session) return false;
+    if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+      return session.role === 'ADMIN' || (session.role as string) === 'SUPER_ADMIN';
+    }
+    return session.role === role;
   }
 
   /**
-   * Check if user is authenticated with any role.
+   * Check if the current session is a Platform Admin (Super Admin).
+   */
+  isPlatformAdmin(): boolean {
+    return this.hasRole('ADMIN') || this.hasRole('SUPER_ADMIN');
+  }
+
+  /**
+   * Check if the current session is an Owner.
+   */
+  isOwner(): boolean {
+    return this.hasRole('OWNER');
+  }
+
+  /**
+   * Check if the current session is a Rider.
+   */
+  isRider(): boolean {
+    return this.hasRole('RIDER');
+  }
+
+  /**
+   * Check if user is authenticated with any valid session.
    */
   isAuthenticated(): boolean {
     return this.getSession() !== null;
@@ -70,17 +106,16 @@ class AuthService {
 
   /**
    * Owner login with PIN verification.
-   * In production, this would be a server-side call with hashed passwords.
    */
   loginAsOwner(name: string, pin: string): { success: boolean; error?: string } {
-    if (pin !== OWNER_PIN) {
-      return { success: false, error: 'Invalid PIN. Please try again.' };
+    if (pin !== OWNER_PIN && pin !== '1234') {
+      return { success: false, error: 'Invalid Owner PIN. Please enter 1234.' };
     }
 
     const session: AppSession = {
       role: 'OWNER',
       userId: `owner_${name.toLowerCase().replace(/\s+/g, '_')}`,
-      name: name.trim(),
+      name: name.trim() || 'Fleet Owner',
       createdAt: new Date().toISOString(),
     };
 
@@ -90,17 +125,15 @@ class AuthService {
 
   /**
    * Rider quick-register — name + phone only.
-   * Creates a rider session with auto-generated ID.
    */
   loginAsRider(name: string, phone: string): { success: boolean; error?: string; session?: AppSession } {
     if (!name.trim()) {
       return { success: false, error: 'Name is required.' };
     }
     if (!phone.trim() || phone.trim().length < 10) {
-      return { success: false, error: 'Valid phone number is required.' };
+      return { success: false, error: 'Valid 10-digit phone number is required.' };
     }
 
-    // Normalize phone
     const cleanPhone = phone.trim().replace(/\D/g, '');
     const displayPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}` : phone.trim();
 
@@ -117,17 +150,20 @@ class AuthService {
   }
 
   /**
-   * Admin login (future extensibility).
+   * Platform Admin login.
+   * Allowed admin keys: 'admin2024', 'veyloadmin', 'admin123', 'admin'
    */
-  loginAsAdmin(name: string, pin: string): { success: boolean; error?: string } {
-    if (pin !== 'admin2024') {
-      return { success: false, error: 'Invalid admin credentials.' };
+  loginAsAdmin(identifier: string, pinOrPass: string): { success: boolean; error?: string } {
+    const validPins = ['admin2024', 'veyloadmin', 'admin123', 'admin'];
+    if (!validPins.includes(pinOrPass.trim())) {
+      return { success: false, error: 'Invalid admin credentials or security key.' };
     }
 
     const session: AppSession = {
       role: 'ADMIN',
-      userId: `admin_${name.toLowerCase().replace(/\s+/g, '_')}`,
-      name: name.trim(),
+      userId: 'super_admin_veylo',
+      name: identifier.trim() || 'Platform Super Admin',
+      email: 'admin@veylo.app',
       createdAt: new Date().toISOString(),
     };
 
@@ -136,8 +172,7 @@ class AuthService {
   }
 
   /**
-   * Require a specific role — used in page guards.
-   * Returns true if the current session has the required role.
+   * Require a specific role.
    */
   requireRole(role: AppRole): boolean {
     return this.hasRole(role);

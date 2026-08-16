@@ -33,6 +33,7 @@ class Query {
   filters: [string, any][] = [];
   orFilters: { col: string; val: any }[] = [];
   orderBy: { col: string; desc: boolean } | null = null;
+  limitCount: number | null = null;
   head = false;
   private executed: Promise<{ data: Row[] | null; count?: number; error: null }> | null = null;
 
@@ -58,11 +59,14 @@ class Query {
     return this;
   }
 
-  or(str: string) {
-    this.orFilters = str.split(',').map(part => {
-      const [, col, val] = part.match(/(\w+)\.eq\.(.*)/) || [];
-      return { col, val };
-    });
+  or(filterStr: string) {
+    const parts = filterStr.split(',').map(p => p.trim());
+    const parsed: { col: string; val: any }[] = [];
+    for (const part of parts) {
+      const match = part.match(/^([^.]+)\.eq\.(.+)$/);
+      if (match) parsed.push({ col: match[1], val: match[2] });
+    }
+    if (parsed.length) this.orFilters.push(...parsed);
     return this;
   }
 
@@ -71,59 +75,69 @@ class Query {
     return this;
   }
 
-  insert(row: Row) {
-    this.kind = 'insert';
-    this.payload = row;
-    this.executed = this.doInsert();
+  limit(n: number) {
+    this.limitCount = n;
     return this;
   }
 
-  upsert(row: Row, opts?: { onConflict?: string }) {
-    this.kind = 'upsert';
-    this.payload = row;
-    this.onConflict = opts?.onConflict ?? null;
-    this.executed = this.doUpsert();
-    return this;
+  insert(rows: Row | Row[]) {
+    return new Query(this.table, 'insert', rows);
   }
 
   update(row: Row) {
-    this.kind = 'update';
-    this.payload = row;
-    return this;
+    const q = new Query(this.table, 'update', row);
+    q.filters = [...this.filters];
+    return q;
+  }
+
+  upsert(rows: Row | Row[], opts?: { onConflict?: string }) {
+    const q = new Query(this.table, 'upsert', rows);
+    q.onConflict = opts?.onConflict ?? null;
+    return q;
   }
 
   private applyFilters(rows: Row[]): Row[] {
-    let out = rows;
+    let result = rows;
     for (const [col, val] of this.filters) {
-      if (Array.isArray(val)) out = out.filter(r => val.map(String).includes(String(r[col])));
-      else out = out.filter(r => matchesEq(r, col, val));
+      if (Array.isArray(val)) {
+        result = result.filter(r => val.some(v => matchesEq(r, col, v)));
+      } else {
+        result = result.filter(r => matchesEq(r, col, val));
+      }
     }
-    if (this.orFilters.length) out = out.filter(r => matchesOr(r, this.orFilters));
-    return out;
+    if (this.orFilters.length) {
+      result = result.filter(r => matchesOr(r, this.orFilters));
+    }
+    if (this.orderBy) {
+      const { col, desc } = this.orderBy;
+      result = [...result].sort((a, b) => {
+        const va = a[col];
+        const vb = b[col];
+        if (va < vb) return desc ? 1 : -1;
+        if (va > vb) return desc ? -1 : 1;
+        return 0;
+      });
+    }
+    if (this.limitCount != null) {
+      result = result.slice(0, this.limitCount);
+    }
+    return result;
   }
 
   private doSelect(): Promise<{ data: Row[]; count: number; error: null }> {
     const table = fakeStore.ensure(this.table);
-    let rows = this.applyFilters(table);
-    if (this.orderBy) {
-      rows = [...rows].sort((a, b) => {
-        const av = a[this.orderBy!.col];
-        const bv = b[this.orderBy!.col];
-        if (av == null && bv == null) return 0;
-        if (av == null) return 1;
-        if (bv == null) return -1;
-        const cmp = av < bv ? -1 : av > bv ? 1 : 0;
-        return this.orderBy!.desc ? -cmp : cmp;
-      });
-    }
-    return Promise.resolve({ data: rows, count: rows.length, error: null });
+    const filtered = this.applyFilters(table);
+    return Promise.resolve({ data: filtered, count: filtered.length, error: null });
   }
 
   private doInsert(): Promise<{ data: Row[]; error: null }> {
     const table = fakeStore.ensure(this.table);
-    const row = this.payload as Row;
-    table.push(row);
-    return Promise.resolve({ data: [row], error: null });
+    const rows = Array.isArray(this.payload) ? this.payload : [this.payload!];
+    for (const r of rows) {
+      if (r && !r.id) r.id = 'row_' + Math.random().toString(36).slice(2, 9);
+      table.push(r);
+    }
+    return Promise.resolve({ data: rows, error: null });
   }
 
   private doUpdate(): Promise<{ data: Row[]; error: null }> {
@@ -134,17 +148,26 @@ class Query {
 
   private doUpsert(): Promise<{ data: Row[]; error: null }> {
     const table = fakeStore.ensure(this.table);
-    const row = this.payload as Row;
+    const rows = Array.isArray(this.payload) ? this.payload : [this.payload as Row];
     const keys = this.onConflict ? this.onConflict.split(',').map(k => k.trim()) : null;
-    let existing: Row | undefined;
-    if (keys) {
-      existing = table.find(r => keys.every(k => matchesEq(r, k, row[k])));
-    } else if (row.id != null) {
-      existing = table.find(r => matchesEq(r, 'id', row.id));
+    const upserted: Row[] = [];
+
+    for (const row of rows) {
+      let existing: Row | undefined;
+      if (keys) {
+        existing = table.find(r => keys.every(k => matchesEq(r, k, row[k])));
+      } else if (row.id != null) {
+        existing = table.find(r => matchesEq(r, 'id', row.id));
+      }
+      if (existing) {
+        Object.assign(existing, row);
+        upserted.push(existing);
+      } else {
+        table.push(row);
+        upserted.push(row);
+      }
     }
-    if (existing) Object.assign(existing, row);
-    else table.push(row);
-    return Promise.resolve({ data: [existing ?? row], error: null });
+    return Promise.resolve({ data: upserted, error: null });
   }
 
   private execute(): Promise<{ data: Row[] | null; count?: number; error: null }> {
@@ -177,6 +200,74 @@ export function createFakeClient() {
     from(table: string) {
       return new Query(table);
     },
+    rpc(fn: string, args: any) {
+      if (fn === 'admin_update_fuel_rates') {
+        const table = fakeStore.ensure('fuel_prices');
+        const history = fakeStore.ensure('fuel_price_history');
+        const audit = fakeStore.ensure('fuel_price_audit_log');
+
+        const petrolRow = {
+          id: 'fp_petrol',
+          state: args.p_state,
+          district: args.p_district || '',
+          city: args.p_city,
+          fuel_type: 'PETROL',
+          price_per_unit_paise: args.p_petrol_paise,
+          price_rupees: args.p_petrol_paise / 100,
+          unit: 'LITRE',
+          source_name: args.p_source || 'MANUAL_ADMIN',
+          status: 'LIVE',
+          updated_at: new Date().toISOString(),
+        };
+        const dieselRow = {
+          id: 'fp_diesel',
+          state: args.p_state,
+          district: args.p_district || '',
+          city: args.p_city,
+          fuel_type: 'DIESEL',
+          price_per_unit_paise: args.p_diesel_paise,
+          price_rupees: args.p_diesel_paise / 100,
+          unit: 'LITRE',
+          source_name: args.p_source || 'MANUAL_ADMIN',
+          status: 'LIVE',
+          updated_at: new Date().toISOString(),
+        };
+        const cngRow = {
+          id: 'fp_cng',
+          state: args.p_state,
+          district: args.p_district || '',
+          city: args.p_city,
+          fuel_type: 'CNG',
+          price_per_unit_paise: args.p_cng_paise,
+          price_rupees: args.p_cng_paise / 100,
+          unit: 'KG',
+          source_name: args.p_source || 'MANUAL_ADMIN',
+          status: 'LIVE',
+          updated_at: new Date().toISOString(),
+        };
+
+        table.push(petrolRow, dieselRow, cngRow);
+        history.push(petrolRow, dieselRow, cngRow);
+        audit.push(
+          { event_type: 'FUEL_PRICE_UPDATED', fuel_type: 'PETROL', status: 'SUCCESS' },
+          { event_type: 'FUEL_PRICE_UPDATED', fuel_type: 'DIESEL', status: 'SUCCESS' },
+          { event_type: 'FUEL_PRICE_UPDATED', fuel_type: 'CNG', status: 'SUCCESS' }
+        );
+
+        return Promise.resolve({ data: [petrolRow, dieselRow, cngRow], error: null });
+      }
+      return Promise.resolve({ data: null, error: null });
+    },
+    channel(name: string) {
+      return {
+        on() { return this; },
+        subscribe(cb?: any) {
+          if (cb) cb('SUBSCRIBED');
+          return this;
+        },
+      };
+    },
+    removeChannel() {},
     auth: {
       async getUser() {
         return { data: { user: null }, error: null };

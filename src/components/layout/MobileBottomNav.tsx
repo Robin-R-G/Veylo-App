@@ -13,7 +13,7 @@ export const MobileBottomNav: React.FC = () => {
     { label: 'Rider', icon: 'two_wheeler', href: '/rider' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
     { label: 'Estimator', icon: 'calculate', href: '/estimator' },
-    { label: 'Admin', icon: 'settings', href: '/admin' },
+    { label: 'Payments', icon: 'payments', href: '/owner/payments' },
   ];
 
   return (
