@@ -23,7 +23,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(0);
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'ledger' | 'timeline' | 'maintenance' | 'issues' | 'qr'>('ledger');
+  const [activeTab, setActiveTab] = useState<'overview' | 'ledger' | 'timeline' | 'maintenance' | 'issues' | 'qr' | 'specs'>('ledger');
 
   // Physical Odometer Verification Modal
   const [showVerifyModal, setShowVerifyModal] = useState(false);
@@ -180,6 +180,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
           { id: 'timeline', label: 'ODO Audit Trail', icon: 'speed' },
           { id: 'maintenance', label: 'Maintenance Log', icon: 'build' },
           { id: 'issues', label: 'Issues', icon: 'warning' },
+          { id: 'specs', label: 'Specs & Recalls', icon: 'car_repair' },
           { id: 'qr', label: 'Vehicle QR Tag', icon: 'qr_code_2' },
         ].map((tab) => (
           <button
@@ -447,7 +448,12 @@ export default function VehicleDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* TAB 6: QR TAG */}
+      {/* TAB 6: SPECS & RECALLS */}
+      {activeTab === 'specs' && (
+        <SpecsAndRecallsTab vehicle={vehicle} />
+      )}
+
+      {/* TAB 7: QR TAG */}
       {activeTab === 'qr' && (
         <div className="bg-surface p-8 rounded-xl border border-outline-variant shadow-sm max-w-md mx-auto text-center space-y-4">
           <h2 className="text-lg font-bold text-on-surface">Unique Vehicle QR Code</h2>
@@ -607,6 +613,117 @@ export default function VehicleDetailClient({ id }: { id: string }) {
       )}
 
       <AdSlot placement="vehicle-bottom" />
+    </div>
+  );
+}
+
+function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
+  const [recalls, setRecalls] = useState<{ campaignNumber: string; summary: string; consequence: string; remedy: string; reportDate: string; component: string }[]>([]);
+  const [loadingRecalls, setLoadingRecalls] = useState(false);
+  const [recallsFetched, setRecallsFetched] = useState(false);
+
+  const fetchRecalls = async () => {
+    if (!vehicle.make || !vehicle.model) return;
+    setLoadingRecalls(true);
+    try {
+      const year = vehicle.manufacturingYear || new Date(vehicle.createdAt).getFullYear();
+      const res = await fetch(`/api/vehicles/recalls?make=${encodeURIComponent(vehicle.make)}&model=${encodeURIComponent(vehicle.model)}&modelYear=${year}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRecalls(data.recalls ?? []);
+      }
+    } finally {
+      setLoadingRecalls(false);
+      setRecallsFetched(true);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Vehicle Specs */}
+      <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm">
+        <h3 className="text-sm font-bold text-on-surface mb-4 flex items-center gap-2">
+          <span className="material-symbols-outlined text-lg text-primary">info</span>
+          Vehicle Specifications
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          {[
+            { label: 'Registration', value: vehicle.registrationNumber },
+            { label: 'VIN', value: vehicle.vin || '—' },
+            { label: 'Make', value: vehicle.make },
+            { label: 'Model', value: vehicle.model },
+            { label: 'Year', value: vehicle.manufacturingYear || '—' },
+            { label: 'Fuel Type', value: vehicle.fuelType },
+            { label: 'Mileage', value: `${vehicle.mileageKmpl} km/L` },
+            { label: 'Vehicle Type', value: vehicle.vehicleType },
+            { label: 'Status', value: vehicle.status },
+          ].map((item) => (
+            <div key={item.label} className="p-3 rounded-lg bg-surface-container-low">
+              <span className="text-[10px] text-on-surface-variant uppercase font-semibold block">{item.label}</span>
+              <span className="text-sm font-bold text-on-surface">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Recalls */}
+      <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-bold text-on-surface flex items-center gap-2">
+            <span className="material-symbols-outlined text-lg text-amber-600">campaign</span>
+            NHTSA Safety Recalls
+          </h3>
+          {!recallsFetched && (
+            <button
+              onClick={fetchRecalls}
+              disabled={loadingRecalls || !vehicle.make}
+              className="px-3 py-1.5 rounded-lg bg-secondary-container text-on-secondary-container text-xs font-bold disabled:opacity-40 flex items-center gap-1"
+            >
+              <span className="material-symbols-outlined text-sm">{loadingRecalls ? 'hourglass_empty' : 'search'}</span>
+              {loadingRecalls ? 'Checking...' : 'Check Recalls'}
+            </button>
+          )}
+        </div>
+
+        {!recallsFetched && !loadingRecalls && (
+          <p className="text-xs text-on-surface-variant">Click &quot;Check Recalls&quot; to query the NHTSA database for open safety recalls for this {vehicle.make} {vehicle.model}.</p>
+        )}
+
+        {loadingRecalls && (
+          <div className="flex items-center gap-2 text-xs text-on-surface-variant py-4">
+            <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+            Querying NHTSA recall database...
+          </div>
+        )}
+
+        {recallsFetched && !loadingRecalls && recalls.length === 0 && (
+          <div className="py-6 text-center">
+            <span className="material-symbols-outlined text-3xl text-emerald-600">check_circle</span>
+            <p className="text-sm font-semibold text-on-surface mt-2">No open recalls found</p>
+            <p className="text-xs text-on-surface-variant">This vehicle has no outstanding NHTSA safety recalls.</p>
+          </div>
+        )}
+
+        {recalls.length > 0 && (
+          <div className="space-y-3">
+            <p className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-2 rounded-lg">
+              {recalls.length} open recall{recalls.length > 1 ? 's' : ''} found — contact the manufacturer for remedy.
+            </p>
+            {recalls.map((r, i) => (
+              <div key={i} className="p-4 rounded-lg bg-surface-container-low border border-outline-variant space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-xs font-bold text-on-surface font-mono">Campaign #{r.campaignNumber}</span>
+                  <span className="text-[10px] text-on-surface-variant shrink-0">{r.reportDate}</span>
+                </div>
+                {r.component && <p className="text-[11px] text-on-surface-variant"><strong>Component:</strong> {r.component}</p>}
+                {r.summary && <p className="text-[11px] text-on-surface-variant"><strong>Summary:</strong> {r.summary}</p>}
+                {r.consequence && <p className="text-[11px] text-amber-700"><strong>Consequence:</strong> {r.consequence}</p>}
+                {r.remedy && <p className="text-[11px] text-emerald-700"><strong>Remedy:</strong> {r.remedy}</p>}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

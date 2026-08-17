@@ -576,6 +576,67 @@ ALTER TABLE fuel_price_audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_settings ENABLE ROW LEVEL SECURITY;
 
 -- service_role: full access to everything
+DO $$
+BEGIN
+  -- Drop existing policies to make migration idempotent
+  PERFORM 1 FROM pg_policies WHERE policyname = 'service_role_all';
+  IF FOUND THEN
+    DROP POLICY IF EXISTS "service_role_all" ON organizations;
+    DROP POLICY IF EXISTS "service_role_all" ON profiles;
+    DROP POLICY IF EXISTS "service_role_all" ON organization_members;
+    DROP POLICY IF EXISTS "service_role_all" ON vehicles;
+    DROP POLICY IF EXISTS "service_role_all" ON rides;
+    DROP POLICY IF EXISTS "service_role_all" ON rental_trips;
+    DROP POLICY IF EXISTS "service_role_all" ON invoices;
+    DROP POLICY IF EXISTS "service_role_all" ON payment_attempts;
+    DROP POLICY IF EXISTS "service_role_all" ON odometer_history;
+    DROP POLICY IF EXISTS "service_role_all" ON maintenance_records;
+    DROP POLICY IF EXISTS "service_role_all" ON issues;
+    DROP POLICY IF EXISTS "service_role_all" ON disputes;
+    DROP POLICY IF EXISTS "service_role_all" ON rider_profiles;
+    DROP POLICY IF EXISTS "service_role_all" ON plans;
+    DROP POLICY IF EXISTS "service_role_all" ON subscriptions;
+    DROP POLICY IF EXISTS "service_role_all" ON platform_revenue;
+    DROP POLICY IF EXISTS "service_role_all" ON payment_events;
+    DROP POLICY IF EXISTS "service_role_all" ON platform_settings;
+    DROP POLICY IF EXISTS "service_role_all" ON ad_configurations;
+    DROP POLICY IF EXISTS "service_role_all" ON fuel_prices;
+    DROP POLICY IF EXISTS "service_role_all" ON fuel_price_history;
+    DROP POLICY IF EXISTS "service_role_all" ON fuel_price_audit_log;
+    DROP POLICY IF EXISTS "service_role_all" ON payment_settings;
+    DROP POLICY IF EXISTS "authenticated_read" ON organizations;
+    DROP POLICY IF EXISTS "authenticated_read" ON plans;
+    DROP POLICY IF EXISTS "authenticated_read" ON platform_settings;
+    DROP POLICY IF EXISTS "authenticated_read" ON ad_configurations;
+    DROP POLICY IF EXISTS "authenticated_read" ON fuel_prices;
+    DROP POLICY IF EXISTS "authenticated_read" ON fuel_price_history;
+    DROP POLICY IF EXISTS "authenticated_read" ON fuel_price_audit_log;
+    DROP POLICY IF EXISTS "authenticated_read" ON rider_profiles;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON vehicles;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON rental_trips;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON invoices;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON payment_attempts;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON odometer_history;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON maintenance_records;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON issues;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON disputes;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON subscriptions;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON platform_revenue;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON payment_events;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON payment_settings;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON organization_members;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON rides;
+    DROP POLICY IF EXISTS "anon_read" ON plans;
+    DROP POLICY IF EXISTS "anon_read" ON fuel_prices;
+    DROP POLICY IF EXISTS "anon_read" ON ad_configurations;
+    DROP POLICY IF EXISTS "anon_read" ON platform_settings;
+    DROP POLICY IF EXISTS "anon_read" ON organizations;
+    DROP POLICY IF EXISTS "anon_read" ON vehicles;
+    DROP POLICY IF EXISTS "anon_read" ON rides;
+  END IF;
+END
+$$;
+
 CREATE POLICY "service_role_all" ON organizations FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON profiles FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON organization_members FOR ALL USING (auth.role() = 'service_role');
@@ -600,7 +661,6 @@ CREATE POLICY "service_role_all" ON fuel_price_history FOR ALL USING (auth.role(
 CREATE POLICY "service_role_all" ON fuel_price_audit_log FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON payment_settings FOR ALL USING (auth.role() = 'service_role');
 
--- authenticated: read everything, write to own org rows
 CREATE POLICY "authenticated_read" ON organizations FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_read" ON plans FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_read" ON platform_settings FOR SELECT USING (auth.role() = 'authenticated');
@@ -649,7 +709,6 @@ CREATE POLICY "authenticated_org_write" ON organization_members FOR ALL
 CREATE POLICY "authenticated_org_write" ON rides FOR ALL
   USING (auth.role() = 'authenticated');
 
--- anon: read plans, fuel prices, ad configs (public page)
 CREATE POLICY "anon_read" ON plans FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON fuel_prices FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON ad_configurations FOR SELECT USING (auth.role() = 'anon');
