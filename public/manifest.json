@@ -1,21 +1,26 @@
 {
-  "name": "Veylo App",
+  "name": "Veylo — Vehicle Fleet Management",
   "short_name": "Veylo",
-  "description": "Move. Track. Pay. Manage vehicles, calculate live fuel costs, and generate transparent usage bills.",
-  "start_url": "/",
+  "description": "Track rides, calculate fuel costs, generate bills, and collect UPI payments.",
+  "start_url": "/rider",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "orientation": "portrait",
+  "background_color": "#f9f9fa",
   "theme_color": "#003441",
+  "categories": ["transportation", "business", "finance"],
   "icons": [
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

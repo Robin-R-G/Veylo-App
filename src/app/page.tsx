@@ -49,7 +49,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row gap-4 pt-2">
             <Link
-              href="/dashboard"
+              href="/login"
               className="bg-primary text-on-primary px-6 py-3.5 rounded-lg font-semibold text-sm uppercase tracking-wider hover:bg-primary-container hover:text-on-primary-container transition-all shadow-sm text-center flex items-center justify-center gap-2"
             >
               <span>GET STARTED</span>
@@ -57,7 +57,7 @@ export default function LandingPage() {
             </Link>
 
             <Link
-              href="/v/pub_kl16p78_x99a"
+              href="/scan"
               className="bg-surface text-secondary border border-outline-variant px-6 py-3.5 rounded-lg font-semibold text-sm uppercase tracking-wider hover:bg-surface-container-low transition-all text-center flex items-center justify-center gap-2 shadow-sm"
             >
               <span className="material-symbols-outlined text-sm">qr_code_scanner</span>
@@ -198,7 +198,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-2"><span className="material-symbols-outlined text-sm text-emerald-600">check</span> QR Code Entry</li>
               </ul>
             </div>
-            <Link href="/dashboard" className="w-full py-3 text-center rounded-xl border border-outline-variant font-bold text-xs text-primary hover:bg-surface-container transition-all">
+            <Link href="/login" className="w-full py-3 text-center rounded-xl border border-outline-variant font-bold text-xs text-primary hover:bg-surface-container transition-all">
               GET STARTED FREE
             </Link>
           </div>

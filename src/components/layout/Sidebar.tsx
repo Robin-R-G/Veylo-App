@@ -21,6 +21,7 @@ export const Sidebar: React.FC = () => {
   const navItems = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
+    { label: 'GPS Tracking', icon: 'location_on', href: '/owner/tracking' },
     { label: 'Trip Estimator', icon: 'calculate', href: '/estimator' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
     { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices' },

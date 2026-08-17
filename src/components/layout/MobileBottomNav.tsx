@@ -10,9 +10,9 @@ export const MobileBottomNav: React.FC = () => {
 
   const items = [
     { label: 'Dashboard', icon: 'dashboard', href: '/dashboard' },
-    { label: 'Rider', icon: 'two_wheeler', href: '/rider' },
+    { label: 'Track', icon: 'location_on', href: '/owner/tracking' },
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
-    { label: 'Estimator', icon: 'calculate', href: '/estimator' },
+    { label: 'Rider', icon: 'two_wheeler', href: '/rider' },
     { label: 'Payments', icon: 'payments', href: '/owner/payments' },
   ];
 

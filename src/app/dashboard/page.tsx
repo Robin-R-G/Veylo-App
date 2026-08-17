@@ -8,6 +8,7 @@ import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt, Orga
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
+import { geolocationService } from '@/lib/services/geolocationService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
@@ -28,10 +29,11 @@ export default function OwnerDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [mounted, setMounted] = useState(false);
 
-  const loadFuelRates = async (refresh = false) => {
+  const loadFuelRates = async () => {
     setIsRefreshing(true);
     try {
-      const { petrol, diesel, cng } = await centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode');
+      const { city, state } = await geolocationService.getCityState();
+      const { petrol, diesel, cng } = await centralFuelPriceService.getAllCurrentRates(state, city);
       setPetrolPrice(petrol);
       setDieselPrice(diesel);
       setCngPrice(cng);
