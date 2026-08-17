@@ -7,6 +7,7 @@ export const isSupabaseConfigured = url !== 'https://placeholder.supabase.co' &&
 
 const TABLE_MAP: Record<string, string> = {
   vehicles: 'vehicles',
+  rides: 'rides',
   rental_trips: 'rentalTrips',
   invoices: 'invoices',
   maintenance_records: 'maintenanceRecords',

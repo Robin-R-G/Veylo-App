@@ -100,6 +100,44 @@ CREATE INDEX IF NOT EXISTS idx_vehicles_status ON vehicles(status);
 CREATE INDEX IF NOT EXISTS idx_vehicles_normalized_reg ON vehicles(normalized_reg_number);
 
 -- ========================
+-- RIDES (legacy trip tracking)
+-- ========================
+CREATE TABLE IF NOT EXISTS rides (
+  id TEXT PRIMARY KEY,
+  vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  organization_id TEXT NOT NULL,
+  owner_id TEXT NOT NULL,
+  customer_id TEXT,
+  customer_name TEXT,
+  customer_phone TEXT,
+  start_odometer NUMERIC NOT NULL DEFAULT 0,
+  end_odometer NUMERIC NOT NULL DEFAULT 0,
+  distance_km NUMERIC NOT NULL DEFAULT 0,
+  fuel_type TEXT NOT NULL CHECK (fuel_type IN ('PETROL','DIESEL','CNG','ELECTRIC')),
+  mileage_kmpl NUMERIC NOT NULL DEFAULT 0,
+  price_snapshot JSONB,
+  estimated_fuel_litres NUMERIC DEFAULT 0,
+  estimated_fuel_cost_paise INTEGER DEFAULT 0,
+  price_per_km_paise INTEGER DEFAULT 0,
+  pricing_mode TEXT NOT NULL DEFAULT 'FUEL_COST' CHECK (pricing_mode IN ('FUEL_COST','PER_KM','FIXED')),
+  per_km_rate_rupees NUMERIC,
+  fixed_rate_rupees NUMERIC,
+  additional_charges_rupees NUMERIC,
+  total_amount_paise INTEGER NOT NULL DEFAULT 0,
+  total_amount_rupees NUMERIC NOT NULL DEFAULT 0,
+  notes TEXT,
+  issue_reported BOOLEAN DEFAULT false,
+  status TEXT NOT NULL DEFAULT 'ACTIVE' CHECK (status IN ('ACTIVE','COMPLETED','CANCELLED')),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  completed_at TIMESTAMPTZ
+);
+
+CREATE INDEX IF NOT EXISTS idx_rides_vehicle_id ON rides(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_rides_organization_id ON rides(organization_id);
+CREATE INDEX IF NOT EXISTS idx_rides_owner_id ON rides(owner_id);
+CREATE INDEX IF NOT EXISTS idx_rides_status ON rides(status);
+
+-- ========================
 -- RENTAL TRIPS
 -- ========================
 CREATE TABLE IF NOT EXISTS rental_trips (
@@ -516,6 +554,7 @@ ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE organization_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE vehicles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rides ENABLE ROW LEVEL SECURITY;
 ALTER TABLE rental_trips ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_attempts ENABLE ROW LEVEL SECURITY;
@@ -540,6 +579,7 @@ CREATE POLICY "service_role_all" ON organizations FOR ALL USING (auth.role() = '
 CREATE POLICY "service_role_all" ON profiles FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON organization_members FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON vehicles FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "service_role_all" ON rides FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON rental_trips FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON invoices FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON payment_attempts FOR ALL USING (auth.role() = 'service_role');
@@ -605,6 +645,8 @@ CREATE POLICY "authenticated_org_write" ON payment_settings FOR ALL
   USING (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_org_write" ON organization_members FOR ALL
   USING (auth.role() = 'authenticated');
+CREATE POLICY "authenticated_org_write" ON rides FOR ALL
+  USING (auth.role() = 'authenticated');
 
 -- anon: read plans, fuel prices, ad configs (public page)
 CREATE POLICY "anon_read" ON plans FOR SELECT USING (auth.role() = 'anon');
@@ -613,6 +655,7 @@ CREATE POLICY "anon_read" ON ad_configurations FOR SELECT USING (auth.role() = '
 CREATE POLICY "anon_read" ON platform_settings FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON organizations FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON vehicles FOR SELECT USING (auth.role() = 'anon');
+CREATE POLICY "anon_read" ON rides FOR SELECT USING (auth.role() = 'anon');
 
 -- ========================
 -- SEED DATA: DEFAULT ORGANIZATION
