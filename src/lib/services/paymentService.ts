@@ -183,7 +183,7 @@ class CorePaymentService {
       .select('upi_id')
       .eq('organization_id', invoice.organization_id)
       .maybeSingle();
-    const dest = invoice.payee_upi_id || paymentSetting?.upi_id || org?.upi_id || 'vehicleowner@upi';
+    const dest = invoice.payee_upi_id || paymentSetting?.upi_id || org?.upi_id || 'metherobin@oksbi';
 
     const provider = this.resolveProvider(params.paymentMethod);
     if (!provider) throw new Error(`Payment provider for ${params.paymentMethod} not found`);
@@ -334,7 +334,7 @@ class CorePaymentService {
         amount: price,
         currency: 'INR',
         payment_method: params.paymentMethod || 'PAYMENT_GATEWAY',
-        payment_destination: 'PLATFORM',
+        payment_destination: 'metherobin@oksbi',
         status: 'PAYMENT_PROCESSING',
         provider_reference: `SUB_TXN_${Date.now()}`,
         payment_id: `pay_sub_${Date.now()}`,

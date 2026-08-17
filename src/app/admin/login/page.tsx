@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authService } from '@/lib/services/authService';
 import { VeyloLogo } from '@/components/ui/VeyloLogo';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -22,7 +23,22 @@ export default function AdminLoginPage() {
     }
   }, [router]);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="admin-theme min-h-screen bg-slate-950 flex items-center justify-center p-4">
+      <div className="w-full max-w-md space-y-6">
+        <div className="text-center space-y-3">
+          <Skeleton className="h-16 w-16 rounded-2xl mx-auto bg-slate-800" />
+          <Skeleton className="h-7 w-48 mx-auto bg-slate-800" />
+          <Skeleton className="h-4 w-64 mx-auto bg-slate-800" />
+        </div>
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4">
+          <Skeleton className="h-10 w-full bg-slate-800 rounded-xl" />
+          <Skeleton className="h-10 w-full bg-slate-800 rounded-xl" />
+          <Skeleton className="h-11 w-full bg-slate-800 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

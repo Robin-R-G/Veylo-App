@@ -8,6 +8,7 @@ import { Vehicle, VehicleType } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function VehiclesPage() {
@@ -38,6 +39,19 @@ export default function VehiclesPage() {
         setLoading(false);
       }
     })();
+
+    const unsubscribe = appRealtimeService.subscribe(
+      [{ table: 'vehicles' }],
+      () => {
+        supabaseAuth.getOrganizationId().then(orgId => {
+          getVehicles(orgId || 'org_demo_1').then(data => {
+            if (data && data.length > 0) setVehicles(data);
+          }).catch(() => {});
+        });
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   if (loading) {
@@ -72,7 +86,7 @@ export default function VehiclesPage() {
       />
 
       {/* Category Filter Controls matching UIUX Request #10 */}
-      <div className="flex items-center gap-2 border-b border-outline-variant pb-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-outline-variant pb-3">
         {['ALL', 'MOTORCYCLE', 'SCOOTER', 'CAR'].map((tab) => (
           <button
             key={tab}

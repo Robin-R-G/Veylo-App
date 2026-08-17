@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { getActiveRentalTrips, findVehicleByRegNumber } from '@/lib/services/supabase/data';
 import { Vehicle, RentalTrip } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function RiderPortalPage() {
@@ -39,7 +40,28 @@ export default function RiderPortalPage() {
     load();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="max-w-xl mx-auto space-y-6">
+      <Skeleton className="h-7 w-48" />
+      <div className="bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant space-y-6">
+        <div className="text-center space-y-2">
+          <Skeleton className="h-14 w-14 rounded-2xl mx-auto" />
+          <Skeleton className="h-6 w-32 mx-auto" />
+          <Skeleton className="h-4 w-64 mx-auto" />
+        </div>
+        <Skeleton className="h-12 rounded-xl" />
+        <Skeleton className="h-12 rounded-xl" />
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2].map(i => (
+            <div key={i} className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant space-y-2">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-3 w-36" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 
   const handleFindVehicle = async (e: React.FormEvent) => {
     e.preventDefault();

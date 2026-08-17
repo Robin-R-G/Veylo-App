@@ -119,6 +119,11 @@
 @media (max-width: 768px) {
   .bento-col-4, .bento-col-8, .bento-col-6 { grid-column: span 12; }
 }
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bento-col-4 { grid-column: span 6; }
+  .bento-col-8 { grid-column: span 12; }
+  .bento-col-6 { grid-column: span 12; }
+}
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {

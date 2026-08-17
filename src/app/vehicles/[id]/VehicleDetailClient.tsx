@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getVehicleById, updateVehicleOdometer, getOdometerHistory, getRentalTripsByVehicle, getMaintenanceByVehicle } from '@/lib/services/supabase/data';
+import { getVehicleById, updateVehicleOdometer, getOdometerHistory, getRentalTripsByVehicle, getMaintenanceByVehicle, getIssues } from '@/lib/services/supabase/data';
 import { Vehicle, OdometerRecord, MaintenanceRecord, Issue, ServiceType, RentalTrip } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { formatCurrency, calculateRideCosts } from '@/lib/services/financialEngine';
@@ -55,15 +55,17 @@ export default function VehicleDetailClient({ id }: { id: string }) {
       setVehicle(v);
       setPhysicalOdoInput(v.currentOdometer);
 
-      const [odoRecords, trips, maintRecords] = await Promise.all([
+      const [odoRecords, trips, maintRecords, issueRecords] = await Promise.all([
         getOdometerHistory(v.id).catch(() => []),
         getRentalTripsByVehicle(v.id).catch(() => []),
         getMaintenanceByVehicle(v.id).catch(() => []),
+        getIssues([v.id]).catch(() => []),
       ]);
 
       setOdometerRecords(odoRecords || []);
       setRentalTrips(trips || []);
       setMaintenance(maintRecords || []);
+      setIssues(issueRecords || []);
 
       const fp = await fuelPriceService.getLatestFuelPrice(v.fuelType, v.state || 'Kerala', v.city || 'Kozhikode');
       setFuelPriceRupees(fp.priceRupees);
@@ -386,7 +388,66 @@ export default function VehicleDetailClient({ id }: { id: string }) {
         </div>
       )}
 
-      {/* TAB 5: QR TAG */}
+      {/* TAB 5: ISSUES */}
+      {activeTab === 'issues' && (
+        <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-bold text-sm text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg text-amber-600">warning</span>
+              Reported Issues ({issues.length})
+            </h3>
+          </div>
+
+          {issues.length === 0 ? (
+            <div className="text-center py-8">
+              <span className="material-symbols-outlined text-4xl text-on-surface-variant opacity-40">check_circle</span>
+              <p className="text-xs text-on-surface-variant mt-2">No issues reported for this vehicle.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {issues.map((issue) => (
+                <div key={issue.id} className="p-4 rounded-xl border border-outline-variant bg-surface-container-low space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        issue.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' :
+                        issue.severity === 'HIGH' ? 'bg-orange-100 text-orange-800' :
+                        issue.severity === 'MEDIUM' ? 'bg-amber-100 text-amber-800' :
+                        'bg-blue-100 text-blue-800'
+                      }`}>
+                        {issue.severity}
+                      </span>
+                      <span className="text-xs font-bold text-on-surface">{issue.issueType.replace(/_/g, ' ')}</span>
+                    </div>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      issue.status === 'OPEN' ? 'bg-red-100 text-red-800' :
+                      issue.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' :
+                      'bg-emerald-100 text-emerald-800'
+                    }`}>
+                      {issue.status.replace(/_/g, ' ')}
+                    </span>
+                  </div>
+                  <p className="text-xs text-on-surface-variant">{issue.description}</p>
+                  <div className="flex items-center gap-3 text-[10px] text-on-surface-variant">
+                    {issue.reporterName && <span>Reported by: {issue.reporterName}</span>}
+                    <span>{new Date(issue.createdAt).toLocaleDateString('en-IN')}</span>
+                    {issue.resolvedAt && <span>Resolved: {new Date(issue.resolvedAt).toLocaleDateString('en-IN')}</span>}
+                  </div>
+                  {issue.photoUrls && issue.photoUrls.length > 0 && (
+                    <div className="flex gap-2 pt-1">
+                      {issue.photoUrls.map((url, idx) => (
+                        <img key={idx} src={url} alt={`Issue photo ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg border border-outline-variant" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 6: QR TAG */}
       {activeTab === 'qr' && (
         <div className="bg-surface p-8 rounded-xl border border-outline-variant shadow-sm max-w-md mx-auto text-center space-y-4">
           <h2 className="text-lg font-bold text-on-surface">Unique Vehicle QR Code</h2>

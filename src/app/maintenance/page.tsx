@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Vehicle, MaintenanceRecord } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 import { mockStorage } from '@/lib/services/mockStorage';
 import { formatCurrency } from '@/lib/services/financialEngine';
 
@@ -109,7 +110,7 @@ export default function MaintenancePage() {
     }
   };
 
-  if (!mounted) return null;
+  if (!mounted) return <ListSkeleton />;
 
   const totalServices = maintenanceRecords.length;
   const totalCost = maintenanceRecords.reduce((sum, r) => sum + (r.costRupees || 0), 0);

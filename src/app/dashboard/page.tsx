@@ -7,8 +7,10 @@ import { getVehicles, getRentalTrips, getInvoices, getPayments, getOrganization 
 import { Vehicle, Invoice, PlanTier, FuelPrice, RentalTrip, PaymentAttempt, Organization } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
+import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
 import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function OwnerDashboard() {
@@ -70,16 +72,22 @@ export default function OwnerDashboard() {
     loadFuelRates();
 
     // Subscribe to realtime central fuel updates
-    const unsubscribe = fuelRealtimeService.subscribe((updated) => {
+    const unsubscribeFuel = fuelRealtimeService.subscribe((updated) => {
       if (updated.fuelType === 'PETROL') setPetrolPrice(updated);
       if (updated.fuelType === 'DIESEL') setDieselPrice(updated);
       if (updated.fuelType === 'CNG') setCngPrice(updated);
     });
 
-    return () => unsubscribe();
+    // Subscribe to realtime vehicle, trip, and invoice changes
+    const unsubscribeData = appRealtimeService.subscribe(
+      [{ table: 'vehicles' }, { table: 'rental_trips' }, { table: 'invoices' }],
+      () => { loadData(); }
+    );
+
+    return () => { unsubscribeFuel(); unsubscribeData(); };
   }, []);
 
-  if (!mounted || isLoading) return null;
+  if (!mounted || isLoading) return <DashboardSkeleton />;
 
 
   // Active rentals
@@ -210,7 +218,7 @@ export default function OwnerDashboard() {
             <span className="text-xs font-semibold uppercase tracking-wider">Fleet Vehicles</span>
             <span className="material-symbols-outlined text-primary">directions_car</span>
           </div>
-          <p className="text-3xl font-extrabold text-on-surface">{vehicles.length}</p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">{vehicles.length}</p>
           <span className="text-[11px] text-on-surface-variant mt-1">Active registered fleet</span>
         </div>
 
@@ -220,7 +228,7 @@ export default function OwnerDashboard() {
             <span className="text-xs font-semibold uppercase tracking-wider">Total Usage Distance</span>
             <span className="material-symbols-outlined text-secondary">route</span>
           </div>
-          <p className="text-3xl font-extrabold text-on-surface">{totalDistanceKm.toLocaleString()} <span className="text-sm font-normal text-on-surface-variant">km</span></p>
+          <p className="text-2xl sm:text-3xl font-extrabold text-on-surface">{totalDistanceKm.toLocaleString()} <span className="text-sm font-normal text-on-surface-variant">km</span></p>
           <span className="text-[11px] text-on-surface-variant mt-1">GPS verified distance</span>
         </div>
 
@@ -255,7 +263,7 @@ export default function OwnerDashboard() {
               const activeFp = selectedFuelTab === 'PETROL' ? petrolPrice : selectedFuelTab === 'DIESEL' ? dieselPrice : cngPrice;
               return activeFp && activeFp.priceRupees > 0 ? (
                 <>
-                  <p className="text-3xl font-extrabold text-primary">
+                  <p className="text-2xl sm:text-3xl font-extrabold text-primary">
                     ₹{activeFp.priceRupees.toFixed(2)} <span className="text-sm font-normal text-on-surface-variant">/ {activeFp.unit || 'L'}</span>
                   </p>
                   <p className="text-xs text-on-surface-variant font-medium mt-1">

@@ -59,7 +59,7 @@ module.exports = {
         "container-margin": "24px"
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       }
     },
   },

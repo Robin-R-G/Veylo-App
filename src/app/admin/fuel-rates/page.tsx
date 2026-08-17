@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { centralFuelPriceService, adminFuelService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { FuelPrice, FuelPriceHistoryItem, FuelPriceAuditLog, FuelType } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 
 export default function AdminFuelRatesPage() {
   const [petrol, setPetrol] = useState<FuelPrice | null>(null);
@@ -75,7 +76,7 @@ export default function AdminFuelRatesPage() {
     return () => unsubscribe();
   }, [loadCurrentRates, stateInput, cityInput]);
 
-  if (!mounted) return null;
+  if (!mounted) return <AdminSkeleton />;
 
   // Trigger Live API Fetch
   const handleFetchLiveApi = async () => {

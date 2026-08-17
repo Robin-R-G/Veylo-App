@@ -4,20 +4,20 @@ const repo = isGithubActions || isProd ? '/Veylo-App' : '';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'export',
   basePath: repo || undefined,
   assetPrefix: repo || undefined,
-  trailingSlash: true,
   reactStrictMode: true,
   images: {
     formats: ['image/avif', 'image/webp'],
-    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',
         hostname: '*.supabase.co',
       },
     ],
+  },
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@supabase/supabase-js'],
   },
 };
 

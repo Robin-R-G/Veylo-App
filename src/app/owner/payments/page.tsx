@@ -5,6 +5,7 @@ import { getInvoicesByOwner } from '@/lib/services/supabase/data';
 import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { TableSkeleton } from '@/components/ui/Skeleton';
 import { summarizeOwnerRevenue } from '@/lib/services/platformEconomics';
 import { Invoice } from '@/types';
 import { createClient } from '@/lib/supabase/client';
@@ -71,7 +72,7 @@ export default function OwnerPaymentsPage() {
     loadPayments();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <TableSkeleton />;
 
   const statusBadge = (status: string) => {
     const paid = status === 'PAID';

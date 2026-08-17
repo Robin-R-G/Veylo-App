@@ -5,6 +5,7 @@ import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngi
 import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { FuelType } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 export default function TripEstimatorPage() {
   const [startOdo, setStartOdo] = useState<number>(12500);
@@ -39,7 +40,21 @@ export default function TripEstimatorPage() {
     return () => unsubscribe();
   }, [fuelType]);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Skeleton className="h-7 w-64" />
+      <div className="bg-surface rounded-xl p-6 border border-outline-variant space-y-6">
+        <div className="grid grid-cols-3 gap-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-10 rounded-xl" />)}
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-10 rounded-lg" />
+          <Skeleton className="h-10 rounded-lg" />
+        </div>
+        <Skeleton className="h-40 rounded-xl" />
+      </div>
+    </div>
+  );
 
   const startNum = Number(startOdo || 0);
   const endNum = Number(endOdo || 0);

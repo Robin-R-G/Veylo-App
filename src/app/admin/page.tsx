@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { FeatureFlags, AdConfiguration, FuelPrice } from '@/types';
 import { centralFuelPriceService } from '@/lib/services/fuelPriceService';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 
 export default function AdminControlPage() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
@@ -44,7 +45,7 @@ export default function AdminControlPage() {
     load();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <AdminSkeleton />;
 
   const toggleFlag = async (key: keyof FeatureFlags) => {
     const updated = { ...featureFlags, [key]: !featureFlags[key] };

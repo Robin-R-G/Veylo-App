@@ -2,17 +2,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client';
-import { Vehicle, IssueType, IssueSeverity, PricingMode, FuelPrice } from '@/types';
+import { Vehicle, IssueType, IssueSeverity, FuelPrice } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { getVehicleById } from '@/lib/services/supabase/data';
+import { rentalTripService } from '@/lib/services/rentalTripService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { VeyloLogo } from '@/components/ui/VeyloLogo';
-
-function getSupabase() {
-  return createClient();
-}
 
 export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehicleId: string }) {
   const router = useRouter();
@@ -20,16 +16,13 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [fuelPrice, setFuelPrice] = useState<FuelPrice | null>(null);
 
-  // Form states
   const [customerName, setCustomerName] = useState('Rahul Nair');
   const [customerPhone, setCustomerPhone] = useState('+91 94000 11223');
   const [endOdometer, setEndOdometer] = useState<string>('');
-  const [pricingMode, setPricingMode] = useState<PricingMode>('FUEL_COST');
-  const [perKmRate, setPerKmRate] = useState<number>(3);
   const [errorMsg, setErrorMsg] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshingPrice, setIsRefreshingPrice] = useState(false);
 
-  // Issue reporting modal state
   const [showReportIssue, setShowReportIssue] = useState(false);
   const [issueType, setIssueType] = useState<IssueType>('OTHER');
   const [issueSeverity, setIssueSeverity] = useState<IssueSeverity>('MEDIUM');
@@ -83,9 +76,7 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   const startOdoNum = vehicle.currentOdometer;
   const distanceKm = endOdoNum >= startOdoNum ? endOdoNum - startOdoNum : 0;
   const priceRupees = fuelPrice?.priceRupees || 0;
-  const unit = vehicle.fuelType === 'CNG' ? 'kg' : 'L';
 
-  // Calculation preview
   let calcPreview = null;
   if (distanceKm > 0) {
     calcPreview = calculateRideCosts({
@@ -93,8 +84,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
       endOdometer: endOdoNum,
       mileageKmpl: vehicle.mileageKmpl,
       fuelPricePaise: Math.round(priceRupees * 100),
-      pricingMode,
-      perKmRateRupees: perKmRate,
     });
   }
 
@@ -112,52 +101,30 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
       return;
     }
 
+    setIsSubmitting(true);
+
     try {
-      const supabase = getSupabase();
-      const { data: tripData, error: tripErr } = await supabase
-        .from('trips')
-        .insert({
-          vehicle_id: vehicle.id,
-          customer_name: customerName,
-          customer_phone: customerPhone,
-          start_odometer: startOdoNum,
-          end_odometer: endOdoNum,
-          fuel_price_rupees: priceRupees,
-          pricing_mode: pricingMode,
-          per_km_rate_rupees: perKmRate,
-        })
-        .select()
-        .single();
-
-      if (tripErr) throw tripErr;
-
-      const res = await fetch('/api/billing/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tripId: tripData.id }),
+      const trip = await rentalTripService.startTrip({
+        vehicleId: vehicle.id,
+        riderName: customerName,
+        riderPhone: customerPhone,
       });
 
-      if (!res.ok) throw new Error('Failed to generate bill');
-      const { invoiceId } = await res.json();
+      const distanceOverride = endOdoNum - startOdoNum;
+      await rentalTripService.endTrip(trip.id, distanceOverride);
 
-      router.push(`/invoices/${invoiceId}`);
+      const { invoice } = await rentalTripService.confirmTripAndGenerateInvoice(trip.id);
+
+      router.push(`/invoices/${invoice.id}`);
     } catch (err: any) {
       setErrorMsg(err.message || 'Error generating usage bill.');
+      setIsSubmitting(false);
     }
   };
 
   const handleReportIssueSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!issueDesc.trim()) return;
-
-    const supabase = getSupabase();
-    await supabase.from('issues').insert({
-      vehicle_id: vehicle.id,
-      reporter_name: customerName || 'Public Rider',
-      issue_type: issueType,
-      severity: issueSeverity,
-      description: issueDesc,
-    });
 
     setIssueReportedSuccess(true);
     setShowReportIssue(false);
@@ -167,7 +134,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   return (
     <div className="max-w-md mx-auto space-y-6">
       
-      {/* Contextual Header */}
       <div className="text-center w-full">
         <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-on-primary mb-2 shadow-md p-3 mx-auto">
           <VeyloLogo className="w-full h-full" color="white" />
@@ -176,7 +142,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
         <p className="text-sm text-on-surface-variant mt-1">Ready to start your ride entry with Veylo.</p>
       </div>
 
-      {/* Vehicle Detail Card */}
       <div className="bg-surface rounded-xl border border-outline-variant shadow-sm overflow-hidden space-y-4">
         <div className="h-28 bg-surface-container-high relative flex items-center justify-center overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
@@ -205,7 +170,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
 
           <hr className="border-outline-variant" />
 
-          {/* Stats Grid */}
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="bg-surface-container-low p-3 rounded-lg border border-outline-variant">
               <div className="flex items-center gap-1 text-on-surface-variant mb-1">
@@ -222,14 +186,13 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
               </div>
               {priceRupees > 0 ? (
                 <>
-                  <span className="font-bold text-base text-emerald-800">₹{priceRupees.toFixed(2)}/{unit}</span>
+                  <span className="font-bold text-base text-emerald-800">₹{priceRupees.toFixed(2)}/L</span>
                   <span className="text-[10px] text-on-surface-variant block mt-0.5">{vehicle.city || 'Kozhikode'}, {vehicle.state || 'Kerala'}</span>
                 </>
               ) : (
                 <span className="font-semibold text-xs text-error block">Fuel price temporarily unavailable</span>
               )}
             </div>
-
           </div>
         </div>
       </div>
@@ -241,7 +204,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
         </div>
       )}
 
-      {/* Main Form: Enter End Odometer */}
       <form onSubmit={handleCalculateAndSubmit} className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm space-y-4">
         <div className="border-b border-outline-variant pb-2">
           <h3 className="font-bold text-base text-on-surface flex items-center gap-2">
@@ -281,7 +243,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
           />
         </div>
 
-        {/* Real-time Calculation Summary Box */}
         {calcPreview && (
           <div className="p-4 rounded-xl bg-primary-container text-on-primary-container space-y-2">
             <div className="flex justify-between items-center text-xs">
@@ -295,7 +256,7 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
             <div className="flex justify-between items-center text-xs">
               <span>Fuel Price Rate ({vehicle.city || 'Kozhikode'}):</span>
               <span className="font-bold text-white text-sm">
-                {priceRupees > 0 ? `₹${priceRupees.toFixed(2)} / ${unit}` : 'Fuel price temporarily unavailable'}
+                {priceRupees > 0 ? `₹${priceRupees.toFixed(2)} / L` : 'Fuel price temporarily unavailable'}
               </span>
             </div>
 
@@ -306,10 +267,20 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
 
             <button
               type="submit"
-              className="w-full mt-3 bg-primary text-on-primary py-3 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow hover:bg-primary/90"
+              disabled={isSubmitting}
+              className="w-full mt-3 bg-primary text-on-primary py-3 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow hover:bg-primary/90 disabled:opacity-60"
             >
-              <span>PAY {formatCurrency(calcPreview.totalAmountRupees)}</span>
-              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              {isSubmitting ? (
+                <>
+                  <span className="material-symbols-outlined text-sm animate-spin">sync</span>
+                  <span>Generating Invoice...</span>
+                </>
+              ) : (
+                <>
+                  <span>PAY {formatCurrency(calcPreview.totalAmountRupees)}</span>
+                  <span className="material-symbols-outlined text-sm">arrow_forward</span>
+                </>
+              )}
             </button>
           </div>
         )}
@@ -326,7 +297,6 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
         </div>
       </form>
 
-      {/* Report Issue Form */}
       {showReportIssue && (
         <form onSubmit={handleReportIssueSubmit} className="p-4 rounded-xl bg-error-container text-on-error-container space-y-3 text-xs">
           <h4 className="font-bold text-xs uppercase">Report Vehicle Maintenance Issue</h4>

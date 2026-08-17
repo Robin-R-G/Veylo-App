@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 import { PlatformRevenueLog, PlatformRevenueType, Subscription, SaaSPlan, Invoice } from '@/types';
 import {
   RevenueRange,
@@ -59,7 +60,7 @@ export default function AdminRevenuePage() {
     load();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return <AdminSkeleton />;
 
   const breakdown = aggregateRevenue(logs, range);
   const series = revenueSeries(logs, range);

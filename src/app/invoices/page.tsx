@@ -4,6 +4,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { createClient } from '@/lib/supabase/client';
+import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { Invoice } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { mockStorage } from '@/lib/services/mockStorage';
@@ -71,6 +72,13 @@ export default function InvoicesListPage() {
     }
 
     loadInvoices();
+
+    const unsubscribe = appRealtimeService.subscribe(
+      [{ table: 'invoices' }],
+      () => { loadInvoices(); }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const filteredInvoices = useMemo(() => {
