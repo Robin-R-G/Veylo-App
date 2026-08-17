@@ -8,6 +8,7 @@ import { authService } from '@/lib/services/authService';
 import { Dispute, DisputeStatus } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 const STATUS_CONFIG: Record<DisputeStatus, { label: string; color: string }> = {
   OPEN: { label: 'Open', color: 'bg-amber-100 text-amber-700' },
@@ -77,6 +78,12 @@ export default function DisputesClient() {
       setSelectedDispute(null);
       setResolution('');
     }
+
+    mockStorage.updateDispute(disputeId, { status: newStatus, resolution: resolution || `Marked as ${newStatus} by admin` });
+    const refreshed = mockStorage.getState().disputes || [];
+    setDisputes(refreshed);
+    setSelectedDispute(null);
+    setResolution('');
   };
 
   const openCount = disputes.filter(d => d.status === 'OPEN').length;

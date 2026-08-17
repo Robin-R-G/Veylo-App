@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { SaaSPlan, PlatformMonetizationSettings } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { AdminSkeleton } from '@/components/ui/Skeleton';
+import { mockStorage } from '@/lib/services/mockStorage';
 import { AppSession } from '@/types';
 
 export default function AdminMonetizationClient() {
@@ -58,6 +59,7 @@ export default function AdminMonetizationClient() {
   const saveMonetization = async () => {
     const supabase = createClient();
     await supabase.from('platform_settings').upsert({ key: 'monetization', value: settings });
+    mockStorage.saveMonetizationSettings(settings);
     flash('Monetization settings saved.');
   };
 
@@ -69,6 +71,7 @@ export default function AdminMonetizationClient() {
     const supabase = createClient();
     for (const p of plans) {
       await supabase.from('plans').upsert(p);
+      mockStorage.savePlan(p);
     }
     flash('Plan configuration saved.');
   };

@@ -114,6 +114,12 @@ export default function SettingsClient() {
     } catch {
       // Local fallback
     }
+    const state = mockStorage.getState();
+    if (state.organization) {
+      const updated = { ...state.organization, name: orgName, businessName, phone, email, defaultState, defaultCity, invoicePrefix, taxEnabled, gstin: taxEnabled ? gstin : undefined, upiId, upiPayeeName };
+      mockStorage.saveStore({ ...state, organization: updated });
+    }
+    mockStorage.updateOwnerUpiSettings(upiId, upiPayeeName, upiEnabled, upiId ? 'CONFIGURED' : 'NOT_CONFIGURED');
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };

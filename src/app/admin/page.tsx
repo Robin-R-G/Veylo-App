@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import { FeatureFlags, AdConfiguration, FuelPrice } from '@/types';
 import { centralFuelPriceService } from '@/lib/services/fuelPriceService';
 import { AdminSkeleton } from '@/components/ui/Skeleton';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function AdminControlPage() {
   const [featureFlags, setFeatureFlags] = useState<FeatureFlags>({
@@ -53,6 +54,7 @@ export default function AdminControlPage() {
 
     const supabase = createClient();
     await supabase.from('platform_settings').upsert({ key: 'feature_flags', value: updated });
+    mockStorage.updateFeatureFlags(updated);
 
     setSaveSuccessMsg(`Capability '${key}' toggled to ${updated[key] ? 'ENABLED' : 'DISABLED'}.`);
     setTimeout(() => setSaveSuccessMsg(''), 3000);
