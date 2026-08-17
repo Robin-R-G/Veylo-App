@@ -29,15 +29,6 @@ export default function LoginClient() {
 
   useEffect(() => {
     setMounted(true);
-    // Redirect if already authenticated
-    const session = authService.getSession();
-    if (session) {
-      if (session.role === 'OWNER' || session.role === 'ADMIN') {
-        router.replace('/dashboard');
-      } else {
-        router.replace('/rider/dashboard');
-      }
-    }
   }, [router]);
 
   if (!mounted) return null;
