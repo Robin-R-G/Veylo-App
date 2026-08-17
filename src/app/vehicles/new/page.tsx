@@ -7,6 +7,7 @@ import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { getVehicles } from '@/lib/services/supabase/data';
 import { subscriptionService } from '@/lib/services/subscriptionService';
 import { normalizeRegistrationNumber, formatRegistrationDisplay } from '@/lib/services/registrationNormalizer';
+import { decodeVin } from '@/lib/services/nhtsaService';
 import { VehicleType, FuelType } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 
@@ -55,22 +56,18 @@ export default function NewVehiclePage() {
     if (vin.length !== 17) return;
     setVinDecoding(true);
     try {
-      const res = await fetch(`/api/vehicles/vin?vin=${encodeURIComponent(vin)}`);
-      if (!res.ok) return;
-      const data = await res.json();
+      const data = await decodeVin(vin);
       if (data.make) setMake(data.make);
       if (data.model) setModel(data.model);
       if (data.modelYear) {
         const yr = parseInt(data.modelYear);
         if (!isNaN(yr)) {
-          // Auto-set vehicle type from body class
           const body = (data.bodyClass ?? '').toLowerCase();
           if (body.includes('scooter') || body.includes('moped')) {
             setVehicleType('SCOOTER');
           } else if (body.includes('car') || body.includes('sedan') || body.includes('suv') || body.includes('hatchback')) {
             setVehicleType('CAR');
           }
-          // Auto-set fuel type
           const fuel = (data.fuelTypePrimary ?? '').toLowerCase();
           if (fuel.includes('diesel')) setFuelType('DIESEL');
           else if (fuel.includes('cng') || fuel.includes('natural gas')) setFuelType('CNG');

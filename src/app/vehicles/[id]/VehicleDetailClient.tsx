@@ -12,6 +12,7 @@ import { AdSlot } from '@/components/ads/AdSlot';
 import { QRCodeSVG } from 'qrcode.react';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { mockStorage } from '@/lib/services/mockStorage';
+import { fetchRecalls, type Recall } from '@/lib/services/nhtsaService';
 
 export default function VehicleDetailClient({ id }: { id: string }) {
   const router = useRouter();
@@ -74,9 +75,8 @@ export default function VehicleDetailClient({ id }: { id: string }) {
       // Fetch open recalls for health score
       if (v.make && v.model) {
         const year = v.manufacturingYear || new Date(v.createdAt).getFullYear();
-        fetch(`/api/vehicles/recalls?make=${encodeURIComponent(v.make)}&model=${encodeURIComponent(v.model)}&modelYear=${year}`)
-          .then(r => r.json())
-          .then(d => setRecallCount(d.recalls?.length ?? 0))
+        fetchRecalls(v.make, v.model, year)
+          .then(recalls => setRecallCount(recalls.length))
           .catch(() => {});
       }
     } catch {
@@ -636,20 +636,17 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 }
 
 function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
-  const [recalls, setRecalls] = useState<{ campaignNumber: string; summary: string; consequence: string; remedy: string; reportDate: string; component: string }[]>([]);
+  const [recalls, setRecalls] = useState<Recall[]>([]);
   const [loadingRecalls, setLoadingRecalls] = useState(false);
   const [recallsFetched, setRecallsFetched] = useState(false);
 
-  const fetchRecalls = async () => {
+  const handleFetchRecalls = async () => {
     if (!vehicle.make || !vehicle.model) return;
     setLoadingRecalls(true);
     try {
       const year = vehicle.manufacturingYear || new Date(vehicle.createdAt).getFullYear();
-      const res = await fetch(`/api/vehicles/recalls?make=${encodeURIComponent(vehicle.make)}&model=${encodeURIComponent(vehicle.model)}&modelYear=${year}`);
-      if (res.ok) {
-        const data = await res.json();
-        setRecalls(data.recalls ?? []);
-      }
+      const data = await fetchRecalls(vehicle.make, vehicle.model, year);
+      setRecalls(data);
     } finally {
       setLoadingRecalls(false);
       setRecallsFetched(true);
@@ -693,7 +690,7 @@ function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
           </h3>
           {!recallsFetched && (
             <button
-              onClick={fetchRecalls}
+              onClick={handleFetchRecalls}
               disabled={loadingRecalls || !vehicle.make}
               className="px-3 py-1.5 rounded-lg bg-secondary-container text-on-secondary-container text-xs font-bold disabled:opacity-40 flex items-center gap-1"
             >
