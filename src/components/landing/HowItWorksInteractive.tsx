@@ -204,7 +204,7 @@ export function HowItWorksInteractive() {
   };
 
   return (
-    <section className="py-12 bg-surface rounded-3xl p-6 sm:p-10 border border-outline-variant shadow-sm relative overflow-hidden" id="how-it-works">
+    <section className="py-16 sm:py-20 relative overflow-hidden" id="how-it-works">
       
       {/* Background ambient lighting */}
       <div className="absolute top-10 right-10 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none -z-0"></div>
@@ -227,7 +227,7 @@ export function HowItWorksInteractive() {
         </div>
 
         {/* Interactive Layout: Left Steps + Right Phone Mockup */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
           
           {/* Left Column: Synchronized Workflow Cards */}
           <div className="lg:col-span-7 space-y-4">
@@ -362,7 +362,7 @@ export function HowItWorksInteractive() {
           </div>
 
           {/* Right Column: Premium High-Fidelity Mobile Mockup */}
-          <div className="lg:col-span-5 flex justify-center relative">
+          <div className="lg:col-span-5 flex justify-center lg:justify-end relative">
             
             {/* Floating Live Badge Chip */}
             <div className="absolute -top-4 right-2 sm:right-6 z-30 animate-float-badge">
@@ -378,7 +378,7 @@ export function HowItWorksInteractive() {
             </div>
 
             {/* Realistic Smartphone Hardware Shell */}
-            <div className="relative w-[min(88vw,390px)] shrink-0">
+            <div className="relative w-full max-w-[390px] shrink-0">
               {/* Physical side controls make the demo read as a device, not a card. */}
               <span aria-hidden="true" className="absolute -left-1.5 top-28 h-10 w-1.5 rounded-l-full bg-[#2c3338] shadow-sm"></span>
               <span aria-hidden="true" className="absolute -left-1.5 top-40 h-16 w-1.5 rounded-l-full bg-[#2c3338] shadow-sm"></span>

@@ -127,7 +127,7 @@ export default function LandingPage() {
       <HowItWorksInteractive />
 
       {/* Features Section */}
-      <section className="py-12 bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-sm space-y-8" id="features">
+      <section className="py-16 sm:py-20 space-y-10 border-t border-outline-variant/60" id="features">
         <div className="text-center space-y-2">
           <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary-container/30 px-3 py-1 rounded-full">Features</span>
           <h2 className="text-2xl sm:text-3xl font-bold text-on-surface">Everything Needed for Modern Vehicle Operations</h2>
@@ -170,7 +170,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-12 bg-surface rounded-2xl p-6 sm:p-8 border border-outline-variant shadow-sm space-y-8" id="pricing">
+      <section className="py-16 sm:py-20 space-y-10 border-t border-outline-variant/60" id="pricing">
         <div className="text-center space-y-2">
           <span className="text-xs font-bold uppercase tracking-wider text-primary bg-primary-container/30 px-3 py-1 rounded-full">Pricing</span>
           <h2 className="text-2xl sm:text-3xl font-bold text-on-surface">Simple, Transparent Subscription Plans</h2>

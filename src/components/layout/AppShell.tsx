@@ -59,6 +59,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   const isPublicQR = pathname.startsWith('/v/');
   const isLoginPage = pathname === '/login' || pathname === '/admin/login';
   const isRiderPublicPage = pathname === '/rider' || pathname.startsWith('/rider/start/');
+  const isLandingPage = pathname === '/';
   
   // Minimal shell (no sidebar/navbar) for logins, public QR, and rider onboarding
   const isMinimalShell = isLoginPage || isPublicQR || isRiderPublicPage;
@@ -123,7 +124,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div className="min-h-screen bg-background text-on-background flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
       <Navbar />
-      <main className="flex-1 w-full max-w-2xl mx-auto p-4 sm:p-6 pb-24">
+      <main className={`flex-1 w-full mx-auto p-4 sm:p-6 pb-24 ${
+        isLandingPage ? 'max-w-7xl lg:px-8' : 'max-w-2xl'
+      }`}>
         {children}
       </main>
     </div>
