@@ -344,7 +344,7 @@ export class RentalTripService {
       await supabase
         .from('vehicles')
         .update({
-          current_omdometer: trip.estimatedEndOdometer,
+          current_odometer: trip.estimatedEndOdometer,
           estimated_current_omdometer: trip.estimatedEndOdometer,
           updated_at: new Date().toISOString(),
         })
