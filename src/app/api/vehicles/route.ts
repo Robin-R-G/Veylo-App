@@ -100,3 +100,59 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ vehicle }, { status: 201 });
 }
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('id, organization_id')
+    .eq('user_id', user.id)
+    .single();
+  if (!profile?.organization_id) {
+    return NextResponse.json({ error: 'No organization for user' }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const { id, ...updates } = body;
+
+  if (!id) {
+    return NextResponse.json({ error: 'Vehicle id required' }, { status: 400 });
+  }
+
+  // Map camelCase to snake_case
+  const snakeUpdates: Record<string, unknown> = {};
+  if (updates.make !== undefined) snakeUpdates.make = updates.make;
+  if (updates.model !== undefined) snakeUpdates.model = updates.model;
+  if (updates.vin !== undefined) snakeUpdates.vin = updates.vin;
+  if (updates.fuelType !== undefined) snakeUpdates.fuel_type = updates.fuelType;
+  if (updates.mileageKmpl !== undefined) snakeUpdates.mileage_kmpl = Number(updates.mileageKmpl);
+  if (updates.manufacturingYear !== undefined) snakeUpdates.manufacturing_year = Number(updates.manufacturingYear);
+  if (updates.vehicleType !== undefined) snakeUpdates.vehicle_type = updates.vehicleType;
+  if (updates.ratePerKmRupees !== undefined) snakeUpdates.rate_per_km_rupees = Number(updates.ratePerKmRupees);
+  if (updates.ownerUpiId !== undefined) snakeUpdates.owner_upi_id = updates.ownerUpiId;
+  if (updates.state !== undefined) snakeUpdates.state = updates.state;
+  if (updates.city !== undefined) snakeUpdates.city = updates.city;
+  if (updates.notes !== undefined) snakeUpdates.notes = updates.notes;
+  snakeUpdates.updated_at = new Date().toISOString();
+
+  const { data: vehicle, error } = await supabase
+    .from('vehicles')
+    .update(snakeUpdates)
+    .eq('id', id)
+    .eq('organization_id', profile.organization_id)
+    .select()
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ vehicle });
+}

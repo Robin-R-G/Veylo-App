@@ -3,10 +3,27 @@ import { MaintenanceRecord, Issue, VehicleHealthScore } from '@/types';
 export function calculateVehicleHealthScore(
   currentOdometer: number,
   maintenanceRecords: MaintenanceRecord[] = [],
-  unresolvedIssues: Issue[] = []
+  unresolvedIssues: Issue[] = [],
+  openRecalls: number = 0,
 ): VehicleHealthScore {
   let score = 100;
   const factors: VehicleHealthScore['factors'] = [];
+
+  // Factor 0: Open Safety Recalls (most critical — safety issue)
+  if (openRecalls > 0) {
+    score -= openRecalls * 15;
+    factors.push({
+      label: 'Safety Recalls',
+      status: 'CRITICAL',
+      detail: `${openRecalls} open NHTSA safety recall${openRecalls > 1 ? 's' : ''} require${openRecalls === 1 ? 's' : ''} immediate manufacturer service.`,
+    });
+  } else {
+    factors.push({
+      label: 'Safety Recalls',
+      status: 'GOOD',
+      detail: 'No open safety recalls on file.',
+    });
+  }
 
   // Factor 1: Unresolved Issues
   const criticalCount = unresolvedIssues.filter(i => i.severity === 'CRITICAL' || i.severity === 'HIGH').length;

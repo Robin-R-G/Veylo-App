@@ -22,6 +22,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   const [maintenance, setMaintenance] = useState<MaintenanceRecord[]>([]);
   const [issues, setIssues] = useState<Issue[]>([]);
   const [fuelPriceRupees, setFuelPriceRupees] = useState<number>(0);
+  const [recallCount, setRecallCount] = useState<number>(0);
 
   const [activeTab, setActiveTab] = useState<'overview' | 'ledger' | 'timeline' | 'maintenance' | 'issues' | 'qr' | 'specs'>('ledger');
 
@@ -69,6 +70,15 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 
       const fp = await fuelPriceService.getLatestFuelPrice(v.fuelType, v.state || 'Kerala', v.city || 'Kozhikode');
       setFuelPriceRupees(fp.priceRupees);
+
+      // Fetch open recalls for health score
+      if (v.make && v.model) {
+        const year = v.manufacturingYear || new Date(v.createdAt).getFullYear();
+        fetch(`/api/vehicles/recalls?make=${encodeURIComponent(v.make)}&model=${encodeURIComponent(v.model)}&modelYear=${year}`)
+          .then(r => r.json())
+          .then(d => setRecallCount(d.recalls?.length ?? 0))
+          .catch(() => {});
+      }
     } catch {
       const v = mockStorage.getState().vehicles.find(x => x.id === id || x.securePublicId === id) || mockStorage.getState().vehicles[0];
       if (v) {
@@ -102,7 +112,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
   });
 
   // Vehicle Health Score Calculation
-  const health = calculateVehicleHealthScore(vehicle.currentOdometer, maintenance, issues);
+  const health = calculateVehicleHealthScore(vehicle.currentOdometer, maintenance, issues, recallCount);
 
   const handleVerifyOdometerSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -167,6 +177,14 @@ export default function VehicleDetailClient({ id }: { id: string }) {
             >
               <span className="material-symbols-outlined text-sm">directions_bike</span>
               Start Rider Trip
+            </Link>
+
+            <Link
+              href={`/vehicles/${vehicle.id}/edit`}
+              className="px-3.5 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-semibold text-xs flex items-center gap-1.5 hover:bg-surface-container-low transition-all shadow-sm"
+            >
+              <span className="material-symbols-outlined text-sm">edit</span>
+              Edit
             </Link>
           </div>
         }
