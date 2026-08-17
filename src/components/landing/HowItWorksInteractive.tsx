@@ -378,10 +378,16 @@ export function HowItWorksInteractive() {
             </div>
 
             {/* Realistic Smartphone Hardware Shell */}
-            <div className="w-full max-w-[320px] sm:max-w-[340px] bg-[#111618] p-3 rounded-[3rem] shadow-2xl border-4 border-[#2c3338] relative overflow-hidden transition-all duration-300">
+            <div className="relative w-[min(88vw,390px)] shrink-0">
+              {/* Physical side controls make the demo read as a device, not a card. */}
+              <span aria-hidden="true" className="absolute -left-1.5 top-28 h-10 w-1.5 rounded-l-full bg-[#2c3338] shadow-sm"></span>
+              <span aria-hidden="true" className="absolute -left-1.5 top-40 h-16 w-1.5 rounded-l-full bg-[#2c3338] shadow-sm"></span>
+              <span aria-hidden="true" className="absolute -right-1.5 top-36 h-20 w-1.5 rounded-r-full bg-[#2c3338] shadow-sm"></span>
+
+              <div className="w-full bg-[#111618] p-2.5 sm:p-3.5 rounded-[3.4rem] shadow-[0_28px_60px_rgba(15,23,42,0.3)] border-[5px] border-[#2c3338] relative overflow-hidden transition-all duration-300">
               
               {/* Inner Bezel / Screen Container */}
-              <div className="bg-background rounded-[2.3rem] overflow-hidden flex flex-col h-[580px] border border-black/20 relative shadow-inner">
+              <div className="bg-background rounded-[2.65rem] overflow-hidden flex flex-col h-[650px] sm:h-[720px] border border-black/20 relative shadow-inner">
                 
                 {/* Status Bar */}
                 <div className="pt-3 px-5 flex items-center justify-between text-[11px] font-bold text-on-surface/80 select-none shrink-0 bg-surface/80 backdrop-blur-sm z-20">
@@ -821,6 +827,7 @@ export function HowItWorksInteractive() {
                   <div className="w-28 h-1 bg-on-surface/30 rounded-full"></div>
                 </div>
 
+              </div>
               </div>
             </div>
           </div>
