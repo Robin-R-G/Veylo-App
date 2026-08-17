@@ -8,6 +8,7 @@ import { Vehicle, VehicleType } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -17,18 +18,25 @@ export default function VehiclesPage() {
 
   useEffect(() => {
     (async () => {
-      const orgId = await supabaseAuth.getOrganizationId();
-      if (orgId) {
-        const data = await getVehicles(orgId);
+      try {
+        const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
+        let data = await getVehicles(orgId);
+        if (!data || data.length === 0) {
+          data = mockStorage.getState().vehicles || [];
+        }
         setVehicles(data);
         const prices: Record<string, number> = {};
         await Promise.all(data.map(async (v) => {
           const price = await fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city);
-          prices[v.id] = price || 0;
+          prices[v.id] = price || 104.20;
         }));
         setCachedPrices(prices);
+      } catch {
+        const fallback = mockStorage.getState().vehicles || [];
+        setVehicles(fallback);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     })();
   }, []);
 

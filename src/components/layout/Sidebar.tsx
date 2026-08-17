@@ -23,7 +23,7 @@ export const Sidebar: React.FC = () => {
     { label: 'Vehicles', icon: 'directions_car', href: '/vehicles' },
     { label: 'Trip Estimator', icon: 'calculate', href: '/estimator' },
     { label: 'Maintenance', icon: 'build', href: '/maintenance' },
-    { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices/inv_101' },
+    { label: 'Usage Bills', icon: 'receipt_long', href: '/invoices' },
     { label: 'Owner Payments', icon: 'payments', href: '/owner/payments' },
     { label: 'Settings', icon: 'settings', href: '/settings' },
   ];

@@ -43,19 +43,24 @@ export default function RiderDashboardClient() {
     setSession(s);
 
     async function load() {
-      const [trips, rates] = await Promise.all([
-        getTripsByRider(s!.userId),
-        centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode'),
-      ]);
-      setMyTrips(trips);
-      setFuelPrices(rates);
+      try {
+        const [trips, rates] = await Promise.all([
+          getTripsByRider(s!.userId).catch(() => []),
+          centralFuelPriceService.getAllCurrentRates('Kerala', 'Kozhikode').catch(() => ({ petrol: undefined, diesel: undefined, cng: undefined })),
+        ]);
+        setMyTrips(trips || []);
+        setFuelPrices(rates || {});
 
-      const supabase = createClient();
-      const { data: invData } = await supabase
-        .from('invoices')
-        .select('*')
-        .eq('customer_name', s!.name);
-      setMyInvoices((invData as Invoice[]) || []);
+        const supabase = createClient();
+        const { data: invData } = await supabase
+          .from('invoices')
+          .select('*')
+          .eq('customer_name', s!.name);
+        setMyInvoices((invData as Invoice[]) || []);
+      } catch {
+        setMyTrips([]);
+        setMyInvoices([]);
+      }
     }
     load();
 

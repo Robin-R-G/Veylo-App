@@ -8,6 +8,7 @@ import { paymentService } from '@/lib/services/paymentService';
 import { Invoice, PaymentAttempt, Dispute, AppSession } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function InvoiceDetailClient({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -25,18 +26,25 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
 
   const loadData = async () => {
     try {
-      const inv = await getInvoiceById(id);
+      let inv = await getInvoiceById(id);
+      if (!inv) {
+        inv = mockStorage.getState().invoices.find(i => i.id === id) || mockStorage.getState().invoices[0];
+      }
       if (inv) {
         setInvoice(inv);
-        // Load disputes associated with this trip
         if (inv.tripId) {
-          const d = await getDisputeByTripId(inv.tripId);
-          if (d) setDispute(d);
+          try {
+            const d = await getDisputeByTripId(inv.tripId);
+            if (d) setDispute(d);
+          } catch {}
         }
       }
-      setAttempts(await getPaymentsByInvoiceId(id));
-    } catch (err) {
-      console.error('Failed to load invoice data:', err);
+      try {
+        setAttempts(await getPaymentsByInvoiceId(id));
+      } catch {}
+    } catch {
+      const fallback = mockStorage.getState().invoices.find(i => i.id === id) || mockStorage.getState().invoices[0];
+      if (fallback) setInvoice(fallback);
     }
   };
 

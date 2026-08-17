@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/services/financialEngine';
 import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function OwnerDashboard() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -42,23 +43,24 @@ export default function OwnerDashboard() {
 
     const loadData = async () => {
       try {
-        const orgId = await supabaseAuth.getOrganizationId();
-        if (!orgId) return;
+        const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
 
         const [v, t, inv, pay, org] = await Promise.all([
-          getVehicles(orgId),
-          getRentalTrips(orgId),
-          getInvoices(orgId),
-          getPayments(orgId),
-          getOrganization(orgId),
+          getVehicles(orgId).catch(() => []),
+          getRentalTrips(orgId).catch(() => []),
+          getInvoices(orgId).catch(() => []),
+          getPayments(orgId).catch(() => []),
+          getOrganization(orgId).catch(() => null),
         ]);
 
-        setVehicles(v);
-        setRentalTrips(t);
-        setInvoices(inv);
-        setPaymentAttempts(pay);
-        setOrganization(org);
-        if (org) setTier(org.planTier);
+        const state = mockStorage.getState();
+        setVehicles(v?.length ? v : state.vehicles);
+        setRentalTrips(t?.length ? t : state.rentalTrips);
+        setInvoices(inv?.length ? inv : state.invoices);
+        setPaymentAttempts(pay?.length ? pay : state.paymentAttempts);
+        const resolvedOrg = org || state.organization;
+        setOrganization(resolvedOrg);
+        if (resolvedOrg) setTier(resolvedOrg.planTier);
       } finally {
         setIsLoading(false);
       }

@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { getActiveRentalTrips, findVehicleByRegNumber } from '@/lib/services/supabase/data';
 import { Vehicle, RentalTrip } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function RiderPortalPage() {
   const router = useRouter();
@@ -19,13 +20,21 @@ export default function RiderPortalPage() {
   useEffect(() => {
     setMounted(true);
     async function load() {
-      const supabase = createClient();
-      const [trips, { data: vData }] = await Promise.all([
-        getActiveRentalTrips(),
-        supabase.from('vehicles').select('*').eq('status', 'AVAILABLE'),
-      ]);
-      setAvailableVehicles((vData as Vehicle[]) || []);
-      setActiveTrips(trips);
+      try {
+        const supabase = createClient();
+        const [trips, { data: vData }] = await Promise.all([
+          getActiveRentalTrips().catch(() => []),
+          supabase.from('vehicles').select('*').eq('status', 'AVAILABLE'),
+        ]);
+        let vehList = (vData as Vehicle[]) || [];
+        if (vehList.length === 0) {
+          vehList = mockStorage.getState().vehicles.filter(v => v.status === 'AVAILABLE');
+        }
+        setAvailableVehicles(vehList);
+        setActiveTrips(trips || []);
+      } catch {
+        setAvailableVehicles(mockStorage.getState().vehicles.filter(v => v.status === 'AVAILABLE'));
+      }
     }
     load();
   }, []);

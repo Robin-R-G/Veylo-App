@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
+    <div className="admin-theme min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
       
       {/* Background glowing gradient accents */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

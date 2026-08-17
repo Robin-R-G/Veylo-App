@@ -35,6 +35,69 @@
   font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
+/* Platform admin uses the same calm, light Veylo palette as owner and rider views.
+   Legacy admin screens use slate/amber utilities, so these scoped aliases retain
+   their hierarchy while bringing every admin route into the shared theme. */
+.admin-theme {
+  background: #f9f9fa;
+  color: #191c1d;
+}
+
+.admin-theme .bg-slate-950 { background-color: #f9f9fa !important; }
+.admin-theme .bg-slate-900,
+.admin-theme .bg-slate-900\/90,
+.admin-theme .bg-slate-900\/80 { background-color: #ffffff !important; }
+.admin-theme .bg-slate-800,
+.admin-theme .bg-slate-800\/90,
+.admin-theme .bg-slate-800\/80 { background-color: #f3f4f5 !important; }
+.admin-theme .bg-slate-700 { background-color: #e1e2e4 !important; }
+.admin-theme .hover\:bg-slate-800:hover,
+.admin-theme .hover\:bg-slate-800\/40:hover,
+.admin-theme .hover\:bg-slate-700:hover { background-color: #e7e8e9 !important; }
+
+.admin-theme .border-slate-900,
+.admin-theme .border-slate-800,
+.admin-theme .border-slate-800\/60,
+.admin-theme .border-slate-700,
+.admin-theme .border-slate-700\/80 { border-color: #c0c8cb !important; }
+.admin-theme .divide-slate-800\/60 > :not([hidden]) ~ :not([hidden]) { border-color: #c0c8cb !important; }
+
+.admin-theme .text-white,
+.admin-theme .text-slate-100,
+.admin-theme .text-slate-200,
+.admin-theme .text-slate-300 { color: #191c1d !important; }
+.admin-theme .text-slate-400,
+.admin-theme .text-slate-500 { color: #40484b !important; }
+.admin-theme .text-slate-950 { color: #ffffff !important; }
+.admin-theme .hover\:text-white:hover { color: #191c1d !important; }
+
+.admin-theme .bg-amber-500 { background-color: #003441 !important; }
+.admin-theme .hover\:bg-amber-400:hover { background-color: #0f4c5c !important; }
+.admin-theme .text-amber-400 { color: #003441 !important; }
+.admin-theme .text-amber-300 { color: #0f4c5c !important; }
+.admin-theme .border-amber-500,
+.admin-theme .border-amber-800,
+.admin-theme .border-amber-800\/60 { border-color: #87bbce !important; }
+.admin-theme .shadow-amber-500\/20 { --tw-shadow-color: rgba(0, 52, 65, 0.16) !important; }
+
+.admin-theme .bg-emerald-950,
+.admin-theme .bg-emerald-950\/60,
+.admin-theme .bg-emerald-950\/70,
+.admin-theme .bg-emerald-950\/80 { background-color: #dcfce7 !important; }
+.admin-theme .border-emerald-800,
+.admin-theme .border-emerald-800\/60 { border-color: #86efac !important; }
+.admin-theme .text-emerald-300,
+.admin-theme .text-emerald-400 { color: #047857 !important; }
+
+.admin-theme .bg-rose-950,
+.admin-theme .bg-rose-950\/50,
+.admin-theme .bg-rose-950\/70,
+.admin-theme .bg-rose-950\/60 { background-color: #ffebe9 !important; }
+.admin-theme .border-rose-800,
+.admin-theme .border-rose-800\/60 { border-color: #fda4af !important; }
+.admin-theme .text-rose-300,
+.admin-theme .text-rose-400 { color: #ba1a1a !important; }
+
 /* Glassmorphism Card Style matching UIUX */
 .glass-card {
   background: rgba(255, 255, 255, 0.85);
@@ -197,4 +260,3 @@
     transform: none !important;
   }
 }
-

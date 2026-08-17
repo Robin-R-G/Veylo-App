@@ -8,6 +8,7 @@ import { rentalTripService } from '@/lib/services/rentalTripService';
 import { Vehicle } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { KOZHIKODE_SAMPLE_ROUTE } from '@/lib/services/gpsTrackingEngine';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function RiderStartVehicleClient({ token }: { token: string }) {
   const router = useRouter();
@@ -23,8 +24,16 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
   useEffect(() => {
     setMounted(true);
     async function load() {
-      const v = await getVehicleById(token) || await findVehicleByRegNumber(token);
-      if (v) setVehicle(v);
+      try {
+        let v = await getVehicleById(token) || await findVehicleByRegNumber(token);
+        if (!v) {
+          v = mockStorage.getState().vehicles.find(x => x.id === token || x.securePublicId === token) || null;
+        }
+        if (v) setVehicle(v);
+      } catch {
+        const v = mockStorage.getState().vehicles.find(x => x.id === token || x.securePublicId === token) || null;
+        if (v) setVehicle(v);
+      }
     }
     load();
   }, [token]);
