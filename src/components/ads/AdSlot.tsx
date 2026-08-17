@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { AdPlacement, AdConfiguration } from '@/types';
 import { createClient } from '@/lib/supabase/client';
-import { Megaphone, ExternalLink, Sparkles } from 'lucide-react';
 
 interface AdSlotProps {
   placement: AdPlacement;
@@ -76,14 +75,12 @@ export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => 
 
   return (
     <div
-      className={`relative group overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md transition-all duration-300 hover:border-slate-700/80 ${className}`}
+      className={`relative group overflow-hidden rounded-xl border border-outline-variant bg-surface p-4 backdrop-blur-md transition-all duration-300 hover:border-outline ${className}`}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
-            <Megaphone className="h-3.5 w-3.5" />
-          </span>
-          <span className="text-[10px] font-semibold tracking-wider uppercase text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700">
+          <span className="material-symbols-outlined text-sm text-primary">campaign</span>
+          <span className="text-[10px] font-semibold tracking-wider uppercase text-on-surface-variant bg-surface-container px-2 py-0.5 rounded-full border border-outline-variant">
             Sponsored Partner
           </span>
         </div>
@@ -91,20 +88,20 @@ export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => 
         {/* Upgrade Incentive Badge */}
         <a
           href="/#pricing"
-          className="text-[11px] font-medium text-slate-400 hover:text-blue-400 flex items-center gap-1 transition-colors"
+          className="text-[11px] font-medium text-on-surface-variant hover:text-primary flex items-center gap-1 transition-colors"
           title="Upgrade to Pro for an ad-free experience"
         >
-          <Sparkles className="h-3 w-3 text-amber-400" />
+          <span className="material-symbols-outlined text-xs text-tertiary">auto_awesome</span>
           <span>Remove Ads</span>
         </a>
       </div>
 
       <div className="mt-3">
-        <h4 className="text-sm font-semibold text-slate-200 group-hover:text-blue-400 transition-colors flex items-center gap-1.5">
+        <h4 className="text-sm font-semibold text-on-surface group-hover:text-primary transition-colors flex items-center gap-1.5">
           {adConfig.bannerTitle}
-          <ExternalLink className="h-3 w-3 text-slate-500 group-hover:text-blue-400" />
+          <span className="material-symbols-outlined text-xs text-on-surface-variant group-hover:text-primary">open_in_new</span>
         </h4>
-        <p className="mt-1 text-xs text-slate-400 leading-relaxed">
+        <p className="mt-1 text-xs text-on-surface-variant leading-relaxed">
           {adConfig.bannerText}
         </p>
       </div>
