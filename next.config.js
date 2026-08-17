@@ -6,6 +6,7 @@ const repo = isGithubActions || isProd ? '/Veylo-App' : '';
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   ...(isStaticExport && { output: 'export' }),
+  trailingSlash: true,
   basePath: repo || undefined,
   assetPrefix: repo || undefined,
   reactStrictMode: true,
