@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { adminFuelService } from '@/lib/services/fuelPriceService';
 import { FuelPriceAuditLog } from '@/types';
 
@@ -75,9 +76,11 @@ export default function AdminAuditLogsPage() {
             Loading audit records...
           </div>
         ) : logs.length === 0 ? (
-          <div className="py-12 text-center text-on-surface-variant text-xs">
-            No audit records registered yet. Changes made in the Fuel Rate Control will automatically appear here.
-          </div>
+          <EmptyState
+            icon="verified_user"
+            title="No audit records"
+            description="Changes made in the Fuel Rate Control will automatically appear here."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">

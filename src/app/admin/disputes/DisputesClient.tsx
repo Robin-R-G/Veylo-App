@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Dispute, DisputeStatus } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { mockStorage } from '@/lib/services/mockStorage';
 
@@ -129,13 +130,11 @@ export default function DisputesClient() {
       {/* Dispute List */}
       <div className="space-y-3">
         {filtered.length === 0 && (
-          <div className="text-center py-16 text-on-surface-variant">
-            <span className="material-symbols-outlined text-5xl text-outline block mb-3">verified</span>
-            <p className="font-semibold">No disputes found</p>
-            <p className="text-xs mt-1">
-              {filter === 'ALL' ? 'No disputes have been raised yet' : `No ${filter.toLowerCase().replace('_', ' ')} disputes`}
-            </p>
-          </div>
+          <EmptyState
+            icon="verified"
+            title="No disputes found"
+            description={filter === 'ALL' ? 'No disputes have been raised yet' : `No ${filter.toLowerCase().replace('_', ' ')} disputes`}
+          />
         )}
 
         {paginatedDisputes.map(dispute => (

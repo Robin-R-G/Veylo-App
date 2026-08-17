@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { createClient } from '@/lib/supabase/client';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { Invoice } from '@/types';
@@ -222,11 +223,11 @@ export default function InvoicesListPage() {
             <span>Fetching fleet invoices from Supabase...</span>
           </div>
         ) : filteredInvoices.length === 0 ? (
-          <div className="p-12 text-center space-y-2">
-            <span className="material-symbols-outlined text-4xl text-outline-variant">receipt_long</span>
-            <p className="text-sm font-bold text-on-surface">No matching invoices found</p>
-            <p className="text-xs text-on-surface-variant">Try adjusting your search query or status filter.</p>
-          </div>
+          <EmptyState
+            icon="receipt_long"
+            title="No matching invoices found"
+            description="Try adjusting your search query or status filter."
+          />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">

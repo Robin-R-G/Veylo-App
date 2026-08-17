@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Vehicle, MaintenanceRecord } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { ListSkeleton } from '@/components/ui/Skeleton';
 import { formatCurrency } from '@/lib/services/financialEngine';
 
@@ -164,13 +165,16 @@ export default function MaintenancePage() {
             <span>Loading fleet maintenance data...</span>
           </div>
         ) : vehicles.length === 0 ? (
-          <div className="p-12 text-center space-y-2 bg-surface rounded-xl border border-outline-variant">
-            <span className="material-symbols-outlined text-4xl text-outline-variant">build</span>
-            <p className="text-sm font-bold text-on-surface">No vehicles found</p>
-            <Link href="/vehicles/new" className="text-xs text-primary font-bold hover:underline">
-              Add your first vehicle →
-            </Link>
-          </div>
+          <EmptyState
+            icon="build"
+            title="No vehicles found"
+            description="Add your first vehicle to start tracking maintenance."
+            action={
+              <Link href="/vehicles/new" className="px-4 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-xs shadow hover:bg-primary-container hover:text-on-primary-container transition-all">
+                Add Vehicle
+              </Link>
+            }
+          />
         ) : (
           vehicles.map((v) => {
             const vMaint = maintenanceRecords.filter((m) => m.vehicleId === v.id);
