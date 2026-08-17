@@ -12,7 +12,6 @@ import { geolocationService } from '@/lib/services/geolocationService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { DashboardSkeleton } from '@/components/ui/Skeleton';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function OwnerDashboard() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -57,14 +56,12 @@ export default function OwnerDashboard() {
           getOrganization(orgId).catch(() => null),
         ]);
 
-        const state = mockStorage.getState();
-        setVehicles(v?.length ? v : state.vehicles);
-        setRentalTrips(t?.length ? t : state.rentalTrips);
-        setInvoices(inv?.length ? inv : state.invoices);
-        setPaymentAttempts(pay?.length ? pay : state.paymentAttempts);
-        const resolvedOrg = org || state.organization;
-        setOrganization(resolvedOrg);
-        if (resolvedOrg) setTier(resolvedOrg.planTier);
+        setVehicles(v || []);
+        setRentalTrips(t || []);
+        setInvoices(inv || []);
+        setPaymentAttempts(pay || []);
+        setOrganization(org);
+        if (org) setTier(org.planTier);
       } finally {
         setIsLoading(false);
       }
@@ -103,19 +100,11 @@ export default function OwnerDashboard() {
   const pendingInvoices = invoices.filter(i => i.paymentStatus === 'PENDING' || i.paymentStatus === 'PAYMENT_INITIATED' || i.paymentStatus === 'PAYMENT_SUBMITTED');
   const completedInvoices = invoices.filter(i => i.paymentStatus === 'PAID');
 
-  const todayEarningsVal = todayPaid.reduce((sum, i) => sum + i.totalRupees, 0);
-  const todayEarningsRupees = todayEarningsVal > 0 ? todayEarningsVal : 2450;
-  
-  const thisMonthEarningsVal = monthPaid.reduce((sum, i) => sum + i.totalRupees, 0);
-  const thisMonthEarningsRupees = thisMonthEarningsVal > 0 ? thisMonthEarningsVal : 48250;
-
-  const pendingEarningsVal = pendingInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
-  const pendingEarningsRupees = pendingEarningsVal > 0 ? pendingEarningsVal : 500;
-
-  const completedEarningsVal = completedInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
-  const completedEarningsRupees = completedEarningsVal > 0 ? completedEarningsVal : 47750;
-
-  const totalDistanceKm = rentalTrips.reduce((sum, t) => sum + t.gpsDistanceKm, 0) + 68;
+  const todayEarningsRupees = todayPaid.reduce((sum, i) => sum + i.totalRupees, 0);
+  const thisMonthEarningsRupees = monthPaid.reduce((sum, i) => sum + i.totalRupees, 0);
+  const pendingEarningsRupees = pendingInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
+  const completedEarningsRupees = completedInvoices.reduce((sum, i) => sum + i.totalRupees, 0);
+  const totalDistanceKm = rentalTrips.reduce((sum, t) => sum + t.gpsDistanceKm, 0);
 
   const upiIdDisplay = organization?.upiId || 'Not Configured';
 

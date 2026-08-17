@@ -7,7 +7,6 @@ import { createClient } from '@/lib/supabase/client';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { Invoice } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
-import { mockStorage } from '@/lib/services/mockStorage';
 import { supabaseAuth } from '@/lib/services/supabase/auth';
 
 export default function InvoicesListPage() {
@@ -30,21 +29,19 @@ export default function InvoicesListPage() {
           .order('issued_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
-          // Fallback to mock storage for demo fleet
-          const localInvoices = mockStorage.getState().invoices;
-          setInvoices(localInvoices || []);
+          setInvoices([]);
         } else {
           const mapped: Invoice[] = data.map((r: any) => ({
             id: r.id,
             organizationId: r.organization_id,
             tripId: r.trip_id,
             vehicleId: r.vehicle_id,
-            vehicleRegNumber: r.vehicle_reg_number || 'KL 16 P 78',
-            vehicleMakeModel: r.vehicle_make_model || 'Honda Activa 6G',
+            vehicleRegNumber: r.vehicle_reg_number || '',
+            vehicleMakeModel: r.vehicle_make_model || '',
             invoiceNumber: r.invoice_number || r.id,
             title: r.title || 'USAGE BILL',
             customerName: r.customer_name || 'Fleet Rider',
-            customerPhone: r.customer_phone || '+91 98765 43210',
+            customerPhone: r.customer_phone || '',
             startOdometer: Number(r.start_odometer || 0),
             endOdometer: Number(r.end_odometer || 0),
             distanceKm: Number(r.distance_km || 0),
@@ -64,8 +61,7 @@ export default function InvoicesListPage() {
           setInvoices(mapped);
         }
       } catch {
-        const localInvoices = mockStorage.getState().invoices;
-        setInvoices(localInvoices || []);
+        // Data will be empty
       } finally {
         setLoading(false);
       }

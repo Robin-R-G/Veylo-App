@@ -11,7 +11,6 @@ import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { QRCodeSVG } from 'qrcode.react';
 import { PageHeader } from '@/components/ui/PageHeader';
-import { mockStorage } from '@/lib/services/mockStorage';
 import { fetchRecalls, type Recall } from '@/lib/services/nhtsaService';
 
 export default function VehicleDetailClient({ id }: { id: string }) {
@@ -45,10 +44,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 
   const refreshData = async () => {
     try {
-      let v = await getVehicleById(id);
-      if (!v) {
-        v = mockStorage.getState().vehicles.find(x => x.id === id || x.securePublicId === id) || mockStorage.getState().vehicles[0];
-      }
+      const v = await getVehicleById(id);
       if (!v) {
         setLoading(false);
         return;
@@ -80,12 +76,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
           .catch(() => {});
       }
     } catch {
-      const v = mockStorage.getState().vehicles.find(x => x.id === id || x.securePublicId === id) || mockStorage.getState().vehicles[0];
-      if (v) {
-        setVehicle(v);
-        setPhysicalOdoInput(v.currentOdometer);
-        setFuelPriceRupees(104.20);
-      }
+      // Data will be empty
     } finally {
       setLoading(false);
     }

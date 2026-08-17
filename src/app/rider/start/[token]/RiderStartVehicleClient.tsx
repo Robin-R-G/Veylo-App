@@ -8,14 +8,13 @@ import { rentalTripService } from '@/lib/services/rentalTripService';
 import { Vehicle } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { KOZHIKODE_SAMPLE_ROUTE } from '@/lib/services/gpsTrackingEngine';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function RiderStartVehicleClient({ token }: { token: string }) {
   const router = useRouter();
 
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
-  const [riderName, setRiderName] = useState('Robin');
-  const [riderPhone, setRiderPhone] = useState('+91 94000 11223');
+  const [riderName, setRiderName] = useState('');
+  const [riderPhone, setRiderPhone] = useState('');
   const [locationGranted, setLocationGranted] = useState<boolean | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [isStarting, setIsStarting] = useState(false);
@@ -25,14 +24,10 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
     setMounted(true);
     async function load() {
       try {
-        let v = await getVehicleById(token) || await findVehicleByRegNumber(token);
-        if (!v) {
-          v = mockStorage.getState().vehicles.find(x => x.id === token || x.securePublicId === token) || null;
-        }
+        const v = await getVehicleById(token) || await findVehicleByRegNumber(token);
         if (v) setVehicle(v);
       } catch {
-        const v = mockStorage.getState().vehicles.find(x => x.id === token || x.securePublicId === token) || null;
-        if (v) setVehicle(v);
+        // Data will be empty
       }
     }
     load();

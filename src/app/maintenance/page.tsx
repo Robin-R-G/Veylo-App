@@ -9,7 +9,6 @@ import { Vehicle, MaintenanceRecord } from '@/types';
 import { calculateVehicleHealthScore } from '@/lib/services/vehicleHealthEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { ListSkeleton } from '@/components/ui/Skeleton';
-import { mockStorage } from '@/lib/services/mockStorage';
 import { formatCurrency } from '@/lib/services/financialEngine';
 
 export default function MaintenancePage() {
@@ -32,24 +31,17 @@ export default function MaintenancePage() {
     setLoading(true);
     try {
       const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
-      let [v, records] = await Promise.all([
+      const [v, records] = await Promise.all([
         getVehicles(orgId),
         getMaintenanceRecords([]),
       ]);
-      if (!v || v.length === 0) {
-        v = mockStorage.getState().vehicles;
-      }
-      if (!records || records.length === 0) {
-        records = mockStorage.getState().maintenanceRecords || [];
-      }
-      setVehicles(v);
-      setMaintenanceRecords(records);
+      setVehicles(v || []);
+      setMaintenanceRecords(records || []);
       if (v.length > 0 && !selectedVehicleId) {
         setSelectedVehicleId(v[0].id);
       }
     } catch {
-      setVehicles(mockStorage.getState().vehicles || []);
-      setMaintenanceRecords(mockStorage.getState().maintenanceRecords || []);
+      // Data will be empty
     } finally {
       setLoading(false);
     }

@@ -7,7 +7,6 @@ import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { Vehicle } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { mockStorage } from '@/lib/services/mockStorage';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
 
 const CITY_COORDS: Record<string, { lat: number; lng: number }> = {
@@ -45,16 +44,11 @@ export default function OwnerTrackingPage() {
     async function load() {
       try {
         const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
-        let data = await getVehicles(orgId);
-        if (!data || data.length === 0) {
-          data = mockStorage.getState().vehicles || [];
-        }
-        setVehicles(data);
+        const data = await getVehicles(orgId);
+        setVehicles(data || []);
         if (data.length > 0) setSelectedVehicle(data[0]);
       } catch {
-        const fallback = mockStorage.getState().vehicles || [];
-        setVehicles(fallback);
-        if (fallback.length > 0) setSelectedVehicle(fallback[0]);
+        // Data will be empty
       } finally {
         setLoading(false);
       }

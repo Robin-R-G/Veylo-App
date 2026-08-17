@@ -8,7 +8,6 @@ import { paymentService } from '@/lib/services/paymentService';
 import { Invoice, PaymentAttempt, Dispute, AppSession } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { AdSlot } from '@/components/ads/AdSlot';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function InvoiceDetailClient({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -26,10 +25,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
 
   const loadData = async () => {
     try {
-      let inv = await getInvoiceById(id);
-      if (!inv) {
-        inv = mockStorage.getState().invoices.find(i => i.id === id) || mockStorage.getState().invoices[0];
-      }
+      const inv = await getInvoiceById(id);
       if (inv) {
         setInvoice(inv);
         if (inv.tripId) {
@@ -43,8 +39,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
         setAttempts(await getPaymentsByInvoiceId(id));
       } catch {}
     } catch {
-      const fallback = mockStorage.getState().invoices.find(i => i.id === id) || mockStorage.getState().invoices[0];
-      if (fallback) setInvoice(fallback);
+      // Data will be empty
     }
   };
 

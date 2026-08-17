@@ -82,8 +82,8 @@ export default function RiderDashboardClient() {
   const totalDistanceKm = completedTrips.reduce((sum, t) => sum + t.gpsDistanceKm, 0);
   const totalSpentRupees = myInvoices.filter(i => i.paymentStatus === 'PAID').reduce((sum, i) => sum + i.totalRupees, 0);
 
-  const handleLogout = () => {
-    authService.clearSession();
+  const handleLogout = async () => {
+    await authService.logout();
     router.push('/');
   };
 

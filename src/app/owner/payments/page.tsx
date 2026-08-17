@@ -9,7 +9,6 @@ import { TableSkeleton } from '@/components/ui/Skeleton';
 import { summarizeOwnerRevenue } from '@/lib/services/platformEconomics';
 import { Invoice } from '@/types';
 import { createClient } from '@/lib/supabase/client';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function OwnerPaymentsPage() {
   const [mounted, setMounted] = useState(false);
@@ -35,7 +34,7 @@ export default function OwnerPaymentsPage() {
               organizationId: r.organization_id,
               tripId: r.trip_id,
               vehicleId: r.vehicle_id,
-              vehicleRegNumber: r.vehicle_reg_number || 'KL 16 P 78',
+              vehicleRegNumber: r.vehicle_reg_number || '',
               vehicleMakeModel: r.vehicle_make_model || '',
               invoiceNumber: r.invoice_number || r.id,
               title: r.title || 'USAGE BILL',
@@ -51,8 +50,6 @@ export default function OwnerPaymentsPage() {
               issuedAt: r.issued_at || r.created_at || new Date().toISOString(),
               paidAt: r.paid_at,
             } as Invoice));
-          } else {
-            allInvoices = mockStorage.getState().invoices || [];
           }
         }
         setInvoices(
@@ -62,9 +59,7 @@ export default function OwnerPaymentsPage() {
         );
         setSummary(summarizeOwnerRevenue(allInvoices));
       } catch {
-        const fallback = mockStorage.getState().invoices || [];
-        setInvoices(fallback);
-        setSummary(summarizeOwnerRevenue(fallback));
+        // Data will be empty
       } finally {
         setMounted(true);
       }

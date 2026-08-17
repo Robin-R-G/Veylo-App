@@ -1,19 +1,12 @@
-import { AppSession, AppRole } from '@/types';
+import { createClient } from '@/lib/supabase/client';
+import { isSupabaseConfigured } from '@/lib/supabase/client';
+import type { AppSession, AppRole } from '@/types';
 
 const SESSION_KEY = 'veylo_session_v1';
-const OWNER_PIN = '1234'; // Default owner PIN
 
-// In-memory fallback store for Node/SSR/Unit tests
 let inMemorySession: AppSession | null = null;
 
-/**
- * Auth Service — session management with strict role isolation.
- * Roles: 'OWNER' | 'RIDER' | 'ADMIN' | 'SUPER_ADMIN'
- */
 class AuthService {
-  /**
-   * Get current active session.
-   */
   getSession(): AppSession | null {
     if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
       return inMemorySession;
@@ -21,52 +14,30 @@ class AuthService {
     try {
       const raw = localStorage.getItem(SESSION_KEY);
       if (raw) return JSON.parse(raw) as AppSession;
-      
-      // Auto-initialize default Owner session for demo exploration
-      const defaultSession: AppSession = {
-        role: 'OWNER',
-        userId: 'owner_robin',
-        name: 'Robin',
-        createdAt: new Date().toISOString(),
-      };
-      localStorage.setItem(SESSION_KEY, JSON.stringify(defaultSession));
-      return defaultSession;
     } catch {
       return inMemorySession;
     }
+    return null;
   }
 
-  /**
-   * Set a session (login).
-   */
   setSession(session: AppSession): void {
     inMemorySession = session;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         localStorage.setItem(SESSION_KEY, JSON.stringify(session));
-      } catch {
-        // storage quota ignore
-      }
+      } catch {}
     }
   }
 
-  /**
-   * Clear the current session (logout).
-   */
   clearSession(): void {
     inMemorySession = null;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
         localStorage.removeItem(SESSION_KEY);
-      } catch {
-        // ignore
-      }
+      } catch {}
     }
   }
 
-  /**
-   * Check if user has a specific role.
-   */
   hasRole(role: AppRole | 'SUPER_ADMIN'): boolean {
     const session = this.getSession();
     if (!session) return false;
@@ -76,57 +47,177 @@ class AuthService {
     return session.role === role;
   }
 
-  /**
-   * Check if the current session is a Platform Admin (Super Admin).
-   */
   isPlatformAdmin(): boolean {
     return this.hasRole('ADMIN') || this.hasRole('SUPER_ADMIN');
   }
 
-  /**
-   * Check if the current session is an Owner.
-   */
   isOwner(): boolean {
     return this.hasRole('OWNER');
   }
 
-  /**
-   * Check if the current session is a Rider.
-   */
   isRider(): boolean {
     return this.hasRole('RIDER');
   }
 
-  /**
-   * Check if user is authenticated with any valid session.
-   */
   isAuthenticated(): boolean {
     return this.getSession() !== null;
   }
 
+  getDisplayName(): string {
+    return this.getSession()?.name || 'Guest';
+  }
+
+  getCurrentUserId(): string | null {
+    return this.getSession()?.userId || null;
+  }
+
+  requireRole(role: AppRole): boolean {
+    return this.hasRole(role);
+  }
+
   /**
-   * Owner login with PIN verification.
+   * Owner signup with email + password.
+   * Creates Supabase Auth user + profiles row + organization.
    */
-  loginAsOwner(name: string, pin: string): { success: boolean; error?: string } {
-    if (pin !== OWNER_PIN && pin !== '1234') {
-      return { success: false, error: 'Invalid Owner PIN. Please enter 1234.' };
+  async signupOwner(
+    email: string,
+    password: string,
+    fullName: string,
+    phone?: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase not configured' };
     }
 
+    const supabase = createClient();
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName, role: 'OWNER' } },
+    });
+
+    if (authError) {
+      return { success: false, error: authError.message };
+    }
+
+    if (!authData.user) {
+      return { success: false, error: 'Signup failed — no user returned.' };
+    }
+
+    // Create organization
+    const orgId = `org_${authData.user.id.slice(0, 8)}`;
+    const slug = fullName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+    await supabase.from('organizations').insert({
+      id: orgId,
+      name: fullName + "'s Fleet",
+      slug: slug || `fleet-${Date.now()}`,
+      plan_tier: 'FREE',
+      business_name: fullName,
+      email,
+      phone: phone || null,
+      default_state: 'Kerala',
+      default_city: 'Kozhikode',
+      upi_id: 'vehicleowner@upi',
+      upi_payee_name: fullName,
+      upi_enabled: false,
+      tax_enabled: false,
+      cgst_rate: 0,
+      sgst_rate: 0,
+      igst_rate: 0,
+      invoice_prefix: 'INV',
+    });
+
+    // Create profile
+    await supabase.from('profiles').insert({
+      id: `prof_${authData.user.id.slice(0, 8)}`,
+      user_id: authData.user.id,
+      full_name: fullName,
+      email,
+      phone: phone || null,
+      role: 'OWNER',
+      organization_id: orgId,
+    });
+
+    // Create default subscription
+    await supabase.from('subscriptions').insert({
+      id: `sub_${authData.user.id.slice(0, 8)}`,
+      organization_id: orgId,
+      plan_id: 'FREE',
+      status: 'ACTIVE',
+      started_at: new Date().toISOString(),
+      current_period_start: new Date().toISOString(),
+      current_period_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      provider: 'SUPABASE',
+    });
+
+    // Set session
     const session: AppSession = {
       role: 'OWNER',
-      userId: `owner_${name.toLowerCase().replace(/\s+/g, '_')}`,
-      name: name.trim() || 'Fleet Owner',
+      userId: authData.user.id,
+      name: fullName,
+      email,
       createdAt: new Date().toISOString(),
     };
-
     this.setSession(session);
+
     return { success: true };
   }
 
   /**
-   * Rider quick-register — name + phone only.
+   * Owner login with email + password.
    */
-  loginAsRider(name: string, phone: string): { success: boolean; error?: string; session?: AppSession } {
+  async loginAsOwner(
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
+    const supabase = createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Login failed.' };
+    }
+
+    // Get profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
+    const session: AppSession = {
+      role: (profile?.role as AppRole) || 'OWNER',
+      userId: data.user.id,
+      name: profile?.full_name || data.user.email || 'User',
+      email: data.user.email,
+      phone: profile?.phone,
+      createdAt: profile?.created_at || new Date().toISOString(),
+    };
+    this.setSession(session);
+
+    return { success: true };
+  }
+
+  /**
+   * Rider quick-register — name + phone, creates Supabase auth user.
+   */
+  async loginAsRider(
+    name: string,
+    phone: string,
+  ): Promise<{ success: boolean; error?: string; session?: AppSession }> {
     if (!name.trim()) {
       return { success: false, error: 'Name is required.' };
     }
@@ -135,7 +226,37 @@ class AuthService {
     }
 
     const cleanPhone = phone.trim().replace(/\D/g, '');
-    const displayPhone = cleanPhone.length === 10 ? `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}` : phone.trim();
+    const email = `rider_${cleanPhone}@veylo.app`;
+    const password = `rider_${cleanPhone}_${Date.now()}`;
+
+    if (isSupabaseConfigured) {
+      const supabase = createClient();
+
+      // Try to sign up rider (may fail if already exists)
+      const { data: authData } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: name, role: 'RIDER', phone } },
+      });
+
+      if (authData?.user) {
+        // Create rider profile
+        await supabase.from('profiles').insert({
+          id: `prof_rider_${cleanPhone}`,
+          user_id: authData.user.id,
+          full_name: name,
+          phone,
+          role: 'RIDER',
+        }); // Ignore if duplicate
+      }
+
+      // Sign in
+      await supabase.auth.signInWithPassword({ email, password });
+    }
+
+    const displayPhone = cleanPhone.length === 10
+      ? `+91 ${cleanPhone.slice(0, 5)} ${cleanPhone.slice(5)}`
+      : phone.trim();
 
     const session: AppSession = {
       role: 'RIDER',
@@ -150,46 +271,64 @@ class AuthService {
   }
 
   /**
-   * Platform Admin login.
-   * Allowed admin keys: 'admin2024', 'veyloadmin', 'admin123', 'admin'
+   * Platform Admin login — email + password via Supabase Auth.
    */
-  loginAsAdmin(identifier: string, pinOrPass: string): { success: boolean; error?: string } {
-    const validPins = ['admin2024', 'veyloadmin', 'admin123', 'admin'];
-    if (!validPins.includes(pinOrPass.trim())) {
-      return { success: false, error: 'Invalid admin credentials or security key.' };
+  async loginAsAdmin(
+    email: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
+    const supabase = createClient();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+
+    if (!data.user) {
+      return { success: false, error: 'Login failed.' };
+    }
+
+    // Check if user has admin profile
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', data.user.id)
+      .single();
+
+    if (profile?.role !== 'ADMIN') {
+      await supabase.auth.signOut();
+      return { success: false, error: 'Not authorized as admin.' };
     }
 
     const session: AppSession = {
       role: 'ADMIN',
-      userId: 'super_admin_veylo',
-      name: identifier.trim() || 'Platform Super Admin',
-      email: 'admin@veylo.app',
-      createdAt: new Date().toISOString(),
+      userId: data.user.id,
+      name: profile?.full_name || data.user.email || 'Admin',
+      email: data.user.email,
+      createdAt: profile?.created_at || new Date().toISOString(),
     };
-
     this.setSession(session);
+
     return { success: true };
   }
 
   /**
-   * Require a specific role.
+   * Logout — signs out from Supabase + clears local session.
    */
-  requireRole(role: AppRole): boolean {
-    return this.hasRole(role);
-  }
-
-  /**
-   * Get the current user display name.
-   */
-  getDisplayName(): string {
-    return this.getSession()?.name || 'Guest';
-  }
-
-  /**
-   * Get current user ID.
-   */
-  getCurrentUserId(): string | null {
-    return this.getSession()?.userId || null;
+  async logout(): Promise<void> {
+    if (isSupabaseConfigured) {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
+    this.clearSession();
   }
 }
 

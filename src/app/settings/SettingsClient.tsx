@@ -124,8 +124,8 @@ export default function SettingsClient() {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const handleLogout = () => {
-    authService.clearSession();
+  const handleLogout = async () => {
+    await authService.logout();
     router.push('/login');
   };
 

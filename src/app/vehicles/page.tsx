@@ -9,7 +9,6 @@ import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngi
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -21,18 +20,14 @@ export default function VehiclesPage() {
     (async () => {
       try {
         const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
-        let data = await getVehicles(orgId);
-        if (!data || data.length === 0) {
-          data = mockStorage.getState().vehicles || [];
-        }
-        setVehicles(data);
+        const data = await getVehicles(orgId);
+        setVehicles(data || []);
         const prices: Record<string, number> = Object.fromEntries(
           data.map(v => [v.id, 104.20])
         );
         setCachedPrices(prices);
       } catch {
-        const fallback = mockStorage.getState().vehicles || [];
-        setVehicles(fallback);
+        // Data will be empty
       } finally {
         setLoading(false);
       }

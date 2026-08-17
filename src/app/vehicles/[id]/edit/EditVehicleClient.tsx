@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getVehicleById } from '@/lib/services/supabase/data';
-import { mockStorage } from '@/lib/services/mockStorage';
 import { Vehicle, VehicleType, FuelType } from '@/types';
 import { decodeVin } from '@/lib/services/nhtsaService';
 import { reverseGeocode } from '@/lib/services/geocodingService';
@@ -32,10 +31,7 @@ export default function EditVehicleClient({ id }: { id: string }) {
 
   useEffect(() => {
     (async () => {
-      let v = await getVehicleById(id).catch(() => null);
-      if (!v) {
-        v = mockStorage.getState().vehicles.find(x => x.id === id) || null;
-      }
+      const v = await getVehicleById(id).catch(() => null);
       if (!v) {
         setLoading(false);
         return;

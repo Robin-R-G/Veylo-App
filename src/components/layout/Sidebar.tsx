@@ -29,8 +29,8 @@ export const Sidebar: React.FC = () => {
     { label: 'Settings', icon: 'settings', href: '/settings' },
   ];
 
-  const handleLogout = () => {
-    authService.clearSession();
+  const handleLogout = async () => {
+    await authService.logout();
     router.push('/login');
   };
 

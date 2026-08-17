@@ -8,7 +8,6 @@ import { getActiveRentalTrips, findVehicleByRegNumber } from '@/lib/services/sup
 import { Vehicle, RentalTrip } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Skeleton } from '@/components/ui/Skeleton';
-import { mockStorage } from '@/lib/services/mockStorage';
 
 interface VehicleWithDistance extends Vehicle {
   distanceKm?: number;
@@ -79,14 +78,11 @@ export default function RiderPortalPage() {
           getActiveRentalTrips().catch(() => []),
           supabase.from('vehicles').select('*').eq('status', 'AVAILABLE'),
         ]);
-        let vehList = (vData as Vehicle[]) || [];
-        if (vehList.length === 0) {
-          vehList = mockStorage.getState().vehicles.filter(v => v.status === 'AVAILABLE');
-        }
+        const vehList = (vData as Vehicle[]) || [];
         setAvailableVehicles(vehList);
         setActiveTrips(trips || []);
       } catch {
-        setAvailableVehicles(mockStorage.getState().vehicles.filter(v => v.status === 'AVAILABLE'));
+        // Data will be empty
       }
     }
     load();

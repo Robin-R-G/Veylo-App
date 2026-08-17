@@ -26,8 +26,8 @@ export const AdminSidebar: React.FC = () => {
     { label: 'Audit Trail Logs', icon: 'verified_user', href: '/admin/audit-logs' },
   ];
 
-  const handleLogout = () => {
-    authService.clearSession();
+  const handleLogout = async () => {
+    await authService.logout();
     router.push('/admin/login');
   };
 
