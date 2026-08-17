@@ -110,13 +110,12 @@ export default function LandingPage() {
               <div className="mt-auto bg-primary-container p-5 rounded-2xl flex flex-col items-center justify-center text-center">
                 <span className="text-xs text-on-primary-container mb-1">Total Payable Cost</span>
                 <span className="font-extrabold text-3xl text-on-primary-container mb-4">{formatCurrency(calcResult.totalAmountRupees)}</span>
-                <Link
-                  href="/v/pub_kl16p78_x99a"
-                  className="w-full bg-primary text-on-primary py-3 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm hover:bg-primary/90"
+                <div
+                  className="w-full bg-primary text-on-primary py-3 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm opacity-80 cursor-default"
                 >
                   <span>PAY NOW</span>
                   <span className="material-symbols-outlined text-sm">arrow_forward</span>
-                </Link>
+                </div>
               </div>
             </div>
           </div>
