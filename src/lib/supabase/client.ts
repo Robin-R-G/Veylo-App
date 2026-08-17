@@ -30,7 +30,7 @@ const TABLE_MAP: Record<string, string> = {
 
 function getMockStorage() {
   try {
-    const { mockStorage } = require('./mockStorage');
+    const { mockStorage } = require('../services/mockStorage');
     return mockStorage;
   } catch {
     return null;
