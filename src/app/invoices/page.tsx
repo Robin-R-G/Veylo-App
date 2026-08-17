@@ -114,7 +114,19 @@ export default function InvoicesListPage() {
     return { totalCount, totalRevenue, settledAmount, pendingAmount };
   }, [invoices]);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="space-y-6">
+      <div className="h-7 w-48 bg-surface-container-high rounded-lg animate-pulse" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="bg-surface p-5 rounded-xl border border-outline-variant space-y-2 animate-pulse">
+            <div className="h-3 w-24 bg-surface-container-high rounded" />
+            <div className="h-7 w-20 bg-surface-container-high rounded" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">

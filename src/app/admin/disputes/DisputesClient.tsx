@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Dispute, DisputeStatus } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const STATUS_CONFIG: Record<DisputeStatus, { label: string; color: string }> = {
   OPEN: { label: 'Open', color: 'bg-amber-100 text-amber-700' },
@@ -40,7 +41,20 @@ export default function DisputesClient() {
     loadDisputes();
   }, [router]);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="space-y-6">
+      <Skeleton className="h-7 w-48" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="p-5 rounded-xl bg-surface border border-outline-variant space-y-3">
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="h-4 w-48" />
+            <Skeleton className="h-8 w-24 rounded-full" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const filtered = filter === 'ALL' ? disputes : disputes.filter(d => d.status === filter);
 

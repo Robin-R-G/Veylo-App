@@ -8,6 +8,7 @@ import { paymentService } from '@/lib/services/paymentService';
 import { authService } from '@/lib/services/authService';
 import { SaaSPlan, Subscription } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { mockStorage } from '@/lib/services/mockStorage';
 
@@ -76,7 +77,29 @@ export default function BillingClient() {
     loadBillingData();
   }, [router]);
 
-  if (!mounted || plans.length === 0 || !activeSub) return null;
+  if (!mounted || plans.length === 0 || !activeSub) return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Skeleton className="h-7 w-64" />
+      <div className="bg-surface rounded-2xl border border-outline-variant p-6 space-y-3">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-6 w-48" />
+        <Skeleton className="h-3 w-64" />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="rounded-2xl border border-outline-variant p-5 space-y-4">
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-4 w-24" />
+            <Skeleton className="h-7 w-16" />
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5].map(j => <Skeleton key={j} className="h-3 w-full" />)}
+            </div>
+            <Skeleton className="h-10 w-full rounded-xl" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 
   const currentPlan = plans.find(p => p.id === activeSub.planId) || plans[0];
 

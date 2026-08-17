@@ -8,6 +8,7 @@ import { supabase } from '@/lib/services/supabase/client';
 import { authService } from '@/lib/services/authService';
 import { Organization } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { Skeleton } from '@/components/ui/Skeleton';
 import Link from 'next/link';
 import { mockStorage } from '@/lib/services/mockStorage';
 
@@ -76,7 +77,17 @@ export default function SettingsClient() {
     })();
   }, [router]);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <Skeleton className="h-7 w-48" />
+      <div className="bg-surface rounded-xl border border-outline-variant p-6 space-y-4">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-1/2" />
+      </div>
+    </div>
+  );
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();

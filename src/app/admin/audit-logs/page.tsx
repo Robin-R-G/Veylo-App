@@ -24,7 +24,16 @@ export default function AdminAuditLogsPage() {
     load();
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-7 w-48 bg-slate-800 rounded-lg" />
+      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
+        {[1, 2, 3, 4, 5].map(i => (
+          <div key={i} className="h-10 bg-slate-800 rounded" />
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div className="space-y-6">

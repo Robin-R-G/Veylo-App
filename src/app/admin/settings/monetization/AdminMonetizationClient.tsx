@@ -6,6 +6,7 @@ import { authService } from '@/lib/services/authService';
 import { createClient } from '@/lib/supabase/client';
 import { SaaSPlan, PlatformMonetizationSettings } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 import { AppSession } from '@/types';
 
 export default function AdminMonetizationClient() {
@@ -46,8 +47,8 @@ export default function AdminMonetizationClient() {
     load();
   }, [router]);
 
-  if (!mounted || !session) return null;
-  if (session.role !== 'ADMIN') return null;
+  if (!mounted || !session) return <AdminSkeleton />;
+  if (session.role !== 'ADMIN') return <AdminSkeleton />;
 
   const flash = (text: string) => {
     setMsg(text);
