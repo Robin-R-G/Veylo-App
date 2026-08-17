@@ -1,13 +1,16 @@
 import { supabase } from './client';
+import { isSupabaseConfigured } from '@/lib/supabase/client';
 import type { AppSession } from '@/types';
 
 export const supabaseAuth = {
   async getUser() {
+    if (!isSupabaseConfigured) return null;
     const { data: { user } } = await supabase.auth.getUser();
     return user;
   },
 
   async getSession(): Promise<AppSession | null> {
+    if (!isSupabaseConfigured) return null;
     const user = await this.getUser();
     if (!user) return null;
     const { data } = await supabase
@@ -27,6 +30,7 @@ export const supabaseAuth = {
   },
 
   async getOrganizationId() {
+    if (!isSupabaseConfigured) return null;
     const user = await this.getUser();
     if (!user) return null;
     const { data } = await supabase

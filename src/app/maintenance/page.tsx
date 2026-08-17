@@ -32,21 +32,21 @@ export default function MaintenancePage() {
     setLoading(true);
     try {
       const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
-      let v = await getVehicles(orgId);
+      let [v, records] = await Promise.all([
+        getVehicles(orgId),
+        getMaintenanceRecords([]),
+      ]);
       if (!v || v.length === 0) {
         v = mockStorage.getState().vehicles;
       }
-      setVehicles(v);
-      if (v.length > 0 && !selectedVehicleId) {
-        setSelectedVehicleId(v[0].id);
-      }
-
-      const vehicleIds = v.map((veh: any) => veh.id);
-      let records = await getMaintenanceRecords(vehicleIds);
       if (!records || records.length === 0) {
         records = mockStorage.getState().maintenanceRecords || [];
       }
+      setVehicles(v);
       setMaintenanceRecords(records);
+      if (v.length > 0 && !selectedVehicleId) {
+        setSelectedVehicleId(v[0].id);
+      }
     } catch {
       setVehicles(mockStorage.getState().vehicles || []);
       setMaintenanceRecords(mockStorage.getState().maintenanceRecords || []);

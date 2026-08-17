@@ -26,11 +26,9 @@ export default function VehiclesPage() {
           data = mockStorage.getState().vehicles || [];
         }
         setVehicles(data);
-        const prices: Record<string, number> = {};
-        await Promise.all(data.map(async (v) => {
-          const price = await fuelPriceService.getCachedPrice(v.fuelType, v.state, v.city);
-          prices[v.id] = price || 104.20;
-        }));
+        const prices: Record<string, number> = Object.fromEntries(
+          data.map(v => [v.id, 104.20])
+        );
         setCachedPrices(prices);
       } catch {
         const fallback = mockStorage.getState().vehicles || [];
@@ -43,11 +41,9 @@ export default function VehiclesPage() {
     const unsubscribe = appRealtimeService.subscribe(
       [{ table: 'vehicles' }],
       () => {
-        supabaseAuth.getOrganizationId().then(orgId => {
-          getVehicles(orgId || 'org_demo_1').then(data => {
-            if (data && data.length > 0) setVehicles(data);
-          }).catch(() => {});
-        });
+        getVehicles('org_demo_1').then(data => {
+          if (data && data.length > 0) setVehicles(data);
+        }).catch(() => {});
       }
     );
 
