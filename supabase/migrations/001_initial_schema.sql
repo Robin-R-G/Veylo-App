@@ -549,6 +549,24 @@ CREATE TABLE IF NOT EXISTS payment_settings (
 );
 
 -- ========================
+-- VEHICLE RECALLS (cached from NHTSA)
+-- ========================
+CREATE TABLE IF NOT EXISTS vehicle_recalls (
+  id TEXT PRIMARY KEY DEFAULT ('rec_' || replace(gen_random_uuid()::text, '-', '')),
+  vehicle_id TEXT NOT NULL REFERENCES vehicles(id) ON DELETE CASCADE,
+  campaign_number TEXT NOT NULL,
+  component TEXT,
+  summary TEXT,
+  consequence TEXT,
+  remedy TEXT,
+  report_date TEXT,
+  fetched_at TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(vehicle_id, campaign_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_vehicle_recalls_vehicle_id ON vehicle_recalls(vehicle_id);
+
+-- ========================
 -- ROW LEVEL SECURITY
 -- ========================
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
@@ -574,6 +592,7 @@ ALTER TABLE fuel_prices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fuel_price_history ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fuel_price_audit_log ENABLE ROW LEVEL SECURITY;
 ALTER TABLE payment_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE vehicle_recalls ENABLE ROW LEVEL SECURITY;
 
 -- service_role: full access to everything
 DO $$
@@ -604,6 +623,7 @@ BEGIN
     DROP POLICY IF EXISTS "service_role_all" ON fuel_price_history;
     DROP POLICY IF EXISTS "service_role_all" ON fuel_price_audit_log;
     DROP POLICY IF EXISTS "service_role_all" ON payment_settings;
+    DROP POLICY IF EXISTS "service_role_all" ON vehicle_recalls;
     DROP POLICY IF EXISTS "authenticated_read" ON organizations;
     DROP POLICY IF EXISTS "authenticated_read" ON plans;
     DROP POLICY IF EXISTS "authenticated_read" ON platform_settings;
@@ -626,6 +646,7 @@ BEGIN
     DROP POLICY IF EXISTS "authenticated_org_write" ON payment_settings;
     DROP POLICY IF EXISTS "authenticated_org_write" ON organization_members;
     DROP POLICY IF EXISTS "authenticated_org_write" ON rides;
+    DROP POLICY IF EXISTS "authenticated_org_write" ON vehicle_recalls;
     DROP POLICY IF EXISTS "anon_read" ON plans;
     DROP POLICY IF EXISTS "anon_read" ON fuel_prices;
     DROP POLICY IF EXISTS "anon_read" ON ad_configurations;
@@ -633,6 +654,7 @@ BEGIN
     DROP POLICY IF EXISTS "anon_read" ON organizations;
     DROP POLICY IF EXISTS "anon_read" ON vehicles;
     DROP POLICY IF EXISTS "anon_read" ON rides;
+    DROP POLICY IF EXISTS "anon_read" ON vehicle_recalls;
   END IF;
 END
 $$;
@@ -660,6 +682,7 @@ CREATE POLICY "service_role_all" ON fuel_prices FOR ALL USING (auth.role() = 'se
 CREATE POLICY "service_role_all" ON fuel_price_history FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON fuel_price_audit_log FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "service_role_all" ON payment_settings FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "service_role_all" ON vehicle_recalls FOR ALL USING (auth.role() = 'service_role');
 
 CREATE POLICY "authenticated_read" ON organizations FOR SELECT USING (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_read" ON plans FOR SELECT USING (auth.role() = 'authenticated');
@@ -708,6 +731,8 @@ CREATE POLICY "authenticated_org_write" ON organization_members FOR ALL
   USING (auth.role() = 'authenticated');
 CREATE POLICY "authenticated_org_write" ON rides FOR ALL
   USING (auth.role() = 'authenticated');
+CREATE POLICY "authenticated_org_write" ON vehicle_recalls FOR ALL
+  USING (auth.role() = 'authenticated');
 
 CREATE POLICY "anon_read" ON plans FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON fuel_prices FOR SELECT USING (auth.role() = 'anon');
@@ -716,6 +741,7 @@ CREATE POLICY "anon_read" ON platform_settings FOR SELECT USING (auth.role() = '
 CREATE POLICY "anon_read" ON organizations FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON vehicles FOR SELECT USING (auth.role() = 'anon');
 CREATE POLICY "anon_read" ON rides FOR SELECT USING (auth.role() = 'anon');
+CREATE POLICY "anon_read" ON vehicle_recalls FOR SELECT USING (auth.role() = 'anon');
 
 -- ========================
 -- SEED DATA: DEFAULT ORGANIZATION

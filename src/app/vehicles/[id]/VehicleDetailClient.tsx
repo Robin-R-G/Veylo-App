@@ -75,7 +75,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
       // Fetch open recalls for health score
       if (v.make && v.model) {
         const year = v.manufacturingYear || new Date(v.createdAt).getFullYear();
-        fetchRecalls(v.make, v.model, year)
+        fetchRecalls(v.make, v.model, year, v.id)
           .then(recalls => setRecallCount(recalls.length))
           .catch(() => {});
       }
@@ -645,7 +645,7 @@ function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
     setLoadingRecalls(true);
     try {
       const year = vehicle.manufacturingYear || new Date(vehicle.createdAt).getFullYear();
-      const data = await fetchRecalls(vehicle.make, vehicle.model, year);
+      const data = await fetchRecalls(vehicle.make, vehicle.model, year, vehicle.id);
       setRecalls(data);
     } finally {
       setLoadingRecalls(false);
