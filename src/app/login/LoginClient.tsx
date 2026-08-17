@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/lib/services/authService';
+import { isPasskeySupported, hasPasskeyRegistered } from '@/lib/passkey';
 import { VeyloLogo } from '@/components/ui/VeyloLogo';
 
 type Tab = 'owner' | 'rider';
@@ -25,6 +26,13 @@ export default function LoginClient() {
   const [ownerError, setOwnerError] = useState('');
   const [ownerLoading, setOwnerLoading] = useState(false);
 
+  // Passkey state
+  const [passkeySupported, setPasskeySupported] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
+  const [passkeyError, setPasskeyError] = useState('');
+  const [showPasskeyPrompt, setShowPasskeyPrompt] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
+
   // Rider form
   const [riderName, setRiderName] = useState('');
   const [riderPhone, setRiderPhone] = useState('');
@@ -33,6 +41,7 @@ export default function LoginClient() {
 
   useEffect(() => {
     setMounted(true);
+    setPasskeySupported(isPasskeySupported());
   }, [router]);
 
   if (!mounted) return null;
@@ -51,6 +60,49 @@ export default function LoginClient() {
       setOwnerError(result.error || 'Authentication failed.');
       return;
     }
+
+    // After signup, prompt to register passkey
+    if (ownerMode === 'signup' && passkeySupported && !hasPasskeyRegistered(ownerEmail)) {
+      setRegisteredEmail(ownerEmail);
+      setShowPasskeyPrompt(true);
+      return;
+    }
+
+    router.push(redirect.startsWith('/rider') ? '/dashboard' : redirect);
+  };
+
+  const handlePasskeyLogin = async () => {
+    setPasskeyError('');
+    setPasskeyLoading(true);
+
+    const result = await authService.loginWithPasskey(ownerEmail || registeredEmail);
+    setPasskeyLoading(false);
+
+    if (!result.success) {
+      setPasskeyError(result.error || 'Passkey login failed.');
+      return;
+    }
+
+    router.push(redirect.startsWith('/rider') ? '/dashboard' : redirect);
+  };
+
+  const handleRegisterPasskey = async () => {
+    setPasskeyError('');
+    setPasskeyLoading(true);
+
+    const result = await authService.registerUserPasskey(
+      registeredEmail,
+      ownerName || registeredEmail.split('@')[0],
+      ownerPassword,
+    );
+
+    setPasskeyLoading(false);
+    if (!result.success) {
+      setPasskeyError(result.error || 'Failed to register passkey.');
+      return;
+    }
+
+    setShowPasskeyPrompt(false);
     router.push(redirect.startsWith('/rider') ? '/dashboard' : redirect);
   };
 
@@ -106,8 +158,51 @@ export default function LoginClient() {
           </button>
         </div>
 
+        {/* Passkey Registration Prompt */}
+        {showPasskeyPrompt && (
+          <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-4">
+            <div className="text-center space-y-2">
+              <span className="material-symbols-outlined text-3xl text-primary">passkey</span>
+              <h2 className="text-lg font-bold text-on-surface">Register a Passkey?</h2>
+              <p className="text-xs text-on-surface-variant">
+                Use your fingerprint, Face ID, or security key for faster sign-in next time.
+              </p>
+            </div>
+
+            {passkeyError && (
+              <div className="p-3 rounded-xl bg-error-container text-on-error-container text-xs flex gap-2 items-center">
+                <span className="material-symbols-outlined text-sm">error</span>
+                {passkeyError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setShowPasskeyPrompt(false);
+                  router.push(redirect.startsWith('/rider') ? '/dashboard' : redirect);
+                }}
+                className="flex-1 py-3 rounded-xl border border-outline-variant text-on-surface-variant font-semibold text-sm hover:bg-surface-container transition-all"
+              >
+                Skip
+              </button>
+              <button
+                onClick={handleRegisterPasskey}
+                disabled={passkeyLoading}
+                className="flex-1 py-3 rounded-xl bg-primary text-on-primary font-bold text-sm shadow hover:opacity-90 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {passkeyLoading ? (
+                  <><span className="material-symbols-outlined text-sm animate-spin">refresh</span> Setting up...</>
+                ) : (
+                  <><span className="material-symbols-outlined text-sm">passkey</span> Register Passkey</>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Owner Panel */}
-        {activeTab === 'owner' && (
+        {!showPasskeyPrompt && activeTab === 'owner' && (
           <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-5">
             <div className="space-y-1">
               <h2 className="text-lg font-bold text-on-surface">
@@ -189,11 +284,45 @@ export default function LoginClient() {
               </button>
             </form>
 
+            {/* Passkey Login (login mode only) */}
+            {ownerMode === 'login' && passkeySupported && (
+              <>
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-outline-variant"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs">
+                    <span className="bg-surface px-2 text-on-surface-variant">or</span>
+                  </div>
+                </div>
+
+                {passkeyError && (
+                  <div className="p-3 rounded-xl bg-error-container text-on-error-container text-xs flex gap-2 items-center">
+                    <span className="material-symbols-outlined text-sm">error</span>
+                    {passkeyError}
+                  </div>
+                )}
+
+                <button
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoading}
+                  className="w-full py-3.5 rounded-xl border-2 border-primary text-primary font-bold text-sm uppercase tracking-wider hover:bg-primary/5 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {passkeyLoading ? (
+                    <><span className="material-symbols-outlined text-sm animate-spin">refresh</span> Verifying...</>
+                  ) : (
+                    <><span className="material-symbols-outlined text-sm">passkey</span> Sign in with Passkey</>
+                  )}
+                </button>
+              </>
+            )}
+
             <div className="text-center">
               <button
                 onClick={() => {
                   setOwnerMode(ownerMode === 'login' ? 'signup' : 'login');
                   setOwnerError('');
+                  setPasskeyError('');
                 }}
                 className="text-xs text-primary font-semibold hover:underline"
               >
@@ -206,7 +335,7 @@ export default function LoginClient() {
         )}
 
         {/* Rider Panel */}
-        {activeTab === 'rider' && (
+        {!showPasskeyPrompt && activeTab === 'rider' && (
           <div className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-6 space-y-5">
             <div className="space-y-1">
               <h2 className="text-lg font-bold text-on-surface">Start Riding</h2>

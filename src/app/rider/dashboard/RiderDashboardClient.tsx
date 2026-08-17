@@ -98,13 +98,22 @@ export default function RiderDashboardClient() {
             <p className="text-xs text-on-primary/80">{session.phone}</p>
           )}
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-xs font-semibold transition-all"
-        >
-          <span className="material-symbols-outlined text-sm">logout</span>
-          Exit
-        </button>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/settings"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-xs font-semibold transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">settings</span>
+            Settings
+          </Link>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/20 hover:bg-white/30 text-xs font-semibold transition-all"
+          >
+            <span className="material-symbols-outlined text-sm">logout</span>
+            Exit
+          </button>
+        </div>
       </div>
 
       <div className="max-w-lg mx-auto p-4 space-y-4">

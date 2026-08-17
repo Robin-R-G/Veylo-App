@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/client';
 import { isSupabaseConfigured } from '@/lib/supabase/client';
+import { registerPasskey, authenticateWithPasskey, hasPasskeyRegistered } from '@/lib/passkey';
 import type { AppSession, AppRole } from '@/types';
 
 const SESSION_KEY = 'veylo_session_v1';
+const PASSKEY_AUTH_KEY = 'veylo_passkey_auth';
 
 let inMemorySession: AppSession | null = null;
 
@@ -318,6 +320,63 @@ class AuthService {
     this.setSession(session);
 
     return { success: true };
+  }
+
+  /**
+   * Register a passkey for the current user.
+   * Stores the password locally so passkey login can use it later.
+   */
+  async registerUserPasskey(
+    email: string,
+    fullName: string,
+    password: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    const result = await registerPasskey(email, fullName);
+    if (!result.success) return result;
+
+    // Store password for passkey login (Supabase doesn't have native passkey auth yet)
+    const authMap = this.getPasskeyAuthMap();
+    authMap[email] = password;
+    localStorage.setItem(PASSKEY_AUTH_KEY, JSON.stringify(authMap));
+
+    return { success: true };
+  }
+
+  /**
+   * Login using passkey — verifies WebAuthn then signs in via stored password.
+   */
+  async loginWithPasskey(
+    email: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase not configured' };
+    }
+
+    if (!hasPasskeyRegistered(email)) {
+      return { success: false, error: 'No passkey found for this email. Sign in with email/password first, then register a passkey.' };
+    }
+
+    const passkeyResult = await authenticateWithPasskey(email);
+    if (!passkeyResult.success) return passkeyResult;
+
+    // Use stored password to sign in
+    const authMap = this.getPasskeyAuthMap();
+    const storedPassword = authMap[email];
+    if (!storedPassword) {
+      return { success: false, error: 'No stored credentials. Please sign in with email/password and register a passkey.' };
+    }
+
+    return this.loginAsOwner(email, storedPassword);
+  }
+
+  private getPasskeyAuthMap(): Record<string, string> {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = localStorage.getItem(PASSKEY_AUTH_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
   }
 
   /**
