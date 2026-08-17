@@ -171,7 +171,7 @@ export default function AdminFuelRatesPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-2xl">local_gas_station</span>
-            <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Central Fuel Price Authority</h1>
+            <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Fuel Rates</h1>
           </div>
           <p className="text-xs text-on-surface-variant mt-1">
             Centrally control Petrol, Diesel, and CNG rates. Changes immediately propagate to Owners & Riders in real time.
@@ -410,7 +410,7 @@ export default function AdminFuelRatesPage() {
             <div className="flex items-center gap-3 text-primary">
               <span className="material-symbols-outlined text-3xl">warning</span>
               <div>
-                <h3 className="text-lg font-extrabold text-on-surface">Confirm Central Fuel Price Update</h3>
+                <h3 className="text-lg font-extrabold text-on-surface">Confirm Fuel Rate Update</h3>
                 <p className="text-xs text-on-surface-variant">This action will immediately update rates platform-wide.</p>
               </div>
             </div>

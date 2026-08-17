@@ -68,10 +68,10 @@ export default function AdminControlPage() {
         <div>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-2xl">admin_panel_settings</span>
-            <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Platform Control Center</h1>
+            <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Admin Dashboard</h1>
           </div>
           <p className="text-xs text-on-surface-variant mt-1">
-            Super Administrator governance, central fuel authority, monetization flags & system health.
+            Manage fuel rates, disputes, and platform settings.
           </p>
         </div>
         <Link

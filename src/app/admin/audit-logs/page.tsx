@@ -76,7 +76,7 @@ export default function AdminAuditLogsPage() {
           </div>
         ) : logs.length === 0 ? (
           <div className="py-12 text-center text-on-surface-variant text-xs">
-            No audit records registered yet. Changes made in the Central Fuel Control will automatically appear here.
+            No audit records registered yet. Changes made in the Fuel Rate Control will automatically appear here.
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
               Veylo
             </span>
             <span className="text-[10px] text-on-surface-variant font-medium hidden sm:block leading-tight">
-              Move. Track. Pay.
+              Bills & Tracking
             </span>
           </div>
         </Link>

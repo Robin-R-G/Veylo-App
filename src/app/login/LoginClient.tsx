@@ -129,7 +129,7 @@ export default function LoginClient() {
             <VeyloLogo className="w-full h-full" color="white" />
           </div>
           <h1 className="text-3xl font-extrabold text-on-background tracking-tight">Veylo</h1>
-          <p className="text-sm text-on-surface-variant">Move. Track. Pay.</p>
+          <p className="text-sm text-on-surface-variant">Sign in to manage your vehicles</p>
         </div>
 
         {/* Tab Switcher */}

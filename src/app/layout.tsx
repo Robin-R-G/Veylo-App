@@ -6,11 +6,11 @@ import { AppShell } from '@/components/layout/AppShell';
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: 'Veylo App — Move. Track. Pay.',
+  title: 'Veylo — Vehicle Bills & Tracking',
   description: 'Manage vehicles, track odometer mileage, calculate live fuel costs, generate transparent usage bills and collect UPI payments effortlessly with Veylo.',
   manifest: '/manifest.json',
   openGraph: {
-    title: 'Veylo App — Move. Track. Pay.',
+    title: 'Veylo — Vehicle Bills & Tracking',
     description: 'Track vehicle usage, calculate precise fuel costs, and generate transparent usage bills.',
     type: 'website',
   },

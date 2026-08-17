@@ -36,15 +36,15 @@ export default function LandingPage() {
         <div className="space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container text-on-primary-container text-xs font-semibold">
             <span className="material-symbols-outlined text-sm">bolt</span>
-            Veylo — Move. Track. Pay.
+            Vehicle billing that makes sense
           </div>
 
           <h1 className="font-bold text-3xl sm:text-5xl text-on-background leading-tight tracking-tight">
-            Track every ride. Calculate every cost. Pay effortlessly.
+            Track rides, split costs, get paid — all in one place.
           </h1>
           
           <p className="text-body-lg text-on-surface-variant max-w-xl leading-relaxed">
-            Manage your vehicles, mileage, fuel costs, usage bills and UPI payments from one simple platform designed for professional fleet and personal vehicle management.
+            Fleet owners and riders handle mileage, fuel, and UPI payments without the spreadsheet chaos. Simple, fast, built for how you actually work.
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 pt-2">

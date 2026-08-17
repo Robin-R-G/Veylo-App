@@ -48,7 +48,7 @@ export const AdminSidebar: React.FC = () => {
               ADMIN
             </span>
           </div>
-          <p className="text-[11px] text-on-surface-variant font-medium leading-tight">Central Control Panel</p>
+          <p className="text-[11px] text-on-surface-variant font-medium leading-tight">Control Panel</p>
         </div>
       </div>
 
@@ -56,11 +56,11 @@ export const AdminSidebar: React.FC = () => {
       <div className="px-4 mb-4">
         <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant text-xs space-y-1">
           <div className="flex items-center justify-between text-on-surface-variant text-[10px] font-bold uppercase tracking-wider">
-            <span>Platform Security</span>
+            <span>Security Status</span>
             <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
           </div>
           <p className="text-on-surface font-semibold text-[11px]">Database RLS Active</p>
-          <p className="text-[10px] text-on-surface-variant">Sole Central Price Authority</p>
+          <p className="text-[10px] text-on-surface-variant">Central price authority</p>
         </div>
       </div>
 

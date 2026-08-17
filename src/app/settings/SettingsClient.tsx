@@ -233,7 +233,7 @@ export default function SettingsClient() {
               </Link>
             </div>
             <p className="text-xs text-on-surface-variant leading-relaxed">
-              Upgrade to Starter, Pro, or Enterprise Business plans. Unlock advanced reports, custom domain white-labeling, staff permissions, and higher vehicle limits.
+              Upgrade to Starter, Pro, or Business plans. Get advanced reports, custom domain white-labeling, staff permissions, and higher vehicle limits.
             </p>
           </div>
 

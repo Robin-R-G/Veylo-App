@@ -47,7 +47,7 @@ export const Sidebar: React.FC = () => {
         </div>
         <div>
           <h1 className="text-xl font-extrabold text-primary tracking-tight leading-tight">Veylo</h1>
-          <p className="text-[11px] text-on-surface-variant font-semibold leading-tight">Move. Track. Pay.</p>
+          <p className="text-[11px] text-on-surface-variant font-semibold leading-tight">Bills & Tracking</p>
         </div>
       </div>
 
