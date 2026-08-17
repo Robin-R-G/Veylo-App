@@ -1,0 +1,1 @@
+self.__SSG_MANIFEST=new Set(["\u002Finvoices\u002F[id]","\u002Frider\u002Fstart\u002F[token]","\u002Frider\u002Ftrip\u002F[tripId]","\u002Frider\u002Ftrip\u002F[tripId]\u002Fconfirm","\u002Fv\u002F[secureVehicleId]","\u002Fvehicles\u002F[id]","\u002Fvehicles\u002F[id]\u002Fedit"]);self.__SSG_MANIFEST_CB&&self.__SSG_MANIFEST_CB()
