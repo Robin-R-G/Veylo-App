@@ -162,13 +162,14 @@ export default function VehicleDetailClient({ id }: { id: string }) {
         subtitle={`${vehicle.make} ${vehicle.model} • Rate: ₹${vehicle.ratePerKmRupees || 12}/km • ${vehicle.city || 'Kozhikode'}, ${vehicle.state || 'Kerala'}`}
         backHref="/vehicles"
         action={
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 flex-wrap justify-end">
             <button
               onClick={() => setShowVerifyModal(true)}
-              className="px-3.5 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-semibold text-xs flex items-center gap-1.5 hover:bg-surface-container-low transition-all shadow-sm"
+              className="px-3 py-2 rounded-lg bg-surface border border-outline-variant text-on-surface font-semibold text-xs flex items-center gap-1.5 hover:bg-surface-container-low transition-all shadow-sm"
             >
               <span className="material-symbols-outlined text-sm text-primary">pin</span>
-              Verify Physical ODO
+              <span className="hidden sm:inline">Verify Physical ODO</span>
+              <span className="sm:hidden">ODO</span>
             </button>
 
             <Link

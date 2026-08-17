@@ -188,7 +188,7 @@ export default function InvoicesListPage() {
 
       {/* Filter and Search Bar */}
       <div className="bg-surface p-4 rounded-xl border border-outline-variant shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
           {(['ALL', 'PAID', 'PENDING', 'OVERDUE'] as const).map((st) => (
             <button
               key={st}
@@ -298,7 +298,7 @@ export default function InvoicesListPage() {
                       <td className="py-3.5 px-4 text-right">
                         <Link
                           href={`/invoices/${inv.id}`}
-                          className="px-3 py-1 rounded-lg bg-surface-container-high hover:bg-primary hover:text-on-primary transition-all text-xs font-bold inline-flex items-center gap-1"
+                          className="px-3 py-2 rounded-lg bg-surface-container-high hover:bg-primary hover:text-on-primary transition-all text-xs font-bold inline-flex items-center gap-1"
                         >
                           <span>View Bill</span>
                           <span className="material-symbols-outlined text-xs">arrow_forward</span>

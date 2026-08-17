@@ -39,6 +39,7 @@ export default function RootLayout({
         <meta name="theme-color" content="#003441" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body className="bg-background text-on-background antialiased min-h-screen font-sans" suppressHydrationWarning>
         <script

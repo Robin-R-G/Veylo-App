@@ -183,7 +183,7 @@ class CorePaymentService {
       .select('upi_id')
       .eq('organization_id', invoice.organization_id)
       .maybeSingle();
-    const dest = invoice.payee_upi_id || paymentSetting?.upi_id || org?.upi_id || 'metherobin@oksbi';
+    const dest = invoice.payee_upi_id || paymentSetting?.upi_id || org?.upi_id || 'vehicleowner@upi';
 
     const provider = this.resolveProvider(params.paymentMethod);
     if (!provider) throw new Error(`Payment provider for ${params.paymentMethod} not found`);

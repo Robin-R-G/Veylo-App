@@ -134,7 +134,7 @@ export default function VehiclesPage() {
                     <p className="text-xs text-on-surface-variant">Location: {v.city || 'Kozhikode'}, {v.state || 'Kerala'}</p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-xs pt-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs pt-2">
                     <div className="p-2 rounded bg-surface-container-low border border-outline-variant">
                       <span className="text-[10px] text-on-surface-variant block">Fuel Type</span>
                       <span className="font-semibold text-on-surface">{v.fuelType}</span>
