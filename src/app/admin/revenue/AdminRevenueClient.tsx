@@ -197,11 +197,11 @@ export default function AdminRevenueClient() {
           </div>
           <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Past Due</span>
-            <span className="font-extrabold text-base text-amber-800 mt-1 block">{metrics.pastDueOrganizations}</span>
+            <span className="font-extrabold text-base text-primary mt-1 block">{metrics.pastDueOrganizations}</span>
           </div>
           <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Cancelled / Expired</span>
-            <span className="font-extrabold text-base text-red-800 mt-1 block">{metrics.cancelledOrganizations}</span>
+            <span className="font-extrabold text-base text-error mt-1 block">{metrics.cancelledOrganizations}</span>
           </div>
           <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Total Orgs</span>
@@ -213,7 +213,7 @@ export default function AdminRevenueClient() {
       {/* Owner rental revenue (shown separately — NOT platform revenue) */}
       <div className="bg-surface p-6 rounded-2xl border border-outline-variant shadow-sm space-y-4">
         <h2 className="font-bold text-base text-on-surface flex items-center gap-2">
-          <span className="material-symbols-outlined text-emerald-700">account_balance</span>
+          <span className="material-symbols-outlined text-secondary">account_balance</span>
           Owner Rental Revenue (Separate Ledger)
         </h2>
         <p className="text-xs text-on-surface-variant">
@@ -222,19 +222,19 @@ export default function AdminRevenueClient() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Today</span>
-            <span className="font-extrabold text-lg text-emerald-800 mt-1 block">{formatCurrency(ownerSummary.todayRupees)}</span>
+            <span className="font-extrabold text-lg text-secondary mt-1 block">{formatCurrency(ownerSummary.todayRupees)}</span>
           </div>
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">This Month</span>
-            <span className="font-extrabold text-lg text-emerald-800 mt-1 block">{formatCurrency(ownerSummary.thisMonthRupees)}</span>
+            <span className="font-extrabold text-lg text-secondary mt-1 block">{formatCurrency(ownerSummary.thisMonthRupees)}</span>
           </div>
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Pending</span>
-            <span className="font-extrabold text-lg text-amber-800 mt-1 block">{formatCurrency(ownerSummary.pendingRupees)}</span>
+            <span className="font-extrabold text-lg text-primary mt-1 block">{formatCurrency(ownerSummary.pendingRupees)}</span>
           </div>
           <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-[10px] text-on-surface-variant block uppercase font-bold">Paid (All Time)</span>
-            <span className="font-extrabold text-lg text-emerald-800 mt-1 block">{formatCurrency(ownerSummary.paidRupees)}</span>
+            <span className="font-extrabold text-lg text-secondary mt-1 block">{formatCurrency(ownerSummary.paidRupees)}</span>
           </div>
         </div>
       </div>
@@ -264,7 +264,7 @@ export default function AdminRevenueClient() {
                     <span className="text-[10px] text-on-surface-variant ml-1">({sub.plan?.name})</span>
                   </td>
                   <td className="py-3 px-3">
-                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-black uppercase ${sub.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-extrabold uppercase ${sub.status === 'ACTIVE' ? 'bg-primary-container text-on-primary-container border-primary/40' : 'bg-secondary-container text-on-surface border-outline-variant'}`}>
                       {sub.status}
                     </span>
                   </td>

@@ -11,10 +11,10 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import { mockStorage } from '@/lib/services/mockStorage';
 
 const STATUS_CONFIG: Record<DisputeStatus, { label: string; color: string }> = {
-  OPEN: { label: 'Open', color: 'bg-amber-100 text-amber-700' },
-  UNDER_REVIEW: { label: 'Under Review', color: 'bg-blue-100 text-blue-700' },
-  RESOLVED: { label: 'Resolved', color: 'bg-emerald-100 text-emerald-700' },
-  REJECTED: { label: 'Rejected', color: 'bg-red-100 text-red-700' },
+  OPEN: { label: 'Open', color: 'bg-secondary-container text-on-surface' },
+  UNDER_REVIEW: { label: 'Under Review', color: 'bg-tertiary-container text-on-surface' },
+  RESOLVED: { label: 'Resolved', color: 'bg-primary-container text-on-primary-container' },
+  REJECTED: { label: 'Rejected', color: 'bg-error-container text-on-error-container' },
 };
 
 export default function DisputesClient() {
@@ -175,7 +175,7 @@ export default function DisputesClient() {
             </div>
 
             {dispute.resolution && (
-              <div className="p-3 rounded-xl bg-emerald-50 text-xs text-emerald-800 mb-3">
+              <div className="p-3 rounded-xl bg-primary-container/20 text-xs text-on-surface mb-3">
                 <p className="font-semibold mb-1">Resolution:</p>
                 <p>{dispute.resolution}</p>
               </div>
@@ -202,19 +202,19 @@ export default function DisputesClient() {
                     <div className="flex gap-2">
                       <button
                         onClick={() => handleResolve(dispute.id, 'UNDER_REVIEW')}
-                        className="flex-1 py-2 rounded-lg bg-blue-100 text-blue-700 text-xs font-bold uppercase hover:bg-blue-200 transition-all"
+                        className="flex-1 py-2 rounded-lg bg-tertiary-container text-on-surface text-xs font-bold uppercase hover:opacity-90 transition-all"
                       >
                         Mark Under Review
                       </button>
                       <button
                         onClick={() => handleResolve(dispute.id, 'RESOLVED')}
-                        className="flex-1 py-2 rounded-lg bg-emerald-100 text-emerald-700 text-xs font-bold uppercase hover:bg-emerald-200 transition-all"
+                        className="flex-1 py-2 rounded-lg bg-primary-container text-on-primary-container text-xs font-bold uppercase hover:opacity-90 transition-all"
                       >
                         Resolve
                       </button>
                       <button
                         onClick={() => handleResolve(dispute.id, 'REJECTED')}
-                        className="flex-1 py-2 rounded-lg bg-red-100 text-red-700 text-xs font-bold uppercase hover:bg-red-200 transition-all"
+                        className="flex-1 py-2 rounded-lg bg-error-container text-on-error-container text-xs font-bold uppercase hover:opacity-90 transition-all"
                       >
                         Reject
                       </button>

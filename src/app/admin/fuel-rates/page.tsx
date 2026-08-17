@@ -64,7 +64,6 @@ export default function AdminFuelRatesPage() {
     setMounted(true);
     loadCurrentRates();
 
-    // Subscribe to realtime fuel price updates
     const unsubscribe = fuelRealtimeService.subscribe((updated) => {
       if (updated.state === stateInput && updated.city === cityInput) {
         if (updated.fuelType === 'PETROL') setPetrol(updated);
@@ -78,7 +77,6 @@ export default function AdminFuelRatesPage() {
 
   if (!mounted) return <AdminSkeleton />;
 
-  // Trigger Live API Fetch
   const handleFetchLiveApi = async () => {
     setIsRefreshing(true);
     setErrorMsg('');
@@ -99,7 +97,6 @@ export default function AdminFuelRatesPage() {
     }
   };
 
-  // Submit Manual Override
   const handleConfirmOverride = async () => {
     setIsPublishing(true);
     setErrorMsg('');
@@ -137,29 +134,29 @@ export default function AdminFuelRatesPage() {
     switch (status) {
       case 'LIVE':
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-primary-container text-primary flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
             LIVE RATE
           </span>
         );
       case 'RECENT':
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-950/80 border border-blue-700/60 text-blue-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-tertiary-container text-on-surface flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
             VERIFIED BENCHMARK
           </span>
         );
       case 'STALE':
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-950/80 border border-amber-700/60 text-amber-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-secondary-container text-on-surface flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
             CACHED
           </span>
         );
       default:
         return (
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-950/80 border border-rose-700/60 text-rose-300 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-error-container text-on-error-container flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-error"></span>
             UNAVAILABLE
           </span>
         );
@@ -170,13 +167,13 @@ export default function AdminFuelRatesPage() {
     <div className="space-y-6">
       
       {/* Admin Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-outline-variant pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="material-symbols-outlined text-amber-400 text-2xl">local_gas_station</span>
-            <h1 className="text-2xl font-black text-white tracking-tight">Central Fuel Price Authority</h1>
+            <span className="material-symbols-outlined text-primary text-2xl">local_gas_station</span>
+            <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Central Fuel Price Authority</h1>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-on-surface-variant mt-1">
             Centrally control Petrol, Diesel, and CNG rates. Changes immediately propagate to Owners & Riders in real time.
           </p>
         </div>
@@ -184,9 +181,9 @@ export default function AdminFuelRatesPage() {
           <button
             onClick={handleFetchLiveApi}
             disabled={isRefreshing}
-            className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs flex items-center gap-2 transition-all shadow-md disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container-high border border-outline-variant text-on-surface font-bold text-xs flex items-center gap-2 transition-all shadow-sm disabled:opacity-50"
           >
-            <span className={`material-symbols-outlined text-base text-amber-400 ${isRefreshing ? 'animate-spin' : ''}`}>
+            <span className={`material-symbols-outlined text-base text-primary ${isRefreshing ? 'animate-spin' : ''}`}>
               sync
             </span>
             Fetch Live Market Rates
@@ -196,30 +193,30 @@ export default function AdminFuelRatesPage() {
 
       {/* Alert Banners */}
       {saveSuccessMsg && (
-        <div className="p-4 rounded-xl bg-emerald-950/70 border border-emerald-800/80 text-emerald-300 text-xs font-semibold flex items-center gap-2.5 shadow-lg">
-          <span className="material-symbols-outlined text-emerald-400 text-lg shrink-0">check_circle</span>
+        <div className="p-4 rounded-xl bg-primary-container border border-primary text-on-primary-container text-xs font-semibold flex items-center gap-2.5 shadow-md">
+          <span className="material-symbols-outlined text-lg shrink-0">check_circle</span>
           <span>{saveSuccessMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-4 rounded-xl bg-rose-950/70 border border-rose-800/80 text-rose-300 text-xs font-semibold flex items-center gap-2.5 shadow-lg">
-          <span className="material-symbols-outlined text-rose-400 text-lg shrink-0">warning</span>
+        <div className="p-4 rounded-xl bg-error-container border border-error/40 text-on-error-container text-xs font-semibold flex items-center gap-2.5 shadow-md">
+          <span className="material-symbols-outlined text-lg shrink-0">warning</span>
           <span>{errorMsg}</span>
         </div>
       )}
 
       {/* Location Filter */}
-      <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-wrap items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-surface border border-outline-variant flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <span className="material-symbols-outlined text-slate-400 text-lg">location_on</span>
-          <span className="text-xs font-bold text-slate-300">Active Jurisdiction:</span>
+          <span className="material-symbols-outlined text-on-surface-variant text-lg">location_on</span>
+          <span className="text-xs font-bold text-on-surface">Active Jurisdiction:</span>
         </div>
         <div className="flex items-center gap-3">
           <select
             value={stateInput}
             onChange={(e) => setStateInput(e.target.value)}
-            className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-500"
+            className="px-3 py-1.5 rounded-xl bg-surface-container-low border border-outline-variant text-xs font-semibold text-on-surface focus:outline-none focus:border-primary"
           >
             <option value="Kerala">Kerala</option>
             <option value="Karnataka">Karnataka</option>
@@ -232,11 +229,11 @@ export default function AdminFuelRatesPage() {
             value={cityInput}
             onChange={(e) => setCityInput(e.target.value)}
             placeholder="City (e.g. Kozhikode)"
-            className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-xs font-semibold text-white focus:outline-none focus:border-amber-500 w-36"
+            className="px-3 py-1.5 rounded-xl bg-surface-container-low border border-outline-variant text-xs font-semibold text-on-surface focus:outline-none focus:border-primary w-36"
           />
           <button
             onClick={() => loadCurrentRates(true)}
-            className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition-all"
+            className="px-3 py-1.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-bold text-xs transition-all"
           >
             Load
           </button>
@@ -247,63 +244,63 @@ export default function AdminFuelRatesPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* PETROL CARD */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="p-6 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex justify-between items-center">
-            <span className="text-xs font-black tracking-wider text-amber-400 uppercase">PETROL</span>
+            <span className="text-xs font-extrabold tracking-wider text-primary uppercase">PETROL</span>
             {getStatusBadge(petrol?.status)}
           </div>
           <div>
-            <p className="text-4xl font-black text-white tracking-tight">
+            <p className="text-4xl font-extrabold text-on-surface tracking-tight">
               ₹{petrol ? petrol.priceRupees.toFixed(2) : '---'}
-              <span className="text-sm font-medium text-slate-400 ml-1.5">/ {petrol?.unit || 'LITRE'}</span>
+              <span className="text-sm font-medium text-on-surface-variant ml-1.5">/ {petrol?.unit || 'LITRE'}</span>
             </p>
-            <p className="text-xs font-medium text-slate-400 mt-2">
+            <p className="text-xs font-medium text-on-surface-variant mt-2">
               {petrol ? `${petrol.city}, ${petrol.state}` : 'Kerala Jurisdiction'}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1 font-mono">
+            <p className="text-[10px] text-on-surface-variant mt-1 font-mono">
               Source: {petrol?.sourceName || 'Central Authority'} • {petrol ? new Date(petrol.updatedAt).toLocaleTimeString() : ''}
             </p>
           </div>
         </div>
 
         {/* DIESEL CARD */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="p-6 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-tertiary/5 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex justify-between items-center">
-            <span className="text-xs font-black tracking-wider text-blue-400 uppercase">DIESEL</span>
+            <span className="text-xs font-extrabold tracking-wider text-tertiary uppercase">DIESEL</span>
             {getStatusBadge(diesel?.status)}
           </div>
           <div>
-            <p className="text-4xl font-black text-white tracking-tight">
+            <p className="text-4xl font-extrabold text-on-surface tracking-tight">
               ₹{diesel ? diesel.priceRupees.toFixed(2) : '---'}
-              <span className="text-sm font-medium text-slate-400 ml-1.5">/ {diesel?.unit || 'LITRE'}</span>
+              <span className="text-sm font-medium text-on-surface-variant ml-1.5">/ {diesel?.unit || 'LITRE'}</span>
             </p>
-            <p className="text-xs font-medium text-slate-400 mt-2">
+            <p className="text-xs font-medium text-on-surface-variant mt-2">
               {diesel ? `${diesel.city}, ${diesel.state}` : 'Kerala Jurisdiction'}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1 font-mono">
+            <p className="text-[10px] text-on-surface-variant mt-1 font-mono">
               Source: {diesel?.sourceName || 'Central Authority'} • {diesel ? new Date(diesel.updatedAt).toLocaleTimeString() : ''}
             </p>
           </div>
         </div>
 
         {/* CNG CARD */}
-        <div className="p-6 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-xl space-y-4 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="p-6 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-4 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-secondary/5 rounded-full blur-2xl pointer-events-none"></div>
           <div className="flex justify-between items-center">
-            <span className="text-xs font-black tracking-wider text-emerald-400 uppercase">CNG</span>
+            <span className="text-xs font-extrabold tracking-wider text-secondary uppercase">CNG</span>
             {getStatusBadge(cng?.status)}
           </div>
           <div>
-            <p className="text-4xl font-black text-white tracking-tight">
+            <p className="text-4xl font-extrabold text-on-surface tracking-tight">
               ₹{cng ? cng.priceRupees.toFixed(2) : '---'}
-              <span className="text-sm font-medium text-slate-400 ml-1.5">/ {cng?.unit || 'KG'}</span>
+              <span className="text-sm font-medium text-on-surface-variant ml-1.5">/ {cng?.unit || 'KG'}</span>
             </p>
-            <p className="text-xs font-medium text-slate-400 mt-2">
+            <p className="text-xs font-medium text-on-surface-variant mt-2">
               {cng ? `${cng.city}, ${cng.state}` : 'Kerala Jurisdiction'}
             </p>
-            <p className="text-[10px] text-slate-500 mt-1 font-mono">
+            <p className="text-[10px] text-on-surface-variant mt-1 font-mono">
               Source: {cng?.sourceName || 'Central Authority'} • {cng ? new Date(cng.updatedAt).toLocaleTimeString() : ''}
             </p>
           </div>
@@ -311,18 +308,18 @@ export default function AdminFuelRatesPage() {
       </div>
 
       {/* Manual Override Central Publishing Panel */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
-        <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
+      <div className="p-6 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-5">
+        <div className="border-b border-outline-variant pb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-black text-white flex items-center gap-2">
-              <span className="material-symbols-outlined text-amber-400 text-lg">edit_note</span>
+            <h2 className="text-base font-extrabold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary text-lg">edit_note</span>
               Platform Rate Override Authority
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-on-surface-variant mt-0.5">
               Set and commit custom canonical rates for Petrol, Diesel, and CNG.
             </p>
           </div>
-          <span className="text-[10px] font-mono text-amber-400 bg-amber-950/60 border border-amber-800/60 px-2.5 py-1 rounded-full">
+          <span className="text-[10px] font-mono text-primary bg-primary-container/40 border border-primary/40 px-2.5 py-1 rounded-full">
             ATOMIC TRANSACTION
           </span>
         </div>
@@ -336,11 +333,11 @@ export default function AdminFuelRatesPage() {
         >
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-on-surface mb-1.5">
                 Petrol Rate (₹ / Litre)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-amber-400 font-bold text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-primary font-bold text-sm">₹</span>
                 <input
                   type="number"
                   step="0.01"
@@ -348,17 +345,17 @@ export default function AdminFuelRatesPage() {
                   required
                   value={petrolInput}
                   onChange={(e) => setPetrolInput(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold text-sm focus:outline-none focus:border-amber-500 font-mono"
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface font-bold text-sm focus:outline-none focus:border-primary font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-on-surface mb-1.5">
                 Diesel Rate (₹ / Litre)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-blue-400 font-bold text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-tertiary font-bold text-sm">₹</span>
                 <input
                   type="number"
                   step="0.01"
@@ -366,17 +363,17 @@ export default function AdminFuelRatesPage() {
                   required
                   value={dieselInput}
                   onChange={(e) => setDieselInput(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold text-sm focus:outline-none focus:border-amber-500 font-mono"
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface font-bold text-sm focus:outline-none focus:border-primary font-mono"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-300 mb-1.5">
+              <label className="block text-xs font-bold text-on-surface mb-1.5">
                 CNG Rate (₹ / Kg)
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-2.5 text-emerald-400 font-bold text-sm">₹</span>
+                <span className="absolute left-3.5 top-2.5 text-secondary font-bold text-sm">₹</span>
                 <input
                   type="number"
                   step="0.01"
@@ -384,20 +381,20 @@ export default function AdminFuelRatesPage() {
                   required
                   value={cngInput}
                   onChange={(e) => setCngInput(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold text-sm focus:outline-none focus:border-amber-500 font-mono"
+                  className="w-full pl-8 pr-3 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface font-bold text-sm focus:outline-none focus:border-primary font-mono"
                 />
               </div>
             </div>
           </div>
 
           <div className="flex items-center justify-between pt-2">
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-on-surface-variant">
               Overrides supersede external APIs until next manual update or live sync.
             </p>
             <button
               type="submit"
               disabled={isPublishing}
-              className="px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-3 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-extrabold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-2 disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-sm">publish</span>
               Review & Publish Rates
@@ -408,50 +405,50 @@ export default function AdminFuelRatesPage() {
 
       {/* Confirmation Modal */}
       {showConfirmModal && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl">
-            <div className="flex items-center gap-3 text-amber-400">
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface border border-outline-variant rounded-2xl max-w-md w-full p-6 space-y-5 shadow-md">
+            <div className="flex items-center gap-3 text-primary">
               <span className="material-symbols-outlined text-3xl">warning</span>
               <div>
-                <h3 className="text-lg font-black text-white">Confirm Central Fuel Price Update</h3>
-                <p className="text-xs text-slate-400">This action will immediately update rates platform-wide.</p>
+                <h3 className="text-lg font-extrabold text-on-surface">Confirm Central Fuel Price Update</h3>
+                <p className="text-xs text-on-surface-variant">This action will immediately update rates platform-wide.</p>
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-2 text-xs font-mono">
+            <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant space-y-2 text-xs font-mono">
               <div className="flex justify-between">
-                <span className="text-slate-400">Jurisdiction:</span>
-                <span className="text-white font-bold">{cityInput}, {stateInput}</span>
+                <span className="text-on-surface-variant">Jurisdiction:</span>
+                <span className="text-on-surface font-bold">{cityInput}, {stateInput}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Petrol:</span>
-                <span className="text-amber-400 font-bold">₹{parseFloat(petrolInput).toFixed(2)} / L</span>
+                <span className="text-on-surface-variant">Petrol:</span>
+                <span className="text-primary font-bold">₹{parseFloat(petrolInput).toFixed(2)} / L</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Diesel:</span>
-                <span className="text-blue-400 font-bold">₹{parseFloat(dieselInput).toFixed(2)} / L</span>
+                <span className="text-on-surface-variant">Diesel:</span>
+                <span className="text-tertiary font-bold">₹{parseFloat(dieselInput).toFixed(2)} / L</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">CNG:</span>
-                <span className="text-emerald-400 font-bold">₹{parseFloat(cngInput).toFixed(2)} / kg</span>
+                <span className="text-on-surface-variant">CNG:</span>
+                <span className="text-secondary font-bold">₹{parseFloat(cngInput).toFixed(2)} / kg</span>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-on-surface-variant">
               All ongoing and newly initiated trips will compute fuel charges against these canonical rates. Existing completed invoices will retain their historical snapshots.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-2">
               <button
                 onClick={() => setShowConfirmModal(false)}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all"
+                className="px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface font-bold text-xs transition-all"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmOverride}
                 disabled={isPublishing}
-                className="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all flex items-center gap-1.5"
+                className="px-5 py-2 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-extrabold text-xs uppercase tracking-wider shadow-md transition-all flex items-center gap-1.5"
               >
                 {isPublishing ? 'Publishing...' : 'Commit Central Change'}
               </button>
@@ -461,25 +458,25 @@ export default function AdminFuelRatesPage() {
       )}
 
       {/* History & Audit Logs Tabs */}
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl space-y-5">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+      <div className="p-6 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-5">
+        <div className="flex items-center justify-between border-b border-outline-variant pb-3">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setActiveTab('history')}
-              className={`text-xs font-black uppercase tracking-wider pb-1 transition-all ${
+              className={`text-xs font-extrabold uppercase tracking-wider pb-1 transition-all ${
                 activeTab === 'history'
-                  ? 'text-amber-400 border-b-2 border-amber-400'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               Price Change History ({history.length})
             </button>
             <button
               onClick={() => setActiveTab('audit')}
-              className={`text-xs font-black uppercase tracking-wider pb-1 transition-all ${
+              className={`text-xs font-extrabold uppercase tracking-wider pb-1 transition-all ${
                 activeTab === 'audit'
-                  ? 'text-amber-400 border-b-2 border-amber-400'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-on-surface-variant hover:text-on-surface'
               }`}
             >
               Platform Audit Logs ({auditLogs.length})
@@ -491,7 +488,7 @@ export default function AdminFuelRatesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse font-sans">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-outline-variant text-on-surface-variant uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Recorded At</th>
                   <th className="py-3 px-3">Fuel Type</th>
                   <th className="py-3 px-3">Price</th>
@@ -500,39 +497,39 @@ export default function AdminFuelRatesPage() {
                   <th className="py-3 px-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-outline-variant/60">
                 {history.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-6 text-center text-slate-500 text-xs">
+                    <td colSpan={6} className="py-6 text-center text-on-surface-variant text-xs">
                       No historical price records found.
                     </td>
                   </tr>
                 ) : (
                   history.map((h) => (
-                    <tr key={h.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-3 font-mono text-slate-300">
+                    <tr key={h.id} className="hover:bg-surface-container-low/40 transition-colors">
+                      <td className="py-3 px-3 font-mono text-on-surface">
                         {new Date(h.recordedAt).toLocaleString()}
                       </td>
                       <td className="py-3 px-3">
                         <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          h.fuelType === 'PETROL' ? 'bg-amber-950/60 text-amber-400 border border-amber-800/60' :
-                          h.fuelType === 'DIESEL' ? 'bg-blue-950/60 text-blue-400 border border-blue-800/60' :
-                          'bg-emerald-950/60 text-emerald-400 border border-emerald-800/60'
+                          h.fuelType === 'PETROL' ? 'bg-primary-container/40 text-primary border border-primary/40' :
+                          h.fuelType === 'DIESEL' ? 'bg-tertiary-container/40 text-tertiary border border-tertiary/40' :
+                          'bg-secondary-container/40 text-secondary border border-secondary/40'
                         }`}>
                           {h.fuelType}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono font-bold text-white">
-                        ₹{h.priceRupees.toFixed(2)} <span className="text-[10px] text-slate-400">/ {h.unit}</span>
+                      <td className="py-3 px-3 font-mono font-bold text-on-surface">
+                        ₹{h.priceRupees.toFixed(2)} <span className="text-[10px] text-on-surface-variant">/ {h.unit}</span>
                       </td>
-                      <td className="py-3 px-3 text-slate-300">
+                      <td className="py-3 px-3 text-on-surface">
                         {h.city}, {h.state}
                       </td>
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-400">
+                      <td className="py-3 px-3 font-mono text-[11px] text-on-surface-variant">
                         {h.sourceName}
                       </td>
                       <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-container text-primary border border-primary/40">
                           VERIFIED
                         </span>
                       </td>
@@ -546,7 +543,7 @@ export default function AdminFuelRatesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-slate-800 text-slate-400 uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-outline-variant text-on-surface-variant uppercase text-[10px] tracking-wider">
                   <th className="py-3 px-3">Timestamp</th>
                   <th className="py-3 px-3">Event</th>
                   <th className="py-3 px-3">Fuel Type</th>
@@ -556,36 +553,36 @@ export default function AdminFuelRatesPage() {
                   <th className="py-3 px-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-outline-variant/60">
                 {auditLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-6 text-center text-slate-500 text-xs">
+                    <td colSpan={7} className="py-6 text-center text-on-surface-variant text-xs">
                       No audit logs found.
                     </td>
                   </tr>
                 ) : (
                   auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-3 font-mono text-slate-300">
+                    <tr key={log.id} className="hover:bg-surface-container-low/40 transition-colors">
+                      <td className="py-3 px-3 font-mono text-on-surface">
                         {new Date(log.createdAt).toLocaleString()}
                       </td>
-                      <td className="py-3 px-3 font-mono text-[11px] text-amber-400">
+                      <td className="py-3 px-3 font-mono text-[11px] text-primary">
                         {log.eventType}
                       </td>
-                      <td className="py-3 px-3 font-bold text-white">
+                      <td className="py-3 px-3 font-bold text-on-surface">
                         {log.fuelType}
                       </td>
-                      <td className="py-3 px-3 font-mono text-slate-400">
+                      <td className="py-3 px-3 font-mono text-on-surface-variant">
                         {log.oldPriceRupees ? `₹${log.oldPriceRupees.toFixed(2)}` : '---'}
                       </td>
-                      <td className="py-3 px-3 font-mono font-bold text-emerald-400">
+                      <td className="py-3 px-3 font-mono font-bold text-primary">
                         {log.newPriceRupees ? `₹${log.newPriceRupees.toFixed(2)}` : '---'}
                       </td>
-                      <td className="py-3 px-3 text-slate-400 font-mono text-[11px]">
+                      <td className="py-3 px-3 text-on-surface-variant font-mono text-[11px]">
                         {log.sourceName}
                       </td>
                       <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/60 text-emerald-300 border border-emerald-800/60">
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary-container text-primary border border-primary/40">
                           {log.status}
                         </span>
                       </td>

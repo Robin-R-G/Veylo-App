@@ -86,7 +86,7 @@ export default function AdminMonetizationClient() {
       />
 
       {msg && (
-        <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-primary-container text-on-primary-container text-xs font-semibold flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>
           {msg}
         </div>
@@ -209,7 +209,7 @@ export default function AdminMonetizationClient() {
             <tbody>
               {plans.map(p => (
                 <tr key={p.id} className="border-b border-outline-variant hover:bg-surface-container-low">
-                  <td className="py-3 px-3 font-black text-on-surface">{p.id}</td>
+                  <td className="py-3 px-3 font-extrabold text-on-surface">{p.id}</td>
                   <td className="py-3 px-3">
                     <input
                       type="number"

@@ -188,7 +188,7 @@ export default function AdminRevenuePage() {
             <span className="text-[10px] text-on-surface-variant">Settled to Owner</span>
           </div>
           <div>
-            <p className="text-lg font-bold text-amber-700">{formatCurrency(owner.pendingRupees)}</p>
+            <p className="text-lg font-bold text-primary">{formatCurrency(owner.pendingRupees)}</p>
             <span className="text-[10px] text-on-surface-variant">Pending Settlement</span>
           </div>
           <div>

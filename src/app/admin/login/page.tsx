@@ -23,17 +23,17 @@ export default function AdminLoginPage() {
   }, [router]);
 
   if (!mounted) return (
-    <div className="admin-theme min-h-screen bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-3">
-          <Skeleton className="h-16 w-16 rounded-2xl mx-auto bg-slate-800" />
-          <Skeleton className="h-7 w-48 mx-auto bg-slate-800" />
-          <Skeleton className="h-4 w-64 mx-auto bg-slate-800" />
+          <Skeleton className="h-16 w-16 rounded-2xl mx-auto bg-surface-container-low" />
+          <Skeleton className="h-7 w-48 mx-auto bg-surface-container-low" />
+          <Skeleton className="h-4 w-64 mx-auto bg-surface-container-low" />
         </div>
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-4">
-          <Skeleton className="h-10 w-full bg-slate-800 rounded-xl" />
-          <Skeleton className="h-10 w-full bg-slate-800 rounded-xl" />
-          <Skeleton className="h-11 w-full bg-slate-800 rounded-xl" />
+        <div className="bg-surface border border-outline-variant rounded-2xl p-6 space-y-4">
+          <Skeleton className="h-10 w-full bg-surface-container-low rounded-xl" />
+          <Skeleton className="h-10 w-full bg-surface-container-low rounded-xl" />
+          <Skeleton className="h-11 w-full bg-surface-container-low rounded-xl" />
         </div>
       </div>
     </div>
@@ -54,42 +54,42 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="admin-theme min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4 selection:bg-amber-500 selection:text-slate-950">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 selection:bg-primary selection:text-on-primary">
       
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-tertiary/10 rounded-full blur-3xl"></div>
       </div>
 
       <div className="w-full max-w-md relative z-10 space-y-6">
         
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500 text-slate-950 p-3 shadow-xl shadow-amber-500/20">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary text-on-primary p-3 shadow-md">
             <VeyloLogo className="w-full h-full" color="black" />
           </div>
           <div>
             <div className="flex items-center justify-center gap-2">
-              <h1 className="text-2xl font-black text-white tracking-tight">Veylo Admin Portal</h1>
-              <span className="text-[10px] font-black bg-amber-500 text-slate-950 px-2 py-0.5 rounded uppercase">
+              <h1 className="text-2xl font-extrabold text-on-surface tracking-tight">Veylo Admin Portal</h1>
+              <span className="text-[10px] font-extrabold bg-primary text-on-primary px-2 py-0.5 rounded uppercase">
                 SECURE
               </span>
             </div>
-            <p className="text-xs text-slate-400 mt-1">Platform Operations & Fuel Rate Authority</p>
+            <p className="text-xs text-on-surface-variant mt-1">Platform Operations & Fuel Rate Authority</p>
           </div>
         </div>
 
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl space-y-5">
+        <div className="bg-surface border border-outline-variant rounded-2xl p-6 sm:p-8 shadow-md backdrop-blur-xl space-y-5">
           
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center justify-between border-b border-outline-variant pb-3">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-amber-400 text-base">lock</span>
-              <span className="text-xs font-bold text-slate-200">Restricted Access</span>
+              <span className="material-symbols-outlined text-primary text-base">lock</span>
+              <span className="text-xs font-bold text-on-surface">Restricted Access</span>
             </div>
-            <span className="text-[10px] text-slate-400 font-mono">SUPABASE AUTH</span>
+            <span className="text-[10px] text-on-surface-variant font-mono">SUPABASE AUTH</span>
           </div>
 
           {error && (
-            <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-800/60 text-rose-300 text-xs flex items-center gap-2">
+            <div className="p-3 rounded-xl bg-error-container border border-error/40 text-on-error-container text-xs flex items-center gap-2">
               <span className="material-symbols-outlined text-sm shrink-0">error</span>
               <span>{error}</span>
             </div>
@@ -97,7 +97,7 @@ export default function AdminLoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">
+              <label className="block text-on-surface font-semibold mb-1.5">
                 Admin Email
               </label>
               <input
@@ -106,12 +106,12 @@ export default function AdminLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@veylo.app"
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all font-mono"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all font-mono"
               />
             </div>
 
             <div>
-              <label className="block text-slate-300 font-semibold mb-1.5">
+              <label className="block text-on-surface font-semibold mb-1.5">
                 Password
               </label>
               <input
@@ -120,32 +120,32 @@ export default function AdminLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
                 required
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface placeholder-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 uppercase tracking-wider mt-2 disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2 uppercase tracking-wider mt-2 disabled:opacity-50"
             >
               <span className="material-symbols-outlined text-sm">vpn_key</span>
               {isLoading ? 'Authenticating...' : 'Sign In as Admin'}
             </button>
           </form>
 
-          <p className="text-[11px] text-slate-500 text-center">
+          <p className="text-[11px] text-on-surface-variant text-center">
             Admin accounts are created via Supabase Auth with ADMIN role in profiles table.
           </p>
         </div>
 
-        <div className="flex items-center justify-center gap-4 text-xs text-slate-400">
-          <Link href="/login" className="hover:text-white transition-colors flex items-center gap-1">
+        <div className="flex items-center justify-center gap-4 text-xs text-on-surface-variant">
+          <Link href="/login" className="hover:text-on-surface transition-colors flex items-center gap-1">
             <span className="material-symbols-outlined text-xs">storefront</span>
             Fleet Owner Login
           </Link>
           <span>•</span>
-          <Link href="/rider" className="hover:text-white transition-skip transition-colors flex items-center gap-1">
+          <Link href="/rider" className="hover:text-on-surface transition-colors flex items-center gap-1">
             <span className="material-symbols-outlined text-xs">two_wheeler</span>
             Rider Portal
           </Link>
