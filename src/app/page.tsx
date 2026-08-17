@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { VeyloLogo } from '@/components/ui/VeyloLogo';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { useEffect } from 'react';
@@ -256,6 +257,20 @@ export default function LandingPage() {
 
       {/* Ad Slot */}
       <AdSlot placement="public-page-bottom" />
+
+      {/* Footer */}
+      <footer className="mt-16 border-t border-outline-variant pt-8 pb-12 text-center space-y-4">
+        <div className="flex items-center justify-center gap-2">
+          <VeyloLogo className="w-6 h-6" />
+          <span className="text-sm font-bold text-on-surface">Veylo</span>
+        </div>
+        <div className="flex flex-wrap justify-center gap-4 text-xs text-on-surface-variant">
+          <Link href="/login" className="hover:text-primary transition-colors">Login</Link>
+          <Link href="/scan" className="hover:text-primary transition-colors">QR Scan</Link>
+          <Link href="/settings/billing" className="hover:text-primary transition-colors">Pricing</Link>
+        </div>
+        <p className="text-[10px] text-on-surface-variant/60">&copy; {new Date().getFullYear()} Veylo. Built in India.</p>
+      </footer>
     </div>
   );
 }
