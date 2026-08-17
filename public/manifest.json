@@ -1,8 +1,8 @@
 {
-  "name": "Veylo — Vehicle Fleet Management",
+  "name": "Veylo — Vehicle Bills & Tracking",
   "short_name": "Veylo",
-  "description": "Track rides, calculate fuel costs, generate bills, and collect UPI payments.",
-  "start_url": "/rider",
+  "description": "Track rides, split costs, get paid. Fleet billing and UPI payments.",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
@@ -10,6 +10,12 @@
   "theme_color": "#003441",
   "categories": ["transportation", "business", "finance"],
   "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
