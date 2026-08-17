@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/services/financialEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { RevenueRange } from '@/lib/services/platformEconomics';
 import { AppSession } from '@/types';
+import { AdminSkeleton } from '@/components/ui/Skeleton';
 
 const RANGES: { key: RevenueRange; label: string }[] = [
   { key: '7d', label: '7 days' },
@@ -55,9 +56,9 @@ export default function AdminRevenueClient() {
     return () => { cancelled = true; };
   }, [mounted, range, tick]);
 
-  if (!mounted || !session) return null;
+  if (!mounted || !session) return <AdminSkeleton />;
   if (session.role !== 'ADMIN') return null;
-  if (!data) return null;
+  if (!data) return <AdminSkeleton />;
 
   const { breakdown, series, metrics, ownerSummary, ledger } = data;
   const maxSeries = Math.max(...series.map(s => s.value), 1);

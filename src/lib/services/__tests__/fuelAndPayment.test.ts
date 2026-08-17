@@ -1,4 +1,4 @@
-import { describe, test, expect, vi } from 'vitest';
+import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { calculateRideCosts, generateUpiDeepLink } from '../financialEngine';
 import { fuelPriceService } from '../fuelPriceProvider';
 import { mockStorage } from '../mockStorage';

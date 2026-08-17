@@ -156,7 +156,7 @@ describe('Central Fuel Price Authority & Admin Security', () => {
       fuelRealtimeService.broadcast(mockUpdate);
 
       expect(notifiedPrice).not.toBeNull();
-      expect(notifiedPrice?.priceRupees).toBe(108.50);
+      expect((notifiedPrice as unknown as FuelPrice).priceRupees).toBe(108.50);
 
       unsubscribe();
     });

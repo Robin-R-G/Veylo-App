@@ -9,6 +9,7 @@ import { getTripsByRider } from '@/lib/services/supabase/data';
 import { RentalTrip, Invoice, AppSession, FuelPrice } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { centralFuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
 
 function formatDuration(seconds: number): string {
   const h = Math.floor(seconds / 3600);
@@ -74,7 +75,7 @@ export default function RiderDashboardClient() {
     return () => unsubscribe();
   }, [router]);
 
-  if (!mounted || !session) return null;
+  if (!mounted || !session) return <DashboardSkeleton />;
 
   const activeTrip = myTrips.find(t => t.status === 'ACTIVE' || t.status === 'CONFIRMATION_PENDING');
   const completedTrips = myTrips.filter(t => t.status === 'COMPLETED');

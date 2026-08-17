@@ -9,6 +9,7 @@ import { formatCurrency } from '@/lib/services/financialEngine';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { summarizeOwnerRevenue } from '@/lib/services/platformEconomics';
 import { AppSession, Organization, Invoice } from '@/types';
+import { ListSkeleton } from '@/components/ui/Skeleton';
 
 export default function OwnerPaymentsClient() {
   const router = useRouter();
@@ -51,7 +52,7 @@ export default function OwnerPaymentsClient() {
     })();
   }, [router]);
 
-  if (!mounted || !session) return null;
+  if (!mounted || !session) return <ListSkeleton />;
 
   const pageSize = 20;
   const totalPages = Math.ceil(history.length / pageSize) || 1;
