@@ -73,6 +73,7 @@ CREATE TABLE IF NOT EXISTS vehicles (
   secure_public_id TEXT NOT NULL UNIQUE,
   registration_number TEXT NOT NULL,
   normalized_reg_number TEXT NOT NULL,
+  vin TEXT,
   vehicle_type TEXT NOT NULL CHECK (vehicle_type IN ('MOTORCYCLE','SCOOTER','CAR')),
   make TEXT NOT NULL,
   model TEXT NOT NULL,

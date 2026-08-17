@@ -175,6 +175,7 @@ export interface Vehicle {
   securePublicId: string;
   registrationNumber: string;
   normalizedRegNumber: string;
+  vin?: string;
   vehicleType: VehicleType;
   make: string;
   model: string;

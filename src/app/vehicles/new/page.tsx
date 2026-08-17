@@ -14,6 +14,8 @@ export default function NewVehiclePage() {
   const router = useRouter();
 
   const [rawReg, setRawReg] = useState('');
+  const [vin, setVin] = useState('');
+  const [vinDecoding, setVinDecoding] = useState(false);
   const [vehicleType, setVehicleType] = useState<VehicleType>('MOTORCYCLE');
   const [make, setMake] = useState('');
   const [model, setModel] = useState('');
@@ -49,6 +51,38 @@ export default function NewVehiclePage() {
   const normalizedKey = normalizeRegistrationNumber(rawReg);
   const formattedDisplay = formatRegistrationDisplay(rawReg);
 
+  const handleVinDecode = async () => {
+    if (vin.length !== 17) return;
+    setVinDecoding(true);
+    try {
+      const res = await fetch(`/api/vehicles/vin?vin=${encodeURIComponent(vin)}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data.make) setMake(data.make);
+      if (data.model) setModel(data.model);
+      if (data.modelYear) {
+        const yr = parseInt(data.modelYear);
+        if (!isNaN(yr)) {
+          // Auto-set vehicle type from body class
+          const body = (data.bodyClass ?? '').toLowerCase();
+          if (body.includes('scooter') || body.includes('moped')) {
+            setVehicleType('SCOOTER');
+          } else if (body.includes('car') || body.includes('sedan') || body.includes('suv') || body.includes('hatchback')) {
+            setVehicleType('CAR');
+          }
+          // Auto-set fuel type
+          const fuel = (data.fuelTypePrimary ?? '').toLowerCase();
+          if (fuel.includes('diesel')) setFuelType('DIESEL');
+          else if (fuel.includes('cng') || fuel.includes('natural gas')) setFuelType('CNG');
+          else if (fuel.includes('electric')) setFuelType('ELECTRIC');
+          else setFuelType('PETROL');
+        }
+      }
+    } finally {
+      setVinDecoding(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -70,6 +104,7 @@ export default function NewVehiclePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           registrationNumber: formattedDisplay || rawReg.toUpperCase(),
+          vin: vin.length === 17 ? vin.toUpperCase() : undefined,
           vehicleType,
           make,
           model,
@@ -153,6 +188,32 @@ export default function NewVehiclePage() {
               <span className="font-mono font-bold">{normalizedKey}</span>
             </div>
           )}
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-on-surface mb-1">
+            VIN (17-char Vehicle Identification Number) <span className="text-on-surface-variant font-normal">optional</span>
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="e.g. MA3EKCL1XSHF12345"
+              value={vin}
+              onChange={(e) => setVin(e.target.value.toUpperCase())}
+              maxLength={17}
+              className="flex-1 px-4 py-3 rounded-lg bg-surface-container-low border border-outline-variant text-on-surface font-mono font-extrabold text-lg tracking-wider focus:outline-none focus:border-primary uppercase"
+            />
+            <button
+              type="button"
+              onClick={handleVinDecode}
+              disabled={vin.length !== 17 || vinDecoding}
+              className="px-4 py-3 rounded-lg bg-secondary-container text-on-secondary-container font-bold text-xs uppercase tracking-wider disabled:opacity-40 flex items-center gap-1 shrink-0"
+            >
+              <span className="material-symbols-outlined text-sm">{vinDecoding ? 'hourglass_empty' : 'search'}</span>
+              {vinDecoding ? 'Decoding...' : 'Decode'}
+            </button>
+          </div>
+          <span className="text-[10px] text-on-surface-variant block mt-1">Enter VIN to auto-fill make, model, fuel type from NHTSA database</span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

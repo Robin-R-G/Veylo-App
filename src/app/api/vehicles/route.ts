@@ -39,7 +39,7 @@ export async function POST(request: Request) {
 
   const body = await request.json();
   const {
-    registrationNumber, vehicleType, make, model, fuelType,
+    registrationNumber, vin, vehicleType, make, model, fuelType,
     mileageKmpl, initialOdometer, ratePerKmRupees, ownerUpiId,
     requiresApproval, state, city, notes,
   } = body;
@@ -61,6 +61,7 @@ export async function POST(request: Request) {
       secure_public_id: securePublicId,
       registration_number: registrationNumber,
       normalized_reg_number: normalizedRegNumber,
+      vin: vin || null,
       vehicle_type: vehicleType,
       make,
       model,
