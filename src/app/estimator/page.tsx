@@ -208,7 +208,7 @@ export default function TripEstimatorPage() {
 
           <div className="border-t border-outline-variant pt-3 flex justify-between items-center">
             <span className="text-sm font-bold text-on-surface">Total Payable Estimate:</span>
-            <span className="text-2xl font-black text-primary">{formatCurrency(result.totalAmountPaise)}</span>
+            <span className="text-2xl font-extrabold text-primary">{formatCurrency(result.totalAmountPaise)}</span>
           </div>
         </div>
       </div>

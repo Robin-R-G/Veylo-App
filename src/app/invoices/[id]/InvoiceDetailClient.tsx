@@ -203,7 +203,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             <span className="text-[10px] uppercase font-bold tracking-widest text-primary block">
               VEYLO VERIFIED USAGE BILL
             </span>
-            <h1 className="text-xl font-black text-on-surface tracking-tight mt-0.5 font-mono">
+            <h1 className="text-xl font-extrabold text-on-surface tracking-tight mt-0.5 font-mono">
               {invoice.invoiceNumber}
             </h1>
             <p className="text-[11px] text-on-surface-variant mt-0.5">
@@ -374,7 +374,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             {isUpiConfigured ? (
               <button
                 onClick={handleLaunchUpi}
-                className="w-full bg-primary text-on-primary py-3.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow hover:opacity-95 transition-all"
+                className="w-full bg-primary text-on-primary py-3.5 rounded-xl text-xs font-extrabold uppercase tracking-wider flex items-center justify-center gap-2 shadow hover:opacity-95 transition-all"
               >
                 <span>Pay with UPI</span>
                 <span className="material-symbols-outlined text-sm">open_in_new</span>
@@ -466,7 +466,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
           <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-1.5 text-amber-900">
             <div className="flex items-center justify-between">
               <span className="font-bold">DISPUTE LODGED</span>
-              <span className="px-2 py-0.5 rounded bg-amber-200 border border-amber-300 text-[10px] font-black uppercase text-amber-800">
+              <span className="px-2 py-0.5 rounded bg-amber-200 border border-amber-300 text-[10px] font-extrabold uppercase text-amber-800">
                 {dispute.status}
               </span>
             </div>

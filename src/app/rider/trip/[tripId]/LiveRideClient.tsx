@@ -150,7 +150,7 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
         {/* Large Central Distance Counter */}
         <div className="text-center py-4 bg-surface-container-low rounded-2xl border border-outline-variant">
           <span className="text-xs uppercase font-bold text-on-surface-variant tracking-wider block">Distance Travelled</span>
-          <div className="text-5xl font-black text-primary font-mono tracking-tight my-2">
+          <div className="text-5xl font-extrabold text-primary font-mono tracking-tight my-2">
             {trip.gpsDistanceKm.toFixed(1)} <span className="text-xl font-bold text-on-surface-variant">KM</span>
           </div>
           <span className="text-xs font-semibold text-emerald-700 flex items-center justify-center gap-1">

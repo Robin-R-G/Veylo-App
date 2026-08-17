@@ -104,7 +104,7 @@ export default function OwnerPaymentsClient() {
             <span className="text-[11px] text-on-surface-variant">{org.upiPayeeName || 'Vehicle Owner'}</span>
           </div>
           <div className="text-right">
-            <span className={`px-3 py-1 rounded-full border text-[10px] font-black uppercase ${org.upiStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+            <span className={`px-3 py-1 rounded-full border text-[10px] font-extrabold uppercase ${org.upiStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
               {org.upiStatus || 'NOT_CONFIGURED'}
             </span>
             <p className="text-[10px] text-on-surface-variant mt-1.5">

@@ -463,7 +463,7 @@ export function HowItWorksInteractive() {
                             <p className="text-[10px] text-on-surface-variant mt-0.5">⭐ 4.9 (128 rides) • 2.4 km away</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-xs font-black text-primary">₹399</p>
+                            <p className="text-xs font-extrabold text-primary">₹399</p>
                             <span className="text-[9px] text-on-surface-variant">/ day</span>
                           </div>
                         </div>
@@ -533,7 +533,7 @@ export function HowItWorksInteractive() {
                       <div className="bg-surface-container-low p-3 rounded-xl border border-outline-variant/60 flex justify-between items-center">
                         <div>
                           <p className="text-[10px] text-on-surface-variant font-semibold">Standard Rental Rate</p>
-                          <p className="text-sm font-black text-on-surface">₹399 <span className="text-[10px] font-normal text-on-surface-variant">/ 24 hrs</span></p>
+                          <p className="text-sm font-extrabold text-on-surface">₹399 <span className="text-[10px] font-normal text-on-surface-variant">/ 24 hrs</span></p>
                         </div>
                         <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-2 py-1 rounded-md">
                           Verified Owner
@@ -657,11 +657,11 @@ export function HowItWorksInteractive() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="bg-surface p-3 rounded-2xl border border-outline-variant/60 shadow-sm text-center">
                           <span className="text-[9px] text-on-surface-variant font-bold uppercase">Distance</span>
-                          <p className="text-xl font-black text-primary">{rideDistance.toFixed(2)} <span className="text-xs font-normal text-on-surface-variant">km</span></p>
+                          <p className="text-xl font-extrabold text-primary">{rideDistance.toFixed(2)} <span className="text-xs font-normal text-on-surface-variant">km</span></p>
                         </div>
                         <div className="bg-surface p-3 rounded-2xl border border-outline-variant/60 shadow-sm text-center">
                           <span className="text-[9px] text-on-surface-variant font-bold uppercase">Estimated Bill</span>
-                          <p className="text-xl font-black text-primary">₹{rideCost.toFixed(2)}</p>
+                          <p className="text-xl font-extrabold text-primary">₹{rideCost.toFixed(2)}</p>
                         </div>
                       </div>
 
@@ -726,7 +726,7 @@ export function HowItWorksInteractive() {
                         <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-checkmark-pop shadow-sm">
                           <span className="material-symbols-outlined text-2xl font-bold">check</span>
                         </div>
-                        <h4 className="font-black text-sm text-on-surface">Ride Completed</h4>
+                        <h4 className="font-extrabold text-sm text-on-surface">Ride Completed</h4>
                         <p className="text-[10px] text-on-surface-variant">Honda Activa 6G • KL 16 P 78</p>
                       </div>
 
@@ -754,7 +754,7 @@ export function HowItWorksInteractive() {
 
                         <div className="border-t border-outline-variant/60 pt-2 flex justify-between items-center">
                           <span className="font-extrabold text-xs text-on-surface">Total Payable Amount:</span>
-                          <span className="font-black text-base text-primary">₹526.00</span>
+                          <span className="font-extrabold text-base text-primary">₹526.00</span>
                         </div>
                       </div>
 
@@ -779,7 +779,7 @@ export function HowItWorksInteractive() {
                           <span className="material-symbols-outlined text-2xl font-bold">verified</span>
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Payment Successful</p>
-                        <h4 className="font-black text-2xl text-on-surface">₹526.00</h4>
+                        <h4 className="font-extrabold text-2xl text-on-surface">₹526.00</h4>
                       </div>
 
                       {/* UPI Confirmation Details */}

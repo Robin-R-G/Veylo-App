@@ -148,7 +148,7 @@ export default function NewVehiclePage() {
             <span className="material-symbols-outlined text-3xl">lock</span>
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-black text-on-surface">You've reached your vehicle limit</h2>
+            <h2 className="text-lg font-extrabold text-on-surface">You've reached your vehicle limit</h2>
             <p className="text-xs text-on-surface-variant max-w-md mx-auto leading-relaxed">
               Your current active subscription plan supports up to <strong>{limitCount} vehicles</strong>. To register more vehicles in your fleet, please upgrade to a higher tier plan.
             </p>

@@ -163,9 +163,9 @@ export default function BillingClient() {
       <div className="bg-surface rounded-2xl border border-outline-variant p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Active Subscription</span>
-          <h2 className="font-black text-lg text-primary mt-1 flex items-center gap-2">
+          <h2 className="font-extrabold text-lg text-primary mt-1 flex items-center gap-2">
             {currentPlan.name}
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-black uppercase">
+            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold uppercase">
               {activeSub.status}
             </span>
           </h2>
@@ -204,7 +204,7 @@ export default function BillingClient() {
               >
                 <div>
                   <div className="flex justify-between items-start">
-                    <h4 className="font-black text-sm text-on-surface uppercase tracking-tight">{p.id}</h4>
+                    <h4 className="font-extrabold text-sm text-on-surface uppercase tracking-tight">{p.id}</h4>
                     {isActive && (
                       <span className="px-2 py-0.5 rounded bg-primary text-on-primary font-bold text-[9px] uppercase tracking-widest">
                         Active
@@ -224,33 +224,33 @@ export default function BillingClient() {
 
                   <ul className="mt-4 space-y-2 text-xs text-on-surface-variant">
                     <li className="flex items-center gap-1.5 font-semibold text-on-surface">
-                      <span className="material-symbols-outlined text-emerald-600 text-xs font-black">check</span>
+                      <span className="material-symbols-outlined text-emerald-600 text-xs font-extrabold">check</span>
                       Max Vehicles: {p.vehicleLimit > 50 ? '50+' : p.vehicleLimit}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-emerald-600 text-xs font-black">check</span>
+                      <span className="material-symbols-outlined text-emerald-600 text-xs font-extrabold">check</span>
                       Staff Seats: {p.staffLimit}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-black ${p.gpsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.gpsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
                         {p.gpsEnabled ? 'check' : 'close'}
                       </span>
                       GPS Tracking: {p.id === 'FREE' ? 'Basic' : 'Advanced'}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-black ${p.advancedReports ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.advancedReports ? 'text-emerald-600' : 'text-outline'}`}>
                         {p.advancedReports ? 'check' : 'close'}
                       </span>
                       Advanced Reports
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-black ${p.customBranding ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.customBranding ? 'text-emerald-600' : 'text-outline'}`}>
                         {p.customBranding ? 'check' : 'close'}
                       </span>
                       Custom Branding
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-black ${!p.adsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold ${!p.adsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
                         {!p.adsEnabled ? 'check' : 'close'}
                       </span>
                       Ad-Free Portal
