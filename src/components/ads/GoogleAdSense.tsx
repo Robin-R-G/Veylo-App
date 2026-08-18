@@ -5,7 +5,8 @@ import React, { useEffect, useRef } from 'react';
 interface GoogleAdSenseProps {
   adClient: string;
   adSlot: string;
-  format?: 'auto' | 'horizontal' | 'vertical' | 'rectangle';
+  format?: 'auto' | 'horizontal' | 'vertical' | 'rectangle' | 'fluid';
+  layout?: 'in-article' | 'in-feed' | 'fixed';
   responsive?: boolean;
   className?: string;
   style?: React.CSSProperties;
@@ -21,6 +22,7 @@ export const GoogleAdSense: React.FC<GoogleAdSenseProps> = ({
   adClient,
   adSlot,
   format = 'auto',
+  layout,
   responsive = true,
   className = '',
   style,
@@ -49,11 +51,13 @@ export const GoogleAdSense: React.FC<GoogleAdSenseProps> = ({
         className="adsbygoogle"
         style={{
           display: 'block',
+          textAlign: 'center',
           ...style,
         }}
         data-ad-client={adClient}
         data-ad-slot={adSlot}
         data-ad-format={format}
+        {...(layout ? { 'data-ad-layout': layout } : {})}
         data-full-width-responsive={responsive ? 'true' : 'false'}
       />
     </div>

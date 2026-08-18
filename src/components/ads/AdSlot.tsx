@@ -10,12 +10,12 @@ interface AdSlotProps {
   className?: string;
 }
 
-const ADSENSE_PLACEMENT_MAP: Record<string, { slot: string; format: string }> = {
-  'dashboard-bottom': { slot: '1234567890', format: 'auto' },
-  'vehicle-bottom': { slot: '1234567891', format: 'auto' },
-  'invoice-bottom': { slot: '1234567892', format: 'auto' },
-  'public-page-bottom': { slot: '1234567893', format: 'auto' },
-  'reports-bottom': { slot: '1234567894', format: 'auto' },
+const ADSENSE_PLACEMENT_MAP: Record<string, { slot: string; format: string; layout?: string }> = {
+  'dashboard-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
+  'vehicle-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
+  'invoice-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
+  'public-page-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
+  'reports-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
 };
 
 export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => {
@@ -24,7 +24,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => 
   const [mounted, setMounted] = useState(false);
   const [adProvider, setAdProvider] = useState<'custom' | 'adsense' | null>(null);
 
-  const adClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || '';
+  const adClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT || 'ca-pub-1405620724559526';
 
   useEffect(() => {
     setMounted(true);
@@ -133,6 +133,7 @@ export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => 
             adClient={adClient}
             adSlot={adsenseConfig.slot}
             format={adsenseConfig.format as any}
+            layout={adsenseConfig.layout as any}
             responsive
           />
         </div>
