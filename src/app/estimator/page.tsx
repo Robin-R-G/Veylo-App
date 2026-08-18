@@ -203,12 +203,12 @@ export default function TripEstimatorPage() {
 
           <div className="flex justify-between items-center text-xs text-on-surface-variant">
             <span>Calculated Fuel Cost:</span>
-            <span className="font-bold text-on-surface">{formatCurrency(result.estimatedFuelCostPaise)}</span>
+            <span className="font-bold text-on-surface">{formatCurrency(result.estimatedFuelCostRupees)}</span>
           </div>
 
           <div className="border-t border-outline-variant pt-3 flex justify-between items-center">
             <span className="text-sm font-bold text-on-surface">Total Payable Estimate:</span>
-            <span className="text-2xl font-extrabold text-primary">{formatCurrency(result.totalAmountPaise)}</span>
+            <span className="text-2xl font-extrabold text-primary">{formatCurrency(result.totalAmountRupees)}</span>
           </div>
         </div>
       </div>
