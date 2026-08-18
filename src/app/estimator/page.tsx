@@ -21,8 +21,8 @@ export default function TripEstimatorPage() {
   const loadRateForType = async (type: FuelType) => {
     const rate = await centralFuelPriceService.getLatestFuelPrice(type, 'Kerala', 'Kozhikode');
     if (rate) {
-      const rawPrice = Number(rate.priceRupees || 0);
-      const rupees = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
+      const rawPrice = Number(rate.priceRupees || (rate.pricePerUnitPaise ? rate.pricePerUnitPaise / 100 : 0));
+      const rupees = rawPrice > 500 ? rawPrice / 100 : rawPrice;
       setFuelPrice(rupees);
       setUnit(rate.unit);
     }
@@ -34,8 +34,8 @@ export default function TripEstimatorPage() {
 
     const unsubscribe = fuelRealtimeService.subscribe((updated) => {
       if (updated.fuelType === fuelType) {
-        const rawPrice = Number(updated.priceRupees || 0);
-        const rupees = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
+        const rawPrice = Number(updated.priceRupees || (updated.pricePerUnitPaise ? updated.pricePerUnitPaise / 100 : 0));
+        const rupees = rawPrice > 500 ? rawPrice / 100 : rawPrice;
         setFuelPrice(rupees);
         setUnit(updated.unit);
       }
@@ -67,7 +67,7 @@ export default function TripEstimatorPage() {
   const dist = safeEndNum - startNum;
 
   const rawPriceNum = Number(fuelPrice || 0);
-  const normalizedPriceRupees = rawPriceNum > 1000 ? rawPriceNum / 100 : rawPriceNum;
+  const normalizedPriceRupees = rawPriceNum > 500 ? rawPriceNum / 100 : rawPriceNum;
 
   const result = calculateRideCosts({
     startOdometer: startNum,

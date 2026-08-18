@@ -14,8 +14,8 @@ export function mapFuelPriceRow(r: any): FuelPrice {
   let rawPaise = Number(r.price_per_unit_paise || r.pricePerUnitPaise || 0);
   let rawRupees = Number(r.price_rupees || r.priceRupees || 0);
 
-  if (rawRupees > 1000) {
-    rawPaise = rawRupees;
+  if (rawRupees > 500) {
+    rawPaise = Math.round(rawRupees);
     rawRupees = rawPaise / 100;
   } else if (rawRupees === 0 && rawPaise > 0) {
     rawRupees = rawPaise / 100;

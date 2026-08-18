@@ -41,18 +41,24 @@ export function calculateRideCosts(params: RideCalculationParams): RideCalculati
   const safeEnd = Math.max(safeStart, Number(endOdometer || 0));
   const safeMileage = Number(mileageKmpl) > 0 ? Number(mileageKmpl) : 1;
 
+  // Sanitize fuelPricePaise: if > 50000 (₹500/L), fuelPricePaise was multiplied by 100 twice
+  let safeFuelPricePaise = Math.max(0, Number(fuelPricePaise || 0));
+  if (safeFuelPricePaise > 50000) {
+    safeFuelPricePaise = Math.round(safeFuelPricePaise / 100);
+  }
+
   const distanceKm = Math.round((safeEnd - safeStart) * 100) / 100;
   
   // Fuel consumed in Litres (e.g. 8 km / 40 km/L = 0.20 L)
   const estimatedFuelLitres = distanceKm > 0 ? Math.round((distanceKm / safeMileage) * 1000) / 1000 : 0;
   
   // Fuel cost in integer paise (e.g. (8 / 40) * 10420 = 2084 paise = ₹20.84)
-  const estimatedFuelCostPaise = Math.round((distanceKm / safeMileage) * fuelPricePaise);
+  const estimatedFuelCostPaise = Math.round((distanceKm / safeMileage) * safeFuelPricePaise);
   
   // Price per kilometre in paise
   const pricePerKmPaise = distanceKm > 0 
     ? Math.round(estimatedFuelCostPaise / distanceKm) 
-    : Math.round((1 / safeMileage) * fuelPricePaise);
+    : Math.round((1 / safeMileage) * safeFuelPricePaise);
 
   const perKmRatePaise = Math.round(perKmRateRupees * 100);
   const fixedRatePaise = Math.round(fixedRateRupees * 100);
