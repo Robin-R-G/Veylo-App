@@ -502,6 +502,34 @@ export interface PlanEntitlements {
 
 export type SubscriptionStatus = 'TRIAL' | 'ACTIVE' | 'PAST_DUE' | 'CANCELLED' | 'EXPIRED' | 'SUSPENDED';
 
+export type StaffRole = 'MANAGER' | 'DISPATCHER' | 'VIEWER';
+
+export interface StaffMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  email: string;
+  name: string;
+  role: StaffRole;
+  invitedAt: string;
+  joinedAt?: string;
+  status: 'INVITED' | 'ACTIVE' | 'DISABLED';
+  createdAt: string;
+}
+
+export interface CustomBrandingSettings {
+  organizationId: string;
+  logoUrl?: string;
+  primaryColor: string;
+  accentColor: string;
+  businessName: string;
+  tagline?: string;
+  customDomain?: string;
+  invoiceFooter?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export type PlatformRevenueType = 'SUBSCRIPTION' | 'PLATFORM_FEE' | 'PREMIUM_FEATURE' | 'ADVERTISING' | 'OTHER';
 
 export interface SaaSPlan {

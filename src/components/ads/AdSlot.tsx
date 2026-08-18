@@ -12,10 +12,10 @@ interface AdSlotProps {
 
 const ADSENSE_PLACEMENT_MAP: Record<string, { slot: string; format: string; layout?: string }> = {
   'dashboard-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
-  'vehicle-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
-  'invoice-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
-  'public-page-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
-  'reports-bottom': { slot: '1041310388', format: 'fluid', layout: 'in-article' },
+  'vehicle-bottom': { slot: 'SLOT_VEHICLE', format: 'fluid', layout: 'in-article' },
+  'invoice-bottom': { slot: 'SLOT_INVOICE', format: 'fluid', layout: 'in-article' },
+  'public-page-bottom': { slot: 'SLOT_PUBLIC', format: 'fluid', layout: 'in-article' },
+  'reports-bottom': { slot: 'SLOT_REPORTS', format: 'fluid', layout: 'in-article' },
 };
 
 export const AdSlot: React.FC<AdSlotProps> = ({ placement, className = '' }) => {

@@ -272,6 +272,18 @@ export function createFakeClient() {
       async getUser() {
         return { data: { user: null }, error: null };
       },
+      async getSession() {
+        return { data: { session: null }, error: null };
+      },
+      async signInWithPassword(params: any) {
+        return { data: { user: { id: 'u_fake', email: params?.email } }, error: null };
+      },
+      async signUp(params: any) {
+        return { data: { user: { id: 'u_fake', email: params?.email } }, error: null };
+      },
+      async signOut() {
+        return { error: null };
+      },
     },
   };
 }

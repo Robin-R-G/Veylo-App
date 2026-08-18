@@ -8,7 +8,7 @@ import { FuelPrice } from '@/types';
 
 vi.mock('@/lib/supabase/client', async () => {
   const m = await import('./fakeSupabase');
-  return { createClient: m.createFakeClient };
+  return { createClient: m.createFakeClient, isSupabaseConfigured: true };
 });
 
 describe('Central Fuel Price Authority & Admin Security', () => {
@@ -163,28 +163,37 @@ describe('Central Fuel Price Authority & Admin Security', () => {
   });
 
   describe('4. Strict Role Authentication & Separation', () => {
-    it('authenticates Super Admin with valid security credentials', () => {
-      const result = authService.loginAsAdmin('superadmin@veylo.app', 'admin2024');
+    it('authenticates Super Admin with valid security credentials', async () => {
+      fakeStore.tables.profiles = [
+        { id: 'prof_admin', user_id: 'u_fake', role: 'ADMIN', full_name: 'Super Admin' }
+      ];
+      const result = await authService.loginAsAdmin('superadmin@veylo.app', 'admin2024');
       expect(result.success).toBe(true);
       expect(authService.isPlatformAdmin()).toBe(true);
       expect(authService.hasRole('ADMIN')).toBe(true);
     });
 
-    it('rejects Admin login with invalid pin', () => {
-      const result = authService.loginAsAdmin('superadmin@veylo.app', 'wrongpin');
+    it('rejects Admin login with invalid pin', async () => {
+      fakeStore.tables.profiles = [
+        { id: 'prof_user', user_id: 'u_fake', role: 'OWNER', full_name: 'Regular Owner' }
+      ];
+      const result = await authService.loginAsAdmin('superadmin@veylo.app', 'wrongpin');
       expect(result.success).toBe(false);
       expect(authService.isPlatformAdmin()).toBe(false);
     });
 
-    it('isolates Owner role from Platform Admin role', () => {
-      authService.loginAsOwner('Robin Owner', '1234');
+    it('isolates Owner role from Platform Admin role', async () => {
+      fakeStore.tables.profiles = [
+        { id: 'prof_owner', user_id: 'u_fake', role: 'OWNER', full_name: 'Robin Owner' }
+      ];
+      await authService.loginAsOwner('Robin Owner', '1234');
       expect(authService.isOwner()).toBe(true);
       expect(authService.isPlatformAdmin()).toBe(false);
       expect(authService.isRider()).toBe(false);
     });
 
-    it('isolates Rider role from Platform Admin and Owner', () => {
-      authService.loginAsRider('Rahul Rider', '9876543210');
+    it('isolates Rider role from Platform Admin and Owner', async () => {
+      await authService.loginAsRider('Rahul Rider', '9876543210');
       expect(authService.isRider()).toBe(true);
       expect(authService.isOwner()).toBe(false);
       expect(authService.isPlatformAdmin()).toBe(false);

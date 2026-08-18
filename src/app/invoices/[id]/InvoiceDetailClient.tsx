@@ -10,6 +10,7 @@ import { formatCurrency } from '@/lib/services/financialEngine';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { FeatureBadge } from '@/components/ui/UpgradePrompt';
 import { getEntitlementsForTier } from '@/lib/services/entitlementEngine';
+import { ReceiptPrinter, BillReceipt, useReceiptPrinting } from '@/components/ui/ReceiptPrinter';
 
 export default function InvoiceDetailClient({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -18,6 +19,8 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
   const [dispute, setDispute] = useState<Dispute | null>(null);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
+  const { stage: receiptStage, startPrinting, reset: resetReceipt } = useReceiptPrinting();
 
   // Dispute form state
   const [showDisputeForm, setShowDisputeForm] = useState(false);
@@ -217,11 +220,14 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
           </div>
           
           <button
-            onClick={() => typeof window !== 'undefined' && window.print()}
+            onClick={() => {
+              setShowReceipt(true);
+              startPrinting();
+            }}
             className="px-3 py-1.5 rounded-lg bg-surface border border-outline-variant text-xs font-semibold text-on-surface flex items-center gap-1 hover:bg-surface-container-low transition-all shadow-sm"
           >
             <span className="material-symbols-outlined text-sm text-primary">print</span>
-            <span>Print</span>
+            <span>Print Bill</span>
           </button>
         </div>
       </div>
@@ -581,6 +587,58 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
       <div className="print:hidden">
         <AdSlot placement="invoice-bottom" />
       </div>
+
+      {/* Receipt Printer Overlay */}
+      {showReceipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm print:hidden">
+          <div className="bg-surface rounded-2xl border border-outline-variant p-6 max-w-sm w-full mx-4 relative">
+            {/* Close button */}
+            <button
+              onClick={() => { setShowReceipt(false); resetReceipt(); }}
+              className="absolute top-3 right-3 text-on-surface-variant hover:text-on-surface transition-colors"
+            >
+              <span className="material-symbols-outlined text-lg">close</span>
+            </button>
+
+            <ReceiptPrinter stage={receiptStage}>
+              <BillReceipt
+                invoiceNumber={invoice.invoiceNumber}
+                vehicleReg={invoice.vehicleRegNumber}
+                vehicleModel={invoice.vehicleMakeModel || undefined}
+                riderName={invoice.customerName || 'Robin'}
+                riderPhone={invoice.customerPhone || undefined}
+                distanceKm={invoice.distanceKm}
+                fuelLitres={invoice.estimatedFuelLitres}
+                fuelPrice={snapshot?.priceRupees}
+                ratePerKm={invoice.ratePerKmRupees}
+                subtotal={invoice.subtotalRupees}
+                total={invoice.totalRupees}
+                issuedAt={invoice.issuedAt}
+                paymentStatus={invoice.paymentStatus}
+              />
+            </ReceiptPrinter>
+
+            {/* Actions after complete */}
+            {receiptStage === 'complete' && (
+              <div className="mt-4 flex gap-2">
+                <button
+                  onClick={() => typeof window !== 'undefined' && window.print()}
+                  className="flex-1 py-2.5 rounded-xl bg-primary text-on-primary text-xs font-bold uppercase flex items-center justify-center gap-1.5 shadow hover:opacity-90 transition-all"
+                >
+                  <span className="material-symbols-outlined text-sm">printer</span>
+                  Send to Printer
+                </button>
+                <button
+                  onClick={() => { setShowReceipt(false); resetReceipt(); }}
+                  className="px-4 py-2.5 rounded-xl border border-outline-variant text-on-surface-variant text-xs font-bold"
+                >
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
