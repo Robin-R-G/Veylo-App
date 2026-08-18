@@ -5,9 +5,11 @@ import Link from 'next/link';
 import { getInvoiceById, getPaymentsByInvoiceId, getDisputeByTripId, createDispute, updatePaymentStatus } from '@/lib/services/supabase/data';
 import { supabaseAuth } from '@/lib/services/supabase/auth';
 import { paymentService } from '@/lib/services/paymentService';
-import { Invoice, PaymentAttempt, Dispute, AppSession } from '@/types';
+import { Invoice, PaymentAttempt, Dispute, AppSession, PlanTier } from '@/types';
 import { formatCurrency } from '@/lib/services/financialEngine';
 import { AdSlot } from '@/components/ads/AdSlot';
+import { FeatureBadge } from '@/components/ui/UpgradePrompt';
+import { getEntitlementsForTier } from '@/lib/services/entitlementEngine';
 
 export default function InvoiceDetailClient({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -22,6 +24,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
   const [disputeReason, setDisputeReason] = useState('PAYMENT_NOT_RECEIVED');
   const [disputeNotes, setDisputeNotes] = useState('');
   const [disputeSuccessMsg, setDisputeSuccessMsg] = useState('');
+  const [planTier, setPlanTier] = useState<PlanTier>('FREE');
 
   const loadData = async () => {
     try {
@@ -45,7 +48,11 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
 
   useEffect(() => {
     setMounted(true);
-    supabaseAuth.getSession().then(s => setSession(s));
+    supabaseAuth.getSession().then(s => {
+      setSession(s);
+      // In production, fetch org plan tier; default to FREE for now
+      setPlanTier('FREE');
+    });
     loadData();
   }, [id]);
 
@@ -183,6 +190,31 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             </span>
             <span>{copied ? 'Link Copied' : 'Share Bill'}</span>
           </button>
+
+          {/* PDF Download - Pro+ feature */}
+          <div className="relative group">
+            <button
+              onClick={() => {
+                if (!getEntitlementsForTier(planTier).allowPdfDownload) {
+                  return; // Blocked for Free tier
+                }
+                // PDF download logic would go here
+                alert('PDF download coming soon!');
+              }}
+              disabled={!getEntitlementsForTier(planTier).allowPdfDownload}
+              className={`px-3 py-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-all shadow-sm ${
+                getEntitlementsForTier(planTier).allowPdfDownload
+                  ? 'bg-surface border-outline-variant text-on-surface hover:bg-surface-container-low'
+                  : 'bg-surface-container-low border-outline-variant text-on-surface-variant cursor-not-allowed opacity-60'
+              }`}
+            >
+              <span className="material-symbols-outlined text-sm text-primary">download</span>
+              <span>PDF</span>
+              {!getEntitlementsForTier(planTier).allowPdfDownload && (
+                <FeatureBadge label="PDF Download" requiredTier="PRO" currentTier={planTier} />
+              )}
+            </button>
+          </div>
           
           <button
             onClick={() => typeof window !== 'undefined' && window.print()}

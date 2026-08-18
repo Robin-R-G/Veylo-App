@@ -4,19 +4,30 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getVehicles } from '@/lib/services/supabase/data';
 import { supabaseAuth } from '@/lib/services/supabase/auth';
-import { Vehicle, VehicleType } from '@/types';
+import { Vehicle, VehicleType, PlanTier } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService } from '@/lib/services/fuelPriceProvider';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { appRealtimeService } from '@/lib/services/appRealtimeService';
+import { UpgradePrompt } from '@/components/ui/UpgradePrompt';
+import { canAddVehicle } from '@/lib/services/entitlementEngine';
+import { authService } from '@/lib/services/authService';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [cachedPrices, setCachedPrices] = useState<Record<string, number>>({});
   const [filterType, setFilterType] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
+  const [planTier, setPlanTier] = useState<PlanTier>('FREE');
 
   useEffect(() => {
+    const session = authService.getSession();
+    if (session) {
+      // Get plan tier from org or default to FREE
+      const orgId = session.userId; // simplified; in production fetch from org
+      setPlanTier('FREE'); // Default; would fetch from org in production
+    }
+
     (async () => {
       try {
         const orgId = (await supabaseAuth.getOrganizationId()) || 'org_demo_1';
@@ -57,22 +68,34 @@ export default function VehiclesPage() {
     ? vehicles
     : vehicles.filter(v => v.vehicleType === filterType);
 
+  const vehicleCheck = canAddVehicle(vehicles.length, planTier);
+  const canAdd = vehicleCheck.allowed;
+
   return (
     <div className="space-y-6">
       
       {/* Standard Page Header */}
       <PageHeader
         title="Vehicle Management"
-        subtitle="Manage your fleet with normalized registration tracking."
+        subtitle={`Manage your fleet with normalized registration tracking. (${vehicles.length}/${vehicleCheck.limit === 999 ? '∞' : vehicleCheck.limit} vehicles)`}
         icon="directions_car"
         action={
-          <Link
-            href="/vehicles/new"
-            className="px-4 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-xs flex items-center gap-1.5 shadow hover:bg-primary-container hover:text-on-primary-container transition-all"
-          >
-            <span className="material-symbols-outlined text-sm">add</span>
-            Register New Vehicle
-          </Link>
+          canAdd ? (
+            <Link
+              href="/vehicles/new"
+              className="px-4 py-2.5 rounded-lg bg-primary text-on-primary font-semibold text-xs flex items-center gap-1.5 shadow hover:bg-primary-container hover:text-on-primary-container transition-all"
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              Register New Vehicle
+            </Link>
+          ) : (
+            <UpgradePrompt
+              feature="Add more vehicles"
+              currentTier={planTier}
+              requiredTier={planTier === 'FREE' ? 'PRO' : 'BUSINESS'}
+              className="!p-2 !text-xs"
+            />
+          )
         }
       />
 
