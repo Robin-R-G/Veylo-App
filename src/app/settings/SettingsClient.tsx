@@ -237,6 +237,43 @@ export default function SettingsClient() {
             </p>
           </div>
 
+          {/* Quick Links: Staff + Branding */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Link
+              href="/settings/staff"
+              className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-4 sm:p-6 hover:border-primary transition-colors group"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <span className="material-symbols-outlined text-primary text-lg">group</span>
+                <h3 className="font-bold text-on-surface text-sm">Staff Accounts</h3>
+              </div>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Invite team members, assign roles, and manage access for your fleet operations.
+              </p>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary mt-2 group-hover:underline">
+                Manage Staff
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </span>
+            </Link>
+
+            <Link
+              href="/settings/branding"
+              className="bg-surface rounded-2xl border border-outline-variant shadow-sm p-4 sm:p-6 hover:border-primary transition-colors group"
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <span className="material-symbols-outlined text-primary text-lg">palette</span>
+                <h3 className="font-bold text-on-surface text-sm">Custom Branding</h3>
+              </div>
+              <p className="text-xs text-on-surface-variant leading-relaxed">
+                Add your logo, brand colors, and customize invoices with your business identity.
+              </p>
+              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary mt-2 group-hover:underline">
+                Customize Brand
+                <span className="material-symbols-outlined text-sm">arrow_forward</span>
+              </span>
+            </Link>
+          </div>
+
           <form onSubmit={handleSave} className="space-y-6">
 
             {/* Organization Details */}
