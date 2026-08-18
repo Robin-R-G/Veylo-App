@@ -186,7 +186,7 @@ export interface Vehicle {
   currentOdometer: number;
   lastVerifiedOdometer: number;
   estimatedCurrentOdometer: number;
-  ratePerKmRupees: number; // e.g. 12 for ₹12/km
+  ratePerKmRupees: number; // e.g. 12 for Γé╣12/km
   ownerUpiId?: string;
   requiresApproval?: boolean;
   state: string; // e.g. "Kerala"
@@ -300,7 +300,7 @@ export interface FuelPrice {
   city: string;
   pincode?: string;
   fuelType: FuelType;
-  pricePerUnitPaise: number; // e.g. 11400 = ₹114.00
+  pricePerUnitPaise: number; // e.g. 11400 = Γé╣114.00
   priceRupees: number; // e.g. 114.00
   unit: 'LITRE' | 'KG';
   currency: string;
