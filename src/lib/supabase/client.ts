@@ -169,7 +169,18 @@ function createEmptyProxy(): SupabaseClient {
           getSession: async () => ({ data: { session: null }, error: null }),
         };
       }
-      if (prop === 'channel') return (_name: string) => new Proxy({}, { get: () => new Proxy(() => ({}), { get: () => () => ({}) }) });
+      if (prop === 'channel') {
+        return (_name: string) => {
+          const ch: any = {
+            on: () => ch,
+            subscribe: (cb?: (status: string) => void) => {
+              if (cb) cb('SUBSCRIBED');
+              return ch;
+            },
+          };
+          return ch;
+        };
+      }
       if (prop === 'removeChannel') return async () => ({});
       if (typeof prop === 'string') {
         return new Proxy(() => buildChain(prop), rootHandler);

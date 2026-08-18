@@ -47,24 +47,27 @@ export class FuelRealtimeService {
   private initRealtimeSubscription() {
     try {
       const supabase = createClient();
-      this.channel = supabase
-        .channel('fuel-prices-realtime-channel')
-        .on(
+      const ch = supabase.channel('fuel-prices-realtime-channel');
+      if (ch && typeof ch.on === 'function') {
+        const sub = ch.on(
           'postgres_changes',
           { event: '*', schema: 'public', table: 'fuel_prices' },
-          (payload) => {
+          (payload: any) => {
             const newRow = payload.new;
             if (newRow) {
               const mapped = mapFuelPriceRow(newRow);
               this.broadcast(mapped);
             }
           }
-        )
-        .subscribe((status) => {
-          if (status === 'SUBSCRIBED') {
-            this.isSubscribed = true;
-          }
-        });
+        );
+        if (sub && typeof sub.subscribe === 'function') {
+          this.channel = sub.subscribe((status: string) => {
+            if (status === 'SUBSCRIBED') {
+              this.isSubscribed = true;
+            }
+          });
+        }
+      }
     } catch (err) {
       console.warn('[FuelRealtimeService] Realtime channel setup failed:', err);
     }
