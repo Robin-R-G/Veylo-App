@@ -21,7 +21,9 @@ export default function TripEstimatorPage() {
   const loadRateForType = async (type: FuelType) => {
     const rate = await centralFuelPriceService.getLatestFuelPrice(type, 'Kerala', 'Kozhikode');
     if (rate) {
-      setFuelPrice(rate.priceRupees);
+      const rawPrice = Number(rate.priceRupees || 0);
+      const rupees = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
+      setFuelPrice(rupees);
       setUnit(rate.unit);
     }
   };
@@ -32,7 +34,9 @@ export default function TripEstimatorPage() {
 
     const unsubscribe = fuelRealtimeService.subscribe((updated) => {
       if (updated.fuelType === fuelType) {
-        setFuelPrice(updated.priceRupees);
+        const rawPrice = Number(updated.priceRupees || 0);
+        const rupees = rawPrice > 1000 ? rawPrice / 100 : rawPrice;
+        setFuelPrice(rupees);
         setUnit(updated.unit);
       }
     });
@@ -58,13 +62,18 @@ export default function TripEstimatorPage() {
 
   const startNum = Number(startOdo || 0);
   const endNum = Number(endOdo || 0);
-  const dist = endNum >= startNum ? endNum - startNum : 0;
+  const isInvalidOdo = endNum < startNum;
+  const safeEndNum = Math.max(startNum, endNum);
+  const dist = safeEndNum - startNum;
+
+  const rawPriceNum = Number(fuelPrice || 0);
+  const normalizedPriceRupees = rawPriceNum > 1000 ? rawPriceNum / 100 : rawPriceNum;
 
   const result = calculateRideCosts({
     startOdometer: startNum,
-    endOdometer: endNum,
+    endOdometer: safeEndNum,
     mileageKmpl: Number(mileage || 1),
-    fuelPricePaise: Math.round(Number(fuelPrice || 0) * 100),
+    fuelPricePaise: Math.round(normalizedPriceRupees * 100),
     pricingMode: mode,
     perKmRateRupees: Number(perKmRate || 0),
   });
@@ -130,6 +139,13 @@ export default function TripEstimatorPage() {
             />
           </div>
         </div>
+
+        {isInvalidOdo && (
+          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm text-amber-500">warning</span>
+            <span>End odometer reading ({endNum} km) cannot be less than start reading ({startNum} km). Distance set to 0 km.</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>

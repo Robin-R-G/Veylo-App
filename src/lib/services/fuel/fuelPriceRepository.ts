@@ -11,6 +11,18 @@ export interface FuelPriceQuery {
 }
 
 export function mapFuelPriceRow(r: any): FuelPrice {
+  let rawPaise = Number(r.price_per_unit_paise || r.pricePerUnitPaise || 0);
+  let rawRupees = Number(r.price_rupees || r.priceRupees || 0);
+
+  if (rawRupees > 1000) {
+    rawPaise = rawRupees;
+    rawRupees = rawPaise / 100;
+  } else if (rawRupees === 0 && rawPaise > 0) {
+    rawRupees = rawPaise / 100;
+  } else if (rawPaise === 0 && rawRupees > 0) {
+    rawPaise = Math.round(rawRupees * 100);
+  }
+
   return {
     id: r.id || `fp_${(r.fuel_type || r.fuelType || '').toLowerCase()}`,
     country: r.country || 'India',
@@ -19,8 +31,8 @@ export function mapFuelPriceRow(r: any): FuelPrice {
     city: r.city || 'Kozhikode',
     pincode: r.pincode || '',
     fuelType: (r.fuel_type || r.fuelType) as FuelType,
-    pricePerUnitPaise: Number(r.price_per_unit_paise || r.pricePerUnitPaise || Math.round((r.price_rupees || r.priceRupees || 0) * 100)),
-    priceRupees: Number(r.price_rupees || r.priceRupees || (r.price_per_unit_paise ? r.price_per_unit_paise / 100 : 0)),
+    pricePerUnitPaise: rawPaise,
+    priceRupees: rawRupees,
     unit: (r.unit || (r.fuel_type === 'CNG' || r.fuelType === 'CNG' ? 'KG' : 'LITRE')) as 'LITRE' | 'KG',
     currency: r.currency || 'INR',
     sourceName: r.source_name || r.sourceName || r.source || 'Central Database',
