@@ -5,14 +5,40 @@ import { computePlatformFee } from '@/lib/services/platformEconomics';
 
 export const dynamic = 'force-dynamic';
 
-// Public QR usage-bill flow: takes a trip draft (from public.trips), computes
-// the bill, and finalizes it into an invoice. No auth — the trip was created
-// by the anonymous QR page; the route only reads the one trip by id.
+// ponytail: simple in-memory rate limiter — resets on cold start, fine for prototype.
+// Upgrade to Redis-backed limiter if throughput matters.
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 10;
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const entry = rateLimitMap.get(ip);
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+    return true;
+  }
+  if (entry.count >= RATE_LIMIT_MAX) return false;
+  entry.count++;
+  return true;
+}
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export async function POST(request: Request) {
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  if (!checkRateLimit(ip)) {
+    return NextResponse.json({ error: 'Rate limit exceeded. Try again in 1 minute.' }, { status: 429 });
+  }
+
   const supabase = await createClient();
   const { tripId } = await request.json();
-  if (!tripId) {
+  if (!tripId || typeof tripId !== 'string') {
     return NextResponse.json({ error: 'tripId required' }, { status: 400 });
+  }
+
+  if (!UUID_RE.test(tripId)) {
+    return NextResponse.json({ error: 'Invalid tripId format' }, { status: 400 });
   }
 
   const { data: trip, error: tripErr } = await supabase

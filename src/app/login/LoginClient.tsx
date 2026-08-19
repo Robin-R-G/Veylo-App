@@ -12,7 +12,18 @@ type OwnerMode = 'login' | 'signup';
 export default function LoginClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  const redirect = (() => {
+    const raw = searchParams.get('redirect') || '/dashboard';
+    // Sanitize: only allow relative paths, block protocol-relative URLs and external domains
+    if (!raw.startsWith('/') || raw.startsWith('//')) return '/dashboard';
+    try {
+      const url = new URL(raw, window.location.origin);
+      if (url.origin !== window.location.origin) return '/dashboard';
+      return url.pathname + url.search;
+    } catch {
+      return '/dashboard';
+    }
+  })();
 
   const [activeTab, setActiveTab] = useState<Tab>('owner');
   const [ownerMode, setOwnerMode] = useState<OwnerMode>('login');

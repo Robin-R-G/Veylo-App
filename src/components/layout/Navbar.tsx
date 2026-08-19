@@ -59,6 +59,7 @@ export const Navbar: React.FC = () => {
 
   const tierBadgeColor: Record<PlanTier, string> = {
     FREE: 'bg-surface text-on-surface',
+    STARTER: 'bg-secondary-container text-on-secondary-container',
     PRO: 'bg-primary text-on-primary',
     BUSINESS: 'bg-tertiary-container text-on-tertiary-container',
   };

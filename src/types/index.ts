@@ -1,4 +1,4 @@
-export type PlanTier = 'FREE' | 'PRO' | 'BUSINESS';
+export type PlanTier = 'FREE' | 'STARTER' | 'PRO' | 'BUSINESS';
 
 export type UserRole = 'SUPER_ADMIN' | 'OWNER' | 'STAFF' | 'CUSTOMER';
 

@@ -10,6 +10,15 @@ export const PLAN_LIMITS: Record<PlanTier, PlanEntitlements> = {
     allowAdvancedAnalytics: false,
     allowTripEstimator: true,
   },
+  STARTER: {
+    maxVehicles: 3,
+    allowPdfDownload: false,
+    allowStaffAccounts: false,
+    allowCustomBranding: false,
+    isAdFree: false,
+    allowAdvancedAnalytics: false,
+    allowTripEstimator: true,
+  },
   PRO: {
     maxVehicles: 10,
     allowPdfDownload: true,

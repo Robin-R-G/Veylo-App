@@ -13,11 +13,12 @@ interface UpgradePromptProps {
 
 const TIER_LABELS: Record<PlanTier, string> = {
   FREE: 'Free',
+  STARTER: 'Starter',
   PRO: 'Pro',
   BUSINESS: 'Business',
 };
 
-const TIER_ORDER: PlanTier[] = ['FREE', 'PRO', 'BUSINESS'];
+const TIER_ORDER: PlanTier[] = ['FREE', 'STARTER', 'PRO', 'BUSINESS'];
 
 export const UpgradePrompt: React.FC<UpgradePromptProps> = ({
   feature,
