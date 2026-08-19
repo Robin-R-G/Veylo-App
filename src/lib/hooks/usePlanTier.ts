@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { PlanTier, PlanEntitlements } from '@/types';
 import { authService } from '@/lib/services/authService';
 import { getEntitlementsForTier } from '@/lib/services/entitlementEngine';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 interface UsePlanTierResult {
   tier: PlanTier;
@@ -23,9 +24,10 @@ export function usePlanTier(): UsePlanTierResult {
       return;
     }
 
-    // In production, fetch from org/subscription
-    // For now, default to FREE
-    setTier('FREE');
+    // Read from mockStorage (demo) — in production, fetch from Supabase subscriptions table
+    const state = mockStorage.getState();
+    const orgTier = state.organization?.planTier || state.currentTier || 'FREE';
+    setTier(orgTier);
     setLoading(false);
   }, []);
 

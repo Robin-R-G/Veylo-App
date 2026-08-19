@@ -12,6 +12,7 @@ import { appRealtimeService } from '@/lib/services/appRealtimeService';
 import { UpgradePrompt } from '@/components/ui/UpgradePrompt';
 import { canAddVehicle } from '@/lib/services/entitlementEngine';
 import { authService } from '@/lib/services/authService';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function VehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -23,9 +24,8 @@ export default function VehiclesPage() {
   useEffect(() => {
     const session = authService.getSession();
     if (session) {
-      // Get plan tier from org or default to FREE
-      const orgId = session.userId; // simplified; in production fetch from org
-      setPlanTier('FREE'); // Default; would fetch from org in production
+      const state = mockStorage.getState();
+      setPlanTier(state.organization?.planTier || state.currentTier || 'FREE');
     }
 
     (async () => {

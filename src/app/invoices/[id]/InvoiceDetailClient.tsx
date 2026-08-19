@@ -11,6 +11,7 @@ import { AdSlot } from '@/components/ads/AdSlot';
 import { FeatureBadge } from '@/components/ui/UpgradePrompt';
 import { getEntitlementsForTier } from '@/lib/services/entitlementEngine';
 import { ReceiptPrinter, BillReceipt, useReceiptPrinting } from '@/components/ui/ReceiptPrinter';
+import { mockStorage } from '@/lib/services/mockStorage';
 
 export default function InvoiceDetailClient({ id }: { id: string }) {
   const [invoice, setInvoice] = useState<Invoice | null>(null);
@@ -53,8 +54,8 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
     setMounted(true);
     supabaseAuth.getSession().then(s => {
       setSession(s);
-      // In production, fetch org plan tier; default to FREE for now
-      setPlanTier('FREE');
+      const state = mockStorage.getState();
+      setPlanTier(state.organization?.planTier || state.currentTier || 'FREE');
     });
     loadData();
   }, [id]);
