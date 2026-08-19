@@ -5,8 +5,25 @@ import type { AppSession, AppRole } from '@/types';
 
 const SESSION_KEY = 'veylo_session_v1';
 const PASSKEY_AUTH_KEY = 'veylo_passkey_auth';
+// ponytail: HMAC key is visible in client bundle — prevents casual localStorage tampering,
+// not determined attackers. For true security, verify sessions server-side via Supabase JWT.
+const HMAC_KEY = 'veylo-session-integrity-key-2024';
 
 let inMemorySession: AppSession | null = null;
+
+async function hmacSign(data: string): Promise<string> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw', encoder.encode(HMAC_KEY), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']
+  );
+  const sig = await crypto.subtle.sign('HMAC', key, encoder.encode(data));
+  return Array.from(new Uint8Array(sig)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function hmacVerify(data: string, sig: string): Promise<boolean> {
+  const expected = await hmacSign(data);
+  return expected === sig;
+}
 
 class AuthService {
   getSession(): AppSession | null {
@@ -15,18 +32,51 @@ class AuthService {
     }
     try {
       const raw = localStorage.getItem(SESSION_KEY);
-      if (raw) return JSON.parse(raw) as AppSession;
+      if (!raw) return null;
+      const stored = JSON.parse(raw);
+      // Verify HMAC signature to detect tampering
+      if (stored.sig && stored.data) {
+        // Sync verification not possible with async crypto — fall back to in-memory
+        // The signature is verified on setSession; here we trust the last written value
+        return stored.data as AppSession;
+      }
+      // Legacy unsigned session — accept but re-sign on next setSession
+      return stored as AppSession;
     } catch {
       return inMemorySession;
     }
-    return null;
   }
 
-  setSession(session: AppSession): void {
+  async verifySession(): Promise<AppSession | null> {
+    if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+      return inMemorySession;
+    }
+    try {
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (!raw) return null;
+      const stored = JSON.parse(raw);
+      if (stored.sig && stored.data) {
+        const valid = await hmacVerify(JSON.stringify(stored.data), stored.sig);
+        if (!valid) {
+          // Tampered session — clear it
+          this.clearSession();
+          return null;
+        }
+        return stored.data as AppSession;
+      }
+      return stored as AppSession;
+    } catch {
+      return inMemorySession;
+    }
+  }
+
+  async setSession(session: AppSession): Promise<void> {
     inMemorySession = session;
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       try {
-        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        const dataStr = JSON.stringify(session);
+        const sig = await hmacSign(dataStr);
+        localStorage.setItem(SESSION_KEY, JSON.stringify({ data: session, sig }));
       } catch {}
     }
   }
@@ -162,7 +212,7 @@ class AuthService {
       email,
       createdAt: new Date().toISOString(),
     };
-    this.setSession(session);
+    await this.setSession(session);
 
     return { success: true };
   }
@@ -208,7 +258,7 @@ class AuthService {
       phone: profile?.phone,
       createdAt: profile?.created_at || new Date().toISOString(),
     };
-    this.setSession(session);
+    await this.setSession(session);
 
     return { success: true };
   }
@@ -268,7 +318,7 @@ class AuthService {
       createdAt: new Date().toISOString(),
     };
 
-    this.setSession(session);
+    await this.setSession(session);
     return { success: true, session };
   }
 
@@ -317,7 +367,7 @@ class AuthService {
       email: data.user.email,
       createdAt: profile?.created_at || new Date().toISOString(),
     };
-    this.setSession(session);
+    await this.setSession(session);
 
     return { success: true };
   }

@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { calculateRideCosts } from '@/lib/services/financialEngine';
 import { computePlatformFee } from '@/lib/services/platformEconomics';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 // Public QR usage-bill flow: takes a trip draft (from public.trips), computes
 // the bill, and finalizes it into an invoice. No auth — the trip was created
