@@ -28,7 +28,8 @@ class LegacyFuelPriceServiceAdapter {
    */
   async getCachedPrice(fuelType: FuelType, state: string = 'Kerala', city: string = 'Kozhikode'): Promise<number> {
     const res = await centralFuelPriceService.getLatestFuelPrice(fuelType, state, city);
-    return res.priceRupees;
+    const rawPrice = res.priceRupees || (res.pricePerUnitPaise ? res.pricePerUnitPaise / 100 : 0);
+    return rawPrice > 500 ? rawPrice / 100 : rawPrice;
   }
 
   /**

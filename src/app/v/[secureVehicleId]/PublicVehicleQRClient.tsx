@@ -75,7 +75,8 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   const endOdoNum = Number(endOdometer || 0);
   const startOdoNum = vehicle.currentOdometer;
   const distanceKm = endOdoNum >= startOdoNum ? endOdoNum - startOdoNum : 0;
-  const priceRupees = fuelPrice?.priceRupees || 0;
+  const rawPrice = fuelPrice?.priceRupees || (fuelPrice?.pricePerUnitPaise ? fuelPrice.pricePerUnitPaise / 100 : 0);
+  const priceRupees = rawPrice > 500 ? rawPrice / 100 : rawPrice;
 
   let calcPreview = null;
   if (distanceKm > 0) {
