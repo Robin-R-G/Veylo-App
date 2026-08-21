@@ -134,8 +134,8 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
       
       {/* Live HUD Header */}
       <div className="text-center space-y-1">
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold uppercase tracking-wider">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-success-container text-success text-xs font-bold uppercase tracking-wider">
+          <span className="w-2.5 h-2.5 rounded-full bg-success animate-pulse"></span>
           <span>Ride in Progress</span>
         </div>
         <h1 className="text-2xl font-extrabold text-on-surface mt-2">{trip.vehicleModel}</h1>
@@ -153,7 +153,7 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
           <div className="text-5xl font-extrabold text-primary font-mono tracking-tight my-2">
             {trip.gpsDistanceKm.toFixed(1)} <span className="text-xl font-bold text-on-surface-variant">KM</span>
           </div>
-          <span className="text-xs font-semibold text-emerald-700 flex items-center justify-center gap-1">
+          <span className="text-xs font-semibold text-success flex items-center justify-center gap-1">
             <span className="material-symbols-outlined text-sm">my_location</span>
             GPS tracking active & accurate
           </span>
@@ -184,7 +184,7 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
 
           <div className="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-on-surface-variant text-[10px] uppercase font-semibold block">Live Fare (₹{trip.ratePerKmRupees}/km)</span>
-            <span className="font-bold text-base text-emerald-800 font-mono mt-0.5 block">
+            <span className="font-bold text-base text-success font-mono mt-0.5 block">
               {formatCurrency(currentCostRupees)}
             </span>
           </div>
@@ -200,7 +200,7 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
             <button
               onClick={() => setIsSimulating(!isSimulating)}
               className={`px-2.5 py-1 rounded text-[10px] font-bold uppercase ${
-                isSimulating ? 'bg-amber-100 text-amber-800' : 'bg-surface border border-outline-variant text-primary'
+                isSimulating ? 'bg-warning-container text-warning' : 'bg-surface border border-outline-variant text-primary'
               }`}
             >
               {isSimulating ? 'Pause Driving Sim' : 'Start Driving Sim'}
@@ -218,7 +218,7 @@ export default function LiveRideClient({ tripId }: { tripId: string }) {
         {/* End Ride Button */}
         <button
           onClick={handleEndRide}
-          className="w-full py-4 rounded-2xl bg-rose-700 text-white font-bold text-xs uppercase tracking-wider shadow-md hover:bg-rose-800 transition-all flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-2xl bg-destructive text-white font-bold text-xs uppercase tracking-wider shadow-md hover:opacity-90 transition-all flex items-center justify-center gap-2"
         >
           <span className="material-symbols-outlined text-base">stop_circle</span>
           <span>End Ride & View Bill</span>

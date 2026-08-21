@@ -165,7 +165,7 @@ export default function VehiclesPage() {
 
                     <div className="p-2 rounded bg-surface-container-low border border-outline-variant">
                       <span className="text-[10px] text-on-surface-variant block">Cost/KM</span>
-                      <span className="font-bold text-emerald-800">{formatCurrency(calc.pricePerKmRupees)}</span>
+                      <span className="font-bold text-success">{formatCurrency(calc.pricePerKmRupees)}</span>
                     </div>
                   </div>
                 </div>

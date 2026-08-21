@@ -187,7 +187,7 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
               </div>
               {priceRupees > 0 ? (
                 <>
-                  <span className="font-bold text-base text-emerald-800">₹{priceRupees.toFixed(2)}/L</span>
+                  <span className="font-bold text-base text-success">₹{priceRupees.toFixed(2)}/L</span>
                   <span className="text-[10px] text-on-surface-variant block mt-0.5">{vehicle.city || 'Kozhikode'}, {vehicle.state || 'Kerala'}</span>
                 </>
               ) : (
@@ -199,7 +199,7 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
       </div>
 
       {issueReportedSuccess && (
-        <div className="p-3 rounded-lg bg-emerald-100 text-emerald-800 text-xs flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-success-container text-on-success-container text-xs flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>
           Issue report logged successfully for vehicle owner.
         </div>

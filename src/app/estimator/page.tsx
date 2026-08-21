@@ -141,8 +141,8 @@ export default function TripEstimatorPage() {
         </div>
 
         {isInvalidOdo && (
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-300 text-xs font-semibold flex items-center gap-2">
-            <span className="material-symbols-outlined text-sm text-amber-500">warning</span>
+          <div className="p-3 rounded-xl bg-warning/10 border border-warning/30 text-warning dark:text-warning text-xs font-semibold flex items-center gap-2">
+            <span className="material-symbols-outlined text-sm text-warning">warning</span>
             <span>End odometer reading ({endNum} km) cannot be less than start reading ({startNum} km). Distance set to 0 km.</span>
           </div>
         )}
@@ -172,7 +172,7 @@ export default function TripEstimatorPage() {
                 onChange={(e) => setFuelPrice(Number(e.target.value))}
                 className="w-full px-3 py-2 rounded-lg bg-surface-container-low border border-outline-variant text-primary text-sm font-bold"
               />
-              <span className="absolute right-3 top-2.5 text-[10px] font-mono text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
+              <span className="absolute right-3 top-2.5 text-[10px] font-mono text-success bg-success-container px-1.5 py-0.5 rounded">
                 Live
               </span>
             </div>

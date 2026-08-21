@@ -143,8 +143,8 @@ export default function NewVehiclePage() {
       />
 
       {limitReached ? (
-        <div className="bg-surface rounded-2xl border border-red-300 p-8 shadow-sm text-center space-y-4">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-50 text-red-700 border border-red-200">
+        <div className="bg-surface rounded-2xl border border-error/30 p-8 shadow-sm text-center space-y-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error-container text-on-error-container border border-error/30">
             <span className="material-symbols-outlined text-3xl">lock</span>
           </div>
           <div className="space-y-1">

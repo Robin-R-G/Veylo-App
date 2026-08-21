@@ -148,32 +148,32 @@ export function TableSkeleton({ rows = 5 }: { rows?: number }) {
 export function AdminSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between border-b border-slate-800 pb-5">
+      <div className="flex items-center justify-between border-b border-dark-border pb-5">
         <div className="space-y-2">
-          <Skeleton className="h-7 w-64 bg-slate-800" />
-          <Skeleton className="h-4 w-96 bg-slate-800" />
+          <Skeleton className="h-7 w-64 bg-dark-surface-alt" />
+          <Skeleton className="h-4 w-96 bg-dark-surface-alt" />
         </div>
-        <Skeleton className="h-10 w-48 bg-slate-800 rounded-xl" />
+        <Skeleton className="h-10 w-48 bg-dark-surface-alt rounded-xl" />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map(i => (
-          <div key={i} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-            <Skeleton className="h-3 w-28 bg-slate-800" />
-            <Skeleton className="h-7 w-24 bg-slate-800" />
-            <Skeleton className="h-3 w-32 bg-slate-800" />
+          <div key={i} className="p-5 rounded-2xl bg-dark-surface border border-dark-border space-y-2">
+            <Skeleton className="h-3 w-28 bg-dark-surface-alt" />
+            <Skeleton className="h-7 w-24 bg-dark-surface-alt" />
+            <Skeleton className="h-3 w-32 bg-dark-surface-alt" />
           </div>
         ))}
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {[1, 2].map(i => (
-          <div key={i} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
-            <Skeleton className="h-5 w-48 bg-slate-800" />
+          <div key={i} className="p-6 rounded-2xl bg-dark-surface border border-dark-border space-y-4">
+            <Skeleton className="h-5 w-48 bg-dark-surface-alt" />
             <div className="grid grid-cols-2 gap-3">
               {[1, 2, 3, 4].map(j => (
-                <div key={j} className="p-4 rounded-xl bg-slate-800/80 border border-slate-700 space-y-2">
-                  <Skeleton className="h-6 w-6 bg-slate-700" />
-                  <Skeleton className="h-4 w-24 bg-slate-700" />
-                  <Skeleton className="h-3 w-32 bg-slate-700" />
+                <div key={j} className="p-4 rounded-xl bg-dark-surface-alt/80 border border-dark-border space-y-2">
+                  <Skeleton className="h-6 w-6 bg-dark-surface-alt" />
+                  <Skeleton className="h-4 w-24 bg-dark-surface-alt" />
+                  <Skeleton className="h-3 w-32 bg-dark-surface-alt" />
                 </div>
               ))}
             </div>

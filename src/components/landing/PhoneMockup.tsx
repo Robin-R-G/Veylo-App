@@ -20,8 +20,8 @@ export function PhoneMockup({ children }: PhoneMockupProps) {
           <div className="pt-3 px-5 flex items-center justify-between text-[11px] font-bold text-on-surface/80 select-none shrink-0 bg-surface/80 backdrop-blur-sm z-20">
             <span>9:41</span>
             <div className="w-20 h-4 bg-black rounded-full flex items-center justify-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-neutral-700"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-dark-surface-alt"></span>
             </div>
             <div className="flex items-center gap-1">
               <span className="material-symbols-outlined text-xs">signal_cellular_4_bar</span>

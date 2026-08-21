@@ -186,7 +186,7 @@ export default function RiderPortalPage() {
           </div>
           <button
             onClick={handleInstall}
-            className="px-4 py-2 rounded-lg bg-white text-primary font-bold text-xs shadow hover:bg-slate-100 transition-all"
+            className="px-4 py-2 rounded-lg bg-white text-primary font-bold text-xs shadow hover:bg-surface-container-high transition-all"
           >
             Install
           </button>
@@ -195,7 +195,7 @@ export default function RiderPortalPage() {
 
       {/* Active Trip Banner */}
       {activeTrips.length > 0 && (
-        <div className="p-4 rounded-xl bg-emerald-600 text-white shadow-md flex items-center justify-between gap-3">
+        <div className="p-4 rounded-xl bg-success text-white shadow-md flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <span className="w-2.5 h-2.5 rounded-full bg-white animate-ping" />
             <div>
@@ -207,7 +207,7 @@ export default function RiderPortalPage() {
           </div>
           <Link
             href={`/rider/trip/${activeTrips[0].id}`}
-            className="px-4 py-2 rounded-lg bg-white text-emerald-700 font-bold text-xs shadow"
+            className="px-4 py-2 rounded-lg bg-white text-success font-bold text-xs shadow"
           >
             Open Ride →
           </Link>
@@ -239,7 +239,7 @@ export default function RiderPortalPage() {
       )}
 
       {locationStatus === 'denied' && (
-        <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-center gap-2">
+        <div className="p-3 rounded-lg bg-warning-container border border-warning text-xs text-on-warning-container flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">info</span>
           Location access denied. You can still search by vehicle number.
         </div>

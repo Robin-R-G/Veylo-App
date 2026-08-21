@@ -253,10 +253,10 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
           <div className="text-right">
             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider inline-block border ${
               invoice.paymentStatus === 'PAID'
-                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                ? 'bg-success-container text-on-success-container border-success/30'
                 : invoice.paymentStatus === 'PAYMENT_INITIATED' || invoice.paymentStatus === 'PAYMENT_PROCESSING'
-                ? 'bg-blue-100 text-blue-800 border-blue-300'
-                : 'bg-amber-100 text-amber-800 border-amber-300'
+                ? 'bg-info-container text-on-info-container border-info/30'
+                : 'bg-warning-container text-on-warning-container border-warning/30'
             }`}>
               {invoice.paymentStatus}
             </span>
@@ -355,7 +355,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
                 <span className="material-symbols-outlined text-sm">local_gas_station</span>
                 {snapshot.fuelType || 'PETROL'} PRICE SNAPSHOT USED
               </span>
-              <span className="font-extrabold text-emerald-800 text-sm">
+              <span className="font-extrabold text-success text-sm">
                 ₹{snapshot.priceRupees.toFixed(2)} / {snapshot.unit || 'L'}
               </span>
             </div>
@@ -419,9 +419,9 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
                 <span className="material-symbols-outlined text-sm">open_in_new</span>
               </button>
             ) : (
-              <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">
+              <div className="p-4 rounded-xl bg-warning-container border border-warning text-xs text-on-warning-container space-y-2">
                 <div className="flex gap-2">
-                  <span className="material-symbols-outlined text-amber-700">warning</span>
+                  <span className="material-symbols-outlined text-warning">warning</span>
                   <p className="font-bold">Owner payment method is not configured.</p>
                 </div>
                 {session?.role === 'OWNER' && (
@@ -448,7 +448,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             {session?.role === 'OWNER' && (
               <button
                 onClick={handleVerifyOwnerConfirm}
-                className="w-full bg-slate-100 border border-slate-300 text-slate-700 py-2.5 rounded-xl text-xs font-bold hover:bg-slate-200 transition-all"
+                className="w-full bg-surface-container-high border border-outline-variant text-on-surface py-2.5 rounded-xl text-xs font-bold hover:bg-surface-container-high transition-all"
               >
                 Mark Paid (Manual Override)
               </button>
@@ -456,17 +456,17 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
 
             {/* Simulation verification block */}
             {lastAttempt && lastAttempt.status !== 'PAID' && (
-              <div className="p-4 rounded-xl bg-blue-50 border border-blue-200 space-y-3">
+              <div className="p-4 rounded-xl bg-info-container border border-info/30 space-y-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-blue-800 block">Simulated active transaction in progress</span>
-                  <p className="text-[11px] text-blue-900 mt-1 leading-relaxed">
+                  <span className="text-[10px] uppercase font-bold text-info block">Simulated active transaction in progress</span>
+                  <p className="text-[11px] text-info mt-1 leading-relaxed">
                     A transaction reference <strong>{lastAttempt.providerReference}</strong> was created. Direct verification from banking webhook must confirm payment status.
                   </p>
                 </div>
                 
                 <button
                   onClick={() => handleSimulateVerify(lastAttempt.paymentId)}
-                  className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
+                  className="w-full py-2 bg-success hover:opacity-90 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all"
                 >
                   <span className="material-symbols-outlined text-sm">check_circle</span>
                   Simulate Bank Webhook Payment Success
@@ -476,10 +476,10 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
           </div>
         ) : (
           <div className="pt-4 border-t border-outline-variant text-center space-y-2">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 mb-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-success-container text-on-success-container border border-success/30 mb-2">
               <span className="material-symbols-outlined text-2xl font-bold">check</span>
             </div>
-            <h3 className="font-extrabold text-base text-emerald-800">Payment Successfully Completed</h3>
+            <h3 className="font-extrabold text-base text-success">Payment Successfully Completed</h3>
             {invoice.paidAt && (
               <p className="text-[10px] text-on-surface-variant">
                 Paid at: {new Date(invoice.paidAt).toLocaleString()}
@@ -502,14 +502,14 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
         </h2>
 
         {dispute ? (
-          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-xs space-y-1.5 text-amber-900">
+          <div className="p-4 rounded-xl bg-warning-container border border-warning text-xs space-y-1.5 text-on-warning-container">
             <div className="flex items-center justify-between">
               <span className="font-bold">DISPUTE LODGED</span>
-              <span className="px-2 py-0.5 rounded bg-amber-200 border border-amber-300 text-[10px] font-extrabold uppercase text-amber-800">
+              <span className="px-2 py-0.5 rounded bg-warning-container border border-warning/30 text-[10px] font-extrabold uppercase text-on-warning-container">
                 {dispute.status}
               </span>
             </div>
-            <p className="font-medium text-amber-950">Reason: {dispute.reason}</p>
+            <p className="font-medium text-on-warning-container">Reason: {dispute.reason}</p>
             <p className="leading-relaxed mt-1 text-on-surface-variant">Description: {dispute.evidence}</p>
             <span className="text-[10px] text-on-surface-variant block mt-1">
 
@@ -525,7 +525,7 @@ export default function InvoiceDetailClient({ id }: { id: string }) {
             {showDisputeForm ? (
               <form onSubmit={handleRaiseDispute} className="space-y-3 pt-2">
                 {disputeSuccessMsg && (
-                  <p className="p-3 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-semibold">{disputeSuccessMsg}</p>
+                  <p className="p-3 rounded-lg bg-success-container text-on-success-container text-xs font-semibold">{disputeSuccessMsg}</p>
                 )}
 
                 <div>

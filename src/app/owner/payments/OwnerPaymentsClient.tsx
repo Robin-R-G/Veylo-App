@@ -60,11 +60,11 @@ export default function OwnerPaymentsClient() {
 
   const statusBadge = (status: string) => {
     const cls =
-      status === 'PAID' ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
-      : status === 'PAYMENT_PROCESSING' || status === 'PAYMENT_INITIATED' ? 'bg-blue-100 text-blue-800 border-blue-300'
-      : status === 'FAILED' || status === 'CANCELLED' ? 'bg-red-100 text-red-800 border-red-300'
-      : status === 'REFUNDED' ? 'bg-purple-100 text-purple-800 border-purple-300'
-      : 'bg-amber-100 text-amber-800 border-amber-300';
+      status === 'PAID' ? 'bg-success-container text-on-success-container border-success-container'
+      : status === 'PAYMENT_PROCESSING' || status === 'PAYMENT_INITIATED' ? 'bg-info-container text-on-info-container border-info-container'
+      : status === 'FAILED' || status === 'CANCELLED' ? 'bg-error-container text-on-error-container border-error-container'
+      : status === 'REFUNDED' ? 'bg-refunded-container text-on-refunded-container border-refunded-container'
+      : 'bg-warning-container text-on-warning-container border-warning-container';
     return `px-2.5 py-1 rounded-full text-[10px] font-bold uppercase border ${cls}`;
   };
 
@@ -104,7 +104,7 @@ export default function OwnerPaymentsClient() {
             <span className="text-[11px] text-on-surface-variant">{org.upiPayeeName || 'Vehicle Owner'}</span>
           </div>
           <div className="text-right">
-            <span className={`px-3 py-1 rounded-full border text-[10px] font-extrabold uppercase ${org.upiStatus === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-800 border-amber-300'}`}>
+            <span className={`px-3 py-1 rounded-full border text-[10px] font-extrabold uppercase ${org.upiStatus === 'ACTIVE' ? 'bg-success-container text-on-success-container border-success-container' : 'bg-warning-container text-on-warning-container border-warning-container'}`}>
               {org.upiStatus || 'NOT_CONFIGURED'}
             </span>
             <p className="text-[10px] text-on-surface-variant mt-1.5">
@@ -118,7 +118,7 @@ export default function OwnerPaymentsClient() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-surface p-5 rounded-2xl border border-outline-variant shadow-sm">
           <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Today's Rental Revenue</span>
-          <span className="font-extrabold text-2xl text-emerald-800 mt-1 block">{formatCurrency(summary.todayRupees)}</span>
+          <span className="font-extrabold text-2xl text-success mt-1 block">{formatCurrency(summary.todayRupees)}</span>
           <span className="text-[10px] text-on-surface-variant mt-0.5 block">Paid invoices today</span>
         </div>
         <div className="bg-surface p-5 rounded-2xl border border-outline-variant shadow-sm">
@@ -128,12 +128,12 @@ export default function OwnerPaymentsClient() {
         </div>
         <div className="bg-surface p-5 rounded-2xl border border-outline-variant shadow-sm">
           <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Pending</span>
-          <span className="font-extrabold text-2xl text-amber-800 mt-1 block">{formatCurrency(summary.pendingRupees)}</span>
+          <span className="font-extrabold text-2xl text-warning mt-1 block">{formatCurrency(summary.pendingRupees)}</span>
           <span className="text-[10px] text-on-surface-variant mt-0.5 block">Awaiting verification</span>
         </div>
         <div className="bg-surface p-5 rounded-2xl border border-outline-variant shadow-sm">
           <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Paid (All Time)</span>
-          <span className="font-extrabold text-2xl text-emerald-800 mt-1 block">{formatCurrency(summary.paidRupees)}</span>
+          <span className="font-extrabold text-2xl text-success mt-1 block">{formatCurrency(summary.paidRupees)}</span>
           <span className="text-[10px] text-on-surface-variant mt-0.5 block">Confirmed owner earnings</span>
         </div>
       </div>

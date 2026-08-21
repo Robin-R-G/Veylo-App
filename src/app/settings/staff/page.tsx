@@ -172,7 +172,7 @@ export default function StaffSettingsPage() {
           )}
 
           {inviteSuccess && (
-            <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs flex gap-2 items-center">
+            <div className="p-3 rounded-xl bg-success-container text-on-success-container text-xs flex gap-2 items-center">
               <span className="material-symbols-outlined text-sm">check_circle</span>
               {inviteSuccess}
             </div>
@@ -264,9 +264,9 @@ export default function StaffSettingsPage() {
                       {ROLE_LABELS[member.role]}
                     </span>
                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                      member.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
-                      member.status === 'INVITED' ? 'bg-amber-100 text-amber-700' :
-                      'bg-red-100 text-red-700'
+                      member.status === 'ACTIVE' ? 'bg-success-container text-success' :
+                      member.status === 'INVITED' ? 'bg-warning-container text-warning' :
+                      'bg-error-container text-error'
                     }`}>
                       {member.status}
                     </span>
@@ -279,15 +279,15 @@ export default function StaffSettingsPage() {
                   onClick={() => handleToggleStatus(member.id)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                     member.status === 'ACTIVE'
-                      ? 'text-amber-700 hover:bg-amber-50'
-                      : 'text-emerald-700 hover:bg-emerald-50'
+                      ? 'text-warning hover:bg-warning-container'
+                      : 'text-success hover:bg-success-container'
                   }`}
                 >
                   {member.status === 'ACTIVE' ? 'Disable' : 'Enable'}
                 </button>
                 <button
                   onClick={() => handleRemove(member.id)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold text-error hover:bg-error-container transition-colors"
                 >
                   Remove
                 </button>

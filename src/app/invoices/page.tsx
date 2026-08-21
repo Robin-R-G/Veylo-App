@@ -167,19 +167,19 @@ export default function InvoicesListPage() {
         <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-on-surface-variant mb-1">
             <span className="text-xs font-semibold uppercase">Settled (Paid)</span>
-            <span className="material-symbols-outlined text-emerald-700 text-sm">verified</span>
+            <span className="material-symbols-outlined text-success text-sm">verified</span>
           </div>
-          <p className="text-2xl font-extrabold text-emerald-700">{formatCurrency(metrics.settledAmount)}</p>
-          <span className="text-[10px] text-emerald-700 font-semibold">Direct UPI confirmed</span>
+          <p className="text-2xl font-extrabold text-success">{formatCurrency(metrics.settledAmount)}</p>
+          <span className="text-[10px] text-success font-semibold">Direct UPI confirmed</span>
         </div>
 
         <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
           <div className="flex justify-between items-center text-on-surface-variant mb-1">
             <span className="text-xs font-semibold uppercase">Pending</span>
-            <span className="material-symbols-outlined text-amber-700 text-sm">hourglass</span>
+            <span className="material-symbols-outlined text-warning text-sm">hourglass</span>
           </div>
-          <p className="text-2xl font-extrabold text-amber-700">{formatCurrency(metrics.pendingAmount)}</p>
-          <span className="text-[10px] text-amber-700 font-semibold">Awaiting rider payment</span>
+          <p className="text-2xl font-extrabold text-warning">{formatCurrency(metrics.pendingAmount)}</p>
+          <span className="text-[10px] text-warning font-semibold">Awaiting rider payment</span>
         </div>
       </div>
 
@@ -285,8 +285,8 @@ export default function InvoicesListPage() {
                         <span
                           className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                             isPaid
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : 'bg-amber-100 text-amber-800'
+                              ? 'bg-success-container text-on-success-container'
+                              : 'bg-warning-container text-on-warning-container'
                           }`}
                         >
                           {isPaid ? 'PAID ✓' : 'PENDING'}

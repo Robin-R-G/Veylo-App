@@ -70,7 +70,7 @@ export function ReceiptPrinter({ stage, children, className = '' }: ReceiptPrint
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.8 }}
               transition={{ duration: shouldMove ? 0.3 : 0, ease: [0.34, 1.56, 0.64, 1] }}
-              className="material-symbols-outlined text-sm text-emerald-600"
+              className="material-symbols-outlined text-sm text-success"
             >
               check_circle
             </motion.span>

@@ -440,7 +440,7 @@ export default function SettingsClient() {
             </div>
 
             {saved && (
-              <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+              <div className="p-3 rounded-xl bg-success-container text-on-success-container text-xs font-semibold flex items-center gap-2">
                 <span className="material-symbols-outlined text-sm">check_circle</span>
                 Settings saved successfully!
               </div>

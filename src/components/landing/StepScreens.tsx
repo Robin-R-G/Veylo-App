@@ -19,8 +19,8 @@ function DiscoverScreen({ onNavigate }: ScreenProps) {
         </span>
       </div>
 
-      <div className="h-44 rounded-2xl bg-slate-100 border border-outline-variant/60 relative overflow-hidden shadow-inner flex items-center justify-center">
-        <svg className="absolute inset-0 w-full h-full stroke-slate-300 stroke-2" fill="none">
+      <div className="h-44 rounded-2xl bg-surface-container-high border border-outline-variant/60 relative overflow-hidden shadow-inner flex items-center justify-center">
+        <svg className="absolute inset-0 w-full h-full stroke-outline-variant stroke-2" fill="none">
           <path d="M-20 40 Q 80 90, 180 50 T 360 80" strokeDasharray="4 4" />
           <path d="M40 -10 L 90 200" stroke="#cbd5e1" strokeWidth="4" />
           <path d="M120 20 Q 220 80, 260 190" stroke="#cbd5e1" strokeWidth="3" />
@@ -50,7 +50,7 @@ function DiscoverScreen({ onNavigate }: ScreenProps) {
           <div>
             <div className="flex items-center gap-1.5">
               <span className="font-extrabold text-xs text-on-surface">Honda Activa 6G</span>
-              <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded-full">Available</span>
+              <span className="text-[9px] bg-success-container text-on-success-container font-bold px-1.5 py-0.2 rounded-full">Available</span>
             </div>
             <p className="text-[10px] text-on-surface-variant mt-0.5">⭐ 4.9 (128 rides) • 2.4 km away</p>
           </div>
@@ -110,7 +110,7 @@ function DetailsScreen({ onNavigate }: ScreenProps) {
         </div>
         <div className="bg-surface p-2 rounded-xl border border-outline-variant/60">
           <p className="text-[9px] text-on-surface-variant font-bold uppercase">Live Petrol Rate</p>
-          <p className="text-xs font-extrabold text-emerald-700">₹104.20/L</p>
+          <p className="text-xs font-extrabold text-success">₹104.20/L</p>
         </div>
         <div className="bg-surface p-2 rounded-xl border border-outline-variant/60">
           <p className="text-[9px] text-on-surface-variant font-bold uppercase">Location</p>
@@ -123,7 +123,7 @@ function DetailsScreen({ onNavigate }: ScreenProps) {
           <p className="text-[10px] text-on-surface-variant font-semibold">Standard Rental Rate</p>
           <p className="text-sm font-extrabold text-on-surface">₹399 <span className="text-[10px] font-normal text-on-surface-variant">/ 24 hrs</span></p>
         </div>
-        <span className="text-[9px] font-bold text-emerald-800 bg-emerald-100 px-2 py-1 rounded-md">
+        <span className="text-[9px] font-bold text-on-success-container bg-success-container px-2 py-1 rounded-md">
           Verified Owner
         </span>
       </div>
@@ -153,16 +153,16 @@ function ScanScreen({ onNavigate }: ScreenProps) {
         </span>
       </div>
 
-      <div className="flex-1 min-h-[220px] rounded-2xl bg-neutral-900 border-2 border-neutral-800 relative flex flex-col items-center justify-center p-4 overflow-hidden">
-        <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-emerald-400 rounded-tl-lg"></div>
-        <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-emerald-400 rounded-tr-lg"></div>
-        <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-emerald-400 rounded-bl-lg"></div>
-        <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-emerald-400 rounded-br-lg"></div>
+      <div className="flex-1 min-h-[220px] rounded-2xl bg-dark-surface border-2 border-dark-border relative flex flex-col items-center justify-center p-4 overflow-hidden">
+        <div className="absolute top-4 left-4 w-6 h-6 border-t-2 border-l-2 border-success rounded-tl-lg"></div>
+        <div className="absolute top-4 right-4 w-6 h-6 border-t-2 border-r-2 border-success rounded-tr-lg"></div>
+        <div className="absolute bottom-4 left-4 w-6 h-6 border-b-2 border-l-2 border-success rounded-bl-lg"></div>
+        <div className="absolute bottom-4 right-4 w-6 h-6 border-b-2 border-r-2 border-success rounded-br-lg"></div>
 
-        <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-[0_0_8px_#34d399] animate-laser-sweep z-20"></div>
+        <div className="absolute left-6 right-6 h-0.5 bg-gradient-to-r from-transparent via-success to-transparent shadow-[0_0_8px_#34d399] animate-laser-sweep z-20"></div>
 
         <div className="w-28 h-28 bg-white p-2.5 rounded-xl shadow-lg flex flex-col items-center justify-center relative">
-          <div className="w-full h-full border border-neutral-300 rounded grid grid-cols-5 gap-1 p-1">
+          <div className="w-full h-full border border-outline-variant rounded grid grid-cols-5 gap-1 p-1">
             <div className="bg-black rounded-sm"></div>
             <div className="bg-black rounded-sm"></div>
             <div className="bg-transparent"></div>
@@ -195,23 +195,23 @@ function ScanScreen({ onNavigate }: ScreenProps) {
           </div>
         </div>
 
-        <p className="text-[10px] text-neutral-300 font-medium mt-3 text-center">
+        <p className="text-[10px] text-dark-on-surface font-medium mt-3 text-center">
           Align QR code within frame
         </p>
       </div>
 
-      <div className="bg-emerald-50 border border-emerald-300 p-2.5 rounded-xl flex items-center gap-2 text-emerald-800 text-xs">
-        <span className="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+      <div className="bg-success-container border border-success/20 p-2.5 rounded-xl flex items-center gap-2 text-on-success-container text-xs">
+        <span className="material-symbols-outlined text-success text-sm">check_circle</span>
         <div className="text-[11px]">
           <p className="font-extrabold leading-tight">Vehicle Detected: KL 16 P 78</p>
-          <span className="text-[9px] text-emerald-700">Start ODO: 12,500 km</span>
+          <span className="text-[9px] text-success">Start ODO: 12,500 km</span>
         </div>
       </div>
 
       <button
         type="button"
         onClick={() => onNavigate(3)}
-        className="w-full py-3 rounded-xl bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm hover:bg-emerald-700 transition-all mt-auto"
+        className="w-full py-3 rounded-xl bg-success text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-sm hover:bg-success/80 transition-all mt-auto"
       >
         <span className="material-symbols-outlined text-sm">play_circle</span>
         <span>Start Ride Now</span>
@@ -264,12 +264,12 @@ function RideScreen({ onNavigate, rideDistance, rideCost, rideSeconds }: ScreenP
           <span className="text-[9px] font-bold text-white/90 bg-black/60 backdrop-blur px-2 py-0.5 rounded">
             Beach Rd → Mananchira
           </span>
-          <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-1.5 py-0.5 rounded">
+          <span className="text-[9px] font-mono text-success bg-success/10 border border-success/20 px-1.5 py-0.5 rounded">
             GPS 38 km/h
           </span>
         </div>
 
-        <div className="relative z-10 flex justify-between items-center text-[9px] text-slate-400">
+        <div className="relative z-10 flex justify-between items-center text-[9px] text-dark-on-surface">
           <span>Start: 12,500 km</span>
           <span>Current: {(12500 + rideDistance).toFixed(1)} km</span>
         </div>
@@ -299,7 +299,7 @@ function CompleteScreen({ onNavigate }: ScreenProps) {
   return (
     <div className="p-4 flex flex-col h-full space-y-3 animate-fadeIn">
       <div className="text-center pt-2 space-y-1">
-        <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto animate-checkmark-pop shadow-sm">
+        <div className="w-12 h-12 rounded-full bg-success-container text-success flex items-center justify-center mx-auto animate-checkmark-pop shadow-sm">
           <span className="material-symbols-outlined text-2xl font-bold">check</span>
         </div>
         <h4 className="font-extrabold text-sm text-on-surface">Ride Completed</h4>
@@ -352,7 +352,7 @@ function PaymentScreen({ onNavigate }: ScreenProps) {
         <div className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-md animate-checkmark-pop">
           <span className="material-symbols-outlined text-2xl font-bold">verified</span>
         </div>
-        <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">Payment Successful</p>
+        <p className="text-[10px] font-bold uppercase tracking-wider text-success">Payment Successful</p>
         <h4 className="font-extrabold text-2xl text-on-surface">₹526.00</h4>
       </div>
 

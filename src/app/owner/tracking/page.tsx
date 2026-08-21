@@ -111,7 +111,7 @@ export default function OwnerTrackingPage() {
                       </span>
                     </div>
                     <span className={`w-2.5 h-2.5 rounded-full ${
-                      v.status === 'AVAILABLE' ? 'bg-emerald-500' : v.status === 'IN_USE' ? 'bg-amber-500' : 'bg-slate-400'
+                      v.status === 'AVAILABLE' ? 'bg-success' : v.status === 'IN_USE' ? 'bg-warning' : 'bg-outline'
                     }`} />
                   </div>
                   <p className="text-[10px] text-on-surface-variant mt-1">
@@ -147,7 +147,7 @@ export default function OwnerTrackingPage() {
                     </p>
                     <p className="text-[10px] text-on-surface-variant">
                       {selectedVehicle.city}, {selectedVehicle.state} •{' '}
-                      <span className={`font-bold ${selectedVehicle.status === 'AVAILABLE' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      <span className={`font-bold ${selectedVehicle.status === 'AVAILABLE' ? 'text-success' : 'text-warning'}`}>
                         {selectedVehicle.status}
                       </span>
                     </p>

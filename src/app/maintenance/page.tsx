@@ -141,7 +141,7 @@ export default function MaintenancePage() {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
           <span className="text-xs font-semibold uppercase text-on-surface-variant">Active Fleet</span>
           <p className="text-3xl font-extrabold text-on-surface">{vehicles.length}</p>
-          <span className="text-[10px] text-emerald-700 font-semibold mt-1">● All fleet vehicles tracked</span>
+          <span className="text-[10px] text-success font-semibold mt-1">● All fleet vehicles tracked</span>
         </div>
 
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
@@ -153,7 +153,7 @@ export default function MaintenancePage() {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between">
           <span className="text-xs font-semibold uppercase text-on-surface-variant">Total Maintenance Expense</span>
           <p className="text-3xl font-extrabold text-on-surface">{formatCurrency(totalCost)}</p>
-          <span className="text-[10px] text-emerald-700 font-semibold mt-1">● Lifetime fleet upkeep</span>
+          <span className="text-[10px] text-success font-semibold mt-1">● Lifetime fleet upkeep</span>
         </div>
       </div>
 
@@ -200,8 +200,8 @@ export default function MaintenancePage() {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <span className="text-xs font-semibold text-on-surface-variant block">Health Rating</span>
-                      <span className="text-sm font-bold text-emerald-800 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm fill text-amber-500">star</span>
+                      <span className="text-sm font-bold text-success flex items-center gap-1">
+                        <span className="material-symbols-outlined text-sm fill text-warning">star</span>
                         {health.score}/100 ({health.statusLabel})
                       </span>
                     </div>
@@ -244,7 +244,7 @@ export default function MaintenancePage() {
                             </span>
                             {rec.notes && <p className="text-[10px] text-on-surface-variant italic mt-0.5">{rec.notes}</p>}
                           </div>
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 font-mono">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-success-container text-on-success-container font-mono">
                             {formatCurrency(rec.costRupees)}
                           </span>
                         </div>

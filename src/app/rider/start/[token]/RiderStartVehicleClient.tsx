@@ -119,7 +119,7 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
           </div>
 
           <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-            isAvailable ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+            isAvailable ? 'bg-success-container text-success' : 'bg-destructive-container text-on-destructive-container'
           }`}>
             {vehicle.status}
           </span>
@@ -136,7 +136,7 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
 
           <div className="p-3 rounded-xl bg-surface-container-low border border-outline-variant">
             <span className="text-on-surface-variant text-[10px] uppercase font-semibold block">Rental Rate</span>
-            <span className="font-extrabold text-lg text-emerald-800 mt-0.5 block">
+            <span className="font-extrabold text-lg text-success mt-0.5 block">
               ₹{vehicle.ratePerKmRupees || 12} / km
             </span>
           </div>
@@ -154,7 +154,7 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium">
+          <div className="p-3 rounded-xl bg-destructive-container border border-destructive/30 text-on-destructive-container text-xs font-medium">
             {errorMsg}
           </div>
         )}
@@ -190,7 +190,7 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
             disabled={!isAvailable || isStarting}
             className={`w-full py-4 rounded-xl font-bold text-xs uppercase tracking-wider shadow-md flex items-center justify-center gap-2 transition-all ${
               isAvailable
-                ? 'bg-emerald-700 text-white hover:bg-emerald-800'
+                ? 'bg-success text-white hover:opacity-90'
                 : 'bg-surface-container-high text-on-surface-variant cursor-not-allowed'
             }`}
           >

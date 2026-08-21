@@ -150,7 +150,7 @@ export default function BrandingSettingsPage() {
             {logoPreview && (
               <button
                 onClick={() => { setLogoPreview(null); setBranding(prev => ({ ...prev, logoUrl: undefined })); }}
-                className="text-xs text-red-600 font-semibold hover:underline"
+                className="text-xs text-error font-semibold hover:underline"
               >
                 Remove Logo
               </button>
@@ -311,7 +311,7 @@ export default function BrandingSettingsPage() {
       </div>
 
       {saved && (
-        <div className="p-3 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+        <div className="p-3 rounded-xl bg-success-container text-on-success-container text-xs font-semibold flex items-center gap-2">
           <span className="material-symbols-outlined text-sm">check_circle</span>
           Branding saved successfully!
         </div>

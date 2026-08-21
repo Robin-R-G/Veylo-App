@@ -139,8 +139,8 @@ export function HowItWorksInteractive() {
 
                           {isActive && (
                             <span className="flex h-2 w-2 relative">
-                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                              <span className="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
                             </span>
                           )}
                         </div>
@@ -214,12 +214,12 @@ export function HowItWorksInteractive() {
             
             <div className="absolute -top-4 right-2 sm:right-6 z-30 animate-float-badge">
               <div className="bg-surface/95 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-outline-variant shadow-lg flex items-center gap-2.5 text-xs font-bold text-on-surface">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+                <div className="w-6 h-6 rounded-lg bg-success/10 text-success flex items-center justify-center">
                   <span className="material-symbols-outlined text-sm">{currentStep.floatingChip.icon}</span>
                 </div>
                 <div>
                   <p className="text-[11px] font-extrabold text-on-surface">{currentStep.floatingChip.text}</p>
-                  <span className="text-[9px] font-mono text-emerald-700 font-semibold">{currentStep.floatingChip.badge}</span>
+                  <span className="text-[9px] font-mono text-success font-semibold">{currentStep.floatingChip.badge}</span>
                 </div>
               </div>
             </div>

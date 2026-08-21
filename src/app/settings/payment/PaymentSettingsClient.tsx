@@ -163,13 +163,13 @@ export default function PaymentSettingsClient() {
   const getStatusBadgeClass = (status: UpiStatus) => {
     switch (status) {
       case 'ACTIVE':
-        return 'bg-emerald-100 text-emerald-800 border-emerald-300';
+        return 'bg-success-container text-on-success-container border-success/30';
       case 'CONFIGURED':
-        return 'bg-blue-100 text-blue-800 border-blue-300';
+        return 'bg-info-container text-on-info-container border-info/30';
       case 'VERIFICATION_REQUIRED':
-        return 'bg-amber-100 text-amber-800 border-amber-300';
+        return 'bg-warning-container text-on-warning-container border-warning/30';
       case 'SUSPENDED':
-        return 'bg-red-100 text-red-800 border-red-300';
+        return 'bg-error-container text-on-error-container border-error/30';
       default:
         return 'bg-surface-container-high text-on-surface-variant border-outline-variant';
     }
@@ -185,7 +185,7 @@ export default function PaymentSettingsClient() {
       />
 
       {saveMsg && (
-        <div className="p-4 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2 border border-emerald-300 shadow-sm animate-pulse">
+        <div className="p-4 rounded-xl bg-success-container text-on-success-container text-xs font-semibold flex items-center gap-2 border border-success/30 shadow-sm animate-pulse">
           <span className="material-symbols-outlined text-sm">check_circle</span>
           {saveMsg}
         </div>
@@ -295,7 +295,7 @@ export default function PaymentSettingsClient() {
               className={`flex-1 py-3 rounded-xl font-bold text-xs uppercase tracking-wider border transition-all flex items-center justify-center gap-2 ${
                 isVerifying 
                   ? 'bg-surface-container text-on-surface-variant border-outline-variant' 
-                  : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                  : 'bg-success-container text-on-success-container border-success/30 hover:bg-success-container'
               }`}
             >
               <span className={`material-symbols-outlined text-sm ${isVerifying ? 'animate-spin' : ''}`}>
@@ -320,10 +320,10 @@ export default function PaymentSettingsClient() {
       </div>
 
       {/* Security Info Card */}
-      <div className="bg-amber-50 rounded-xl border border-amber-200 p-4 text-xs text-amber-900 flex items-start gap-3">
-        <span className="material-symbols-outlined text-amber-700 mt-0.5">security</span>
+      <div className="bg-warning-container rounded-xl border border-warning/20 p-4 text-xs text-on-warning-container flex items-start gap-3">
+        <span className="material-symbols-outlined text-warning mt-0.5">security</span>
         <div className="space-y-1">
-          <p className="font-bold text-amber-950">Strict Security Policy</p>
+          <p className="font-bold text-warning">Strict Security Policy</p>
           <p className="leading-relaxed">
             Veylo never stores sensitive bank details, OTPs, PINs, passwords, or transaction verification tokens. Payment is routed directly between the rider app and your personal bank account.
           </p>

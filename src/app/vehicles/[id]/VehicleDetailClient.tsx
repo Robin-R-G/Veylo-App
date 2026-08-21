@@ -165,7 +165,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 
             <Link
               href={`/rider/start/${vehicle.securePublicId}`}
-              className="px-4 py-2 rounded-lg bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 shadow hover:bg-emerald-800 transition-all"
+              className="px-4 py-2 rounded-lg bg-success text-white font-bold text-xs flex items-center gap-1.5 shadow hover:opacity-90 transition-all"
             >
               <span className="material-symbols-outlined text-sm">directions_bike</span>
               Start Rider Trip
@@ -215,7 +215,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
             <div className="p-5 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-1">
               <span className="text-[10px] text-on-surface-variant uppercase font-semibold">Last Verified KM</span>
               <p className="text-2xl font-extrabold text-on-surface font-mono">{vehicle.lastVerifiedOdometer?.toLocaleString() || vehicle.currentOdometer.toLocaleString()} km</p>
-              <span className="text-[10px] text-emerald-700 font-semibold">● Physical reading confirmed</span>
+              <span className="text-[10px] text-success font-semibold">● Physical reading confirmed</span>
             </div>
 
             <div className="p-5 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-1">
@@ -232,8 +232,8 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 
             <div className="p-5 rounded-2xl bg-surface border border-outline-variant shadow-sm space-y-1">
               <span className="text-[10px] text-on-surface-variant uppercase font-semibold">Total GPS Distance</span>
-              <p className="text-2xl font-extrabold text-emerald-800 font-mono">{totalGpsDistance.toFixed(1)} km</p>
-              <span className="text-[10px] text-emerald-700 font-semibold">Audited GPS telemetry</span>
+              <p className="text-2xl font-extrabold text-success font-mono">{totalGpsDistance.toFixed(1)} km</p>
+              <span className="text-[10px] text-success font-semibold">Audited GPS telemetry</span>
             </div>
           </div>
 
@@ -277,7 +277,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
                         <td className="py-3 px-3 text-right font-bold text-on-surface">{formatCurrency(t.totalAmountRupees)}</td>
                         <td className="py-3 px-3 text-center">
                           <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            t.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                            t.paymentStatus === 'PAID' ? 'bg-success-container text-on-success-container' : 'bg-warning-container text-on-warning-container'
                           }`}>
                             {t.paymentStatus}
                           </span>
@@ -320,7 +320,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
 
               <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant">
                 <span className="text-on-surface-variant text-[10px] uppercase font-semibold block">Rental Rate</span>
-                <span className="text-2xl font-bold text-emerald-800">₹{vehicle.ratePerKmRupees || 12}/km</span>
+                <span className="text-2xl font-bold text-success">₹{vehicle.ratePerKmRupees || 12}/km</span>
               </div>
             </div>
 
@@ -337,7 +337,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
             <h2 className="text-base font-bold text-on-surface">Health Score</h2>
             <div className="p-4 rounded-xl bg-surface-container-low border border-outline-variant text-center space-y-2">
               <div className="text-4xl font-extrabold text-primary">{health.score} <span className="text-sm font-normal text-on-surface-variant">/ 100</span></div>
-              <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 uppercase">
+              <div className="inline-block px-3 py-1 rounded-full text-xs font-bold bg-success-container text-on-success-container uppercase">
                 {health.statusLabel} CONDITION
               </div>
             </div>
@@ -391,7 +391,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
                 </div>
                 <div className="text-right">
                   <span className="font-bold text-primary text-sm">₹{m.costRupees}</span>
-                  <span className="text-[10px] text-emerald-800 font-bold block">Good</span>
+                  <span className="text-[10px] text-success font-bold block">Good</span>
                 </div>
               </div>
             ))}
@@ -404,7 +404,7 @@ export default function VehicleDetailClient({ id }: { id: string }) {
         <div className="bg-surface p-6 rounded-xl border border-outline-variant shadow-sm space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-on-surface flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg text-amber-600">warning</span>
+              <span className="material-symbols-outlined text-lg text-warning">warning</span>
               Reported Issues ({issues.length})
             </h3>
           </div>
@@ -421,19 +421,19 @@ export default function VehicleDetailClient({ id }: { id: string }) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        issue.severity === 'CRITICAL' ? 'bg-red-100 text-red-800' :
+                        issue.severity === 'CRITICAL' ? 'bg-error-container text-on-error-container' :
                         issue.severity === 'HIGH' ? 'bg-orange-100 text-orange-800' :
-                        issue.severity === 'MEDIUM' ? 'bg-amber-100 text-amber-800' :
-                        'bg-blue-100 text-blue-800'
+                        issue.severity === 'MEDIUM' ? 'bg-warning-container text-on-warning-container' :
+                        'bg-info-container text-on-info-container'
                       }`}>
                         {issue.severity}
                       </span>
                       <span className="text-xs font-bold text-on-surface">{issue.issueType.replace(/_/g, ' ')}</span>
                     </div>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      issue.status === 'OPEN' ? 'bg-red-100 text-red-800' :
-                      issue.status === 'IN_PROGRESS' ? 'bg-amber-100 text-amber-800' :
-                      'bg-emerald-100 text-emerald-800'
+                      issue.status === 'OPEN' ? 'bg-error-container text-on-error-container' :
+                      issue.status === 'IN_PROGRESS' ? 'bg-warning-container text-on-warning-container' :
+                      'bg-success-container text-on-success-container'
                     }`}>
                       {issue.status.replace(/_/g, ' ')}
                     </span>
@@ -705,7 +705,7 @@ function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
 
         {recallsFetched && !loadingRecalls && recalls.length === 0 && (
           <div className="py-6 text-center">
-            <span className="material-symbols-outlined text-3xl text-emerald-600">check_circle</span>
+            <span className="material-symbols-outlined text-3xl text-success">check_circle</span>
             <p className="text-sm font-semibold text-on-surface mt-2">No open recalls found</p>
             <p className="text-xs text-on-surface-variant">This vehicle has no outstanding NHTSA safety recalls.</p>
           </div>
@@ -713,7 +713,7 @@ function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
 
         {recalls.length > 0 && (
           <div className="space-y-3">
-            <p className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-2 rounded-lg">
+            <p className="text-xs font-semibold text-warning bg-warning-container px-3 py-2 rounded-lg">
               {recalls.length} open recall{recalls.length > 1 ? 's' : ''} found — contact the manufacturer for remedy.
             </p>
             {recalls.map((r, i) => (
@@ -724,8 +724,8 @@ function SpecsAndRecallsTab({ vehicle }: { vehicle: Vehicle }) {
                 </div>
                 {r.component && <p className="text-[11px] text-on-surface-variant"><strong>Component:</strong> {r.component}</p>}
                 {r.summary && <p className="text-[11px] text-on-surface-variant"><strong>Summary:</strong> {r.summary}</p>}
-                {r.consequence && <p className="text-[11px] text-amber-700"><strong>Consequence:</strong> {r.consequence}</p>}
-                {r.remedy && <p className="text-[11px] text-emerald-700"><strong>Remedy:</strong> {r.remedy}</p>}
+                {r.consequence && <p className="text-[11px] text-warning"><strong>Consequence:</strong> {r.consequence}</p>}
+                {r.remedy && <p className="text-[11px] text-success"><strong>Remedy:</strong> {r.remedy}</p>}
               </div>
             ))}
           </div>

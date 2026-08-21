@@ -74,7 +74,7 @@ export default function OwnerPaymentsPage() {
     return (
       <span
         className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-          paid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+          paid ? 'bg-success-container text-on-success-container' : 'bg-warning-container text-on-warning-container'
         }`}
       >
         {paid ? 'SETTLED' : 'PENDING'}
@@ -112,18 +112,18 @@ export default function OwnerPaymentsPage() {
         <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
           <div className="flex justify-between items-center text-on-surface-variant mb-1">
             <span className="text-xs font-semibold uppercase">Settled</span>
-            <span className="material-symbols-outlined text-emerald-700 text-sm">verified</span>
+            <span className="material-symbols-outlined text-success text-sm">verified</span>
           </div>
-          <p className="text-2xl font-bold text-emerald-700">{formatCurrency(summary.paidRupees)}</p>
+          <p className="text-2xl font-bold text-success">{formatCurrency(summary.paidRupees)}</p>
           <span className="text-[10px] text-on-surface-variant">Confirmed on-platform</span>
         </div>
 
         <div className="bg-surface p-5 rounded-xl border border-outline-variant shadow-sm">
           <div className="flex justify-between items-center text-on-surface-variant mb-1">
             <span className="text-xs font-semibold uppercase">Pending</span>
-            <span className="material-symbols-outlined text-amber-700 text-sm">hourglass</span>
+            <span className="material-symbols-outlined text-warning text-sm">hourglass</span>
           </div>
-          <p className="text-2xl font-bold text-amber-700">{formatCurrency(summary.pendingRupees)}</p>
+          <p className="text-2xl font-bold text-warning">{formatCurrency(summary.pendingRupees)}</p>
           <span className="text-[10px] text-on-surface-variant">Awaiting settlement</span>
         </div>
       </div>

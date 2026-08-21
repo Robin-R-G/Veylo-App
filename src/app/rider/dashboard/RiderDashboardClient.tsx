@@ -120,22 +120,22 @@ export default function RiderDashboardClient() {
 
         {/* Active Ride Banner */}
         {activeTrip && (
-          <div className="rounded-2xl bg-emerald-50 border-2 border-emerald-400 p-4 shadow-sm">
+          <div className="rounded-2xl bg-success-container border-2 border-success/30 p-4 shadow-sm">
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping inline-block"></span>
-              <span className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Ride in Progress</span>
+              <span className="w-2.5 h-2.5 rounded-full bg-success animate-ping inline-block"></span>
+              <span className="text-xs font-bold text-success uppercase tracking-wide">Ride in Progress</span>
             </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-bold text-on-surface">{activeTrip.vehicleRegNumber}</p>
                 <p className="text-xs text-on-surface-variant">{activeTrip.vehicleModel}</p>
-                <p className="text-sm font-semibold text-emerald-700 mt-1">
+                <p className="text-sm font-semibold text-success mt-1">
                   {activeTrip.gpsDistanceKm.toFixed(2)} km tracked
                 </p>
               </div>
               <Link
                 href={`/rider/trip/${activeTrip.id}`}
-                className="px-4 py-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs uppercase tracking-wide shadow-sm hover:bg-emerald-600 transition-all"
+                className="px-4 py-2.5 rounded-xl bg-success text-white font-bold text-xs uppercase tracking-wide shadow-sm hover:opacity-90 transition-all"
               >
                 Open Ride →
               </Link>
@@ -177,8 +177,8 @@ export default function RiderDashboardClient() {
               <span className="material-symbols-outlined text-primary text-sm">local_gas_station</span>
               <span>Official Fuel Rates (Kerala)</span>
             </div>
-            <span className="text-[10px] font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-[10px] font-mono text-success bg-success-container px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
               Live Central Sync
             </span>
           </div>
@@ -229,9 +229,9 @@ export default function RiderDashboardClient() {
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-mono font-bold text-sm text-on-surface">{trip.vehicleRegNumber}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                    trip.status === 'COMPLETED' ? 'bg-emerald-100 text-emerald-700' :
-                    trip.status === 'ACTIVE' ? 'bg-blue-100 text-blue-700' :
-                    'bg-amber-100 text-amber-700'
+                    trip.status === 'COMPLETED' ? 'bg-success-container text-success' :
+                    trip.status === 'ACTIVE' ? 'bg-info-container text-info' :
+                    'bg-warning-container text-warning'
                   }`}>
                     {trip.status.replace(/_/g, ' ')}
                   </span>
@@ -292,9 +292,9 @@ export default function RiderDashboardClient() {
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-xs font-bold text-on-surface">{invoice.invoiceNumber}</span>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
-                    invoice.paymentStatus === 'PAID' ? 'bg-emerald-100 text-emerald-700' :
-                    invoice.paymentStatus === 'PENDING' ? 'bg-amber-100 text-amber-700' :
-                    'bg-red-100 text-red-700'
+                    invoice.paymentStatus === 'PAID' ? 'bg-success-container text-success' :
+                    invoice.paymentStatus === 'PENDING' ? 'bg-warning-container text-warning' :
+                    'bg-error-container text-error'
                   }`}>
                     {invoice.paymentStatus}
                   </span>

@@ -146,7 +146,7 @@ export default function BillingClient() {
       />
 
       {successMsg && (
-        <div className="p-4 rounded-xl bg-emerald-100 text-emerald-800 text-xs font-semibold flex items-center gap-2 border border-emerald-300 shadow-sm animate-pulse">
+        <div className="p-4 rounded-xl bg-success-container text-on-success-container text-xs font-semibold flex items-center gap-2 border border-success/30 shadow-sm animate-pulse">
           <span className="material-symbols-outlined text-sm">check_circle</span>
           {successMsg}
         </div>
@@ -165,7 +165,7 @@ export default function BillingClient() {
           <span className="text-[10px] uppercase font-bold text-on-surface-variant block">Active Subscription</span>
           <h2 className="font-extrabold text-lg text-primary mt-1 flex items-center gap-2">
             {currentPlan.name}
-            <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200 text-[10px] font-extrabold uppercase">
+            <span className="px-2.5 py-0.5 rounded-full bg-success-container text-on-success-container border border-success/20 text-[10px] font-extrabold uppercase">
               {activeSub.status}
             </span>
           </h2>
@@ -224,33 +224,33 @@ export default function BillingClient() {
 
                   <ul className="mt-4 space-y-2 text-xs text-on-surface-variant">
                     <li className="flex items-center gap-1.5 font-semibold text-on-surface">
-                      <span className="material-symbols-outlined text-emerald-600 text-xs font-extrabold">check</span>
+                      <span className="material-symbols-outlined text-success text-xs font-extrabold">check</span>
                       Max Vehicles: {p.vehicleLimit > 50 ? '50+' : p.vehicleLimit}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className="material-symbols-outlined text-emerald-600 text-xs font-extrabold">check</span>
+                      <span className="material-symbols-outlined text-success text-xs font-extrabold">check</span>
                       Staff Seats: {p.staffLimit}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.gpsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold                         ${p.gpsEnabled ? 'text-success' : 'text-outline'}`}>
                         {p.gpsEnabled ? 'check' : 'close'}
                       </span>
                       GPS Tracking: {p.id === 'FREE' ? 'Basic' : 'Advanced'}
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.advancedReports ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold                         ${p.advancedReports ? 'text-success' : 'text-outline'}`}>
                         {p.advancedReports ? 'check' : 'close'}
                       </span>
                       Advanced Reports
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-extrabold ${p.customBranding ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold                         ${p.customBranding ? 'text-success' : 'text-outline'}`}>
                         {p.customBranding ? 'check' : 'close'}
                       </span>
                       Custom Branding
                     </li>
                     <li className="flex items-center gap-1.5">
-                      <span className={`material-symbols-outlined text-xs font-extrabold ${!p.adsEnabled ? 'text-emerald-600' : 'text-outline'}`}>
+                      <span className={`material-symbols-outlined text-xs font-extrabold                         ${!p.adsEnabled ? 'text-success' : 'text-outline'}`}>
                         {!p.adsEnabled ? 'check' : 'close'}
                       </span>
                       Ad-Free Portal
