@@ -57,11 +57,11 @@ export default function LandingPage() {
                 <span className="material-symbols-outlined text-sm">arrow_forward</span>
               </Link>
               <Link
-                href="/scan"
+                href="/v/pub_kl16p78_x99a"
                 className="bg-surface text-on-surface border border-outline-variant px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-surface-container-low transition-all text-center flex items-center justify-center gap-2"
               >
                 <span className="material-symbols-outlined text-sm">qr_code_scanner</span>
-                <span>Try QR Entry</span>
+                <span>Try Demo QR</span>
               </Link>
             </div>
           </div>
