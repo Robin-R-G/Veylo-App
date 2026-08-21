@@ -3,8 +3,6 @@ import { createClient } from '@/lib/supabase/server';
 import { calculateRideCosts } from '@/lib/services/financialEngine';
 import { computePlatformFee } from '@/lib/services/platformEconomics';
 
-export const dynamic = 'force-dynamic';
-
 // ponytail: simple in-memory rate limiter — resets on cold start, fine for prototype.
 // Upgrade to Redis-backed limiter if throughput matters.
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();

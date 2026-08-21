@@ -33,6 +33,9 @@ jobs:
         env:
           DEPLOY_TARGET: ghpages
           GITHUB_ACTIONS: true
+          NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder
+          SUPABASE_SERVICE_ROLE_KEY: placeholder
 
       - name: Deploy to gh-pages branch
         uses: peaceiris/actions-gh-pages@v4
