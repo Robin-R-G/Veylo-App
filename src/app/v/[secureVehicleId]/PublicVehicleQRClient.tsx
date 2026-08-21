@@ -6,6 +6,7 @@ import { Vehicle, IssueType, IssueSeverity, FuelPrice } from '@/types';
 import { calculateRideCosts, formatCurrency } from '@/lib/services/financialEngine';
 import { fuelPriceService, fuelRealtimeService } from '@/lib/services/fuelPriceService';
 import { getVehicleById } from '@/lib/services/supabase/data';
+import { mockStorage } from '@/lib/services/mockStorage';
 import { rentalTripService } from '@/lib/services/rentalTripService';
 import { AdSlot } from '@/components/ads/AdSlot';
 import { VeyloLogo } from '@/components/ui/VeyloLogo';
@@ -47,13 +48,30 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
 
     getVehicleById(secureVehicleId)
       .then((data) => {
-        if (!data) return;
+        if (!data) {
+          const mock = mockStorage.getVehicleById(secureVehicleId);
+          if (mock) {
+            setVehicle(mock);
+            activeVehicleFuelType = mock.fuelType;
+            setEndOdometer(String(mock.currentOdometer === 12500 ? 12508 : mock.currentOdometer + 8));
+            loadLatestPrice(mock.fuelType, mock.state || 'Kerala', mock.city || 'Kozhikode');
+          }
+          return;
+        }
         setVehicle(data);
         activeVehicleFuelType = data.fuelType;
         setEndOdometer(String(data.currentOdometer === 12500 ? 12508 : data.currentOdometer + 8));
         loadLatestPrice(data.fuelType, data.state || 'Kerala', data.city || 'Kozhikode');
       })
-      .catch(() => {});
+      .catch(() => {
+        const mock = mockStorage.getVehicleById(secureVehicleId);
+        if (mock) {
+          setVehicle(mock);
+          activeVehicleFuelType = mock.fuelType;
+          setEndOdometer(String(mock.currentOdometer === 12500 ? 12508 : mock.currentOdometer + 8));
+          loadLatestPrice(mock.fuelType, mock.state || 'Kerala', mock.city || 'Kozhikode');
+        }
+      });
 
     const unsubscribe = fuelRealtimeService.subscribe((updated) => {
       if (updated.fuelType === activeVehicleFuelType) {
