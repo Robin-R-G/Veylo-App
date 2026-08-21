@@ -39,6 +39,15 @@ module.exports = {
         "error": "#ba1a1a",
         "error-container": "#ffdad6",
         "on-error-container": "#93000a",
+        "success": "#006d3b",
+        "success-container": "#95f7b5",
+        "on-success-container": "#00210e",
+        "warning": "#7c5800",
+        "warning-container": "#ffdea3",
+        "on-warning-container": "#271900",
+        "info": "#0061a4",
+        "info-container": "#d1e4ff",
+        "on-info-container": "#001d36",
       },
       borderRadius: {
         "DEFAULT": "0.25rem",
@@ -60,7 +69,32 @@ module.exports = {
       },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
-      }
+      },
+      boxShadow: {
+        'elevation-1': '0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)',
+        'elevation-2': '0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06)',
+        'elevation-3': '0 10px 15px rgba(0,0,0,0.08), 0 4px 6px rgba(0,0,0,0.05)',
+        'elevation-4': '0 20px 25px rgba(0,0,0,0.10), 0 8px 10px rgba(0,0,0,0.04)',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(8px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        'scale-in': {
+          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '100%': { opacity: '1', transform: 'scale(1)' },
+        },
+        'slide-up': {
+          '0%': { opacity: '0', transform: 'translateY(16px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.4s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        'scale-in': 'scale-in 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+        'slide-up': 'slide-up 0.5s cubic-bezier(0.23, 1, 0.32, 1) forwards',
+      },
     },
   },
   plugins: [],

@@ -6,11 +6,16 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  }
   body {
     background-color: #f9f9fa;
     color: #191c1d;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-family: var(--font-inter);
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 }
 
@@ -52,13 +57,7 @@ a:focus-visible {
 
 
 
-/* Glassmorphism Card Style matching UIUX */
-.glass-card {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(226, 232, 240, 0.8);
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.02), 0px 1px 3px rgba(0, 0, 0, 0.05);
-}
+/* Glassmorphism Card — DEPRECATED, do not use */
 
 .bento-grid {
   display: grid;
@@ -207,6 +206,44 @@ a:focus-visible {
 }
 
 /* ==========================================================================
+   Accessibility Utilities
+   ========================================================================== */
+
+/* Skip-to-content link (visually hidden until focused) */
+.skip-nav {
+  position: fixed;
+  top: -100%;
+  left: 0;
+  z-index: 9999;
+  padding: 8px 16px;
+  background-color: #003441;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 0 0 8px 0;
+  transition: top 0.15s ease;
+}
+.skip-nav:focus {
+  top: 0;
+  outline: 2px solid #003441;
+  outline-offset: 2px;
+}
+
+/* Screen reader only */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* ==========================================================================
    Receipt Printer Animation
    ========================================================================== */
 
@@ -264,14 +301,23 @@ a:focus-visible {
 
 /* Accessibility: Respect Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
   .animate-laser-sweep,
   .animate-rider-traverse,
   .animate-wheel-spin,
   .animate-radar-pulse,
   .animate-checkmark-pop,
-  .animate-float-badge {
+  .animate-float-badge,
+  .animate-fade-in,
+  .animate-scale-in,
+  .animate-slide-up {
     animation: none !important;
-    transition: none !important;
-    transform: none !important;
   }
 }

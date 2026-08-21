@@ -96,7 +96,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
               </span>
             </div>
           </header>
-          <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-12 text-slate-100">
+          <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-12 text-slate-100">
             {children}
           </main>
         </div>
@@ -111,7 +111,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 md:pl-[280px]">
           <Navbar />
-          <main className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-12">
+          <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto p-4 sm:p-6 lg:p-8 pb-24 md:pb-12">
             {children}
           </main>
         </div>
@@ -124,7 +124,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
   return (
     <div className="min-h-screen bg-background text-on-background flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
       <Navbar />
-      <main className={`flex-1 w-full mx-auto p-4 sm:p-6 pb-24 ${
+      <main id="main-content" className={`flex-1 w-full mx-auto p-4 sm:p-6 pb-24 ${
         isLandingPage ? 'max-w-7xl lg:px-8' : 'max-w-2xl'
       }`}>
         {children}

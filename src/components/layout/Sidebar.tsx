@@ -55,7 +55,7 @@ export const Sidebar: React.FC = () => {
       <div className="px-4 mb-4">
         <Link
           href="/rider"
-          className="w-full py-2.5 px-3.5 rounded-xl bg-emerald-700 text-white font-bold text-xs flex items-center justify-between shadow hover:bg-emerald-800 transition-all group"
+          className="w-full py-2.5 px-3.5 rounded-xl bg-success text-white font-bold text-xs flex items-center justify-between shadow hover:opacity-90 transition-all group"
         >
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-base">directions_bike</span>

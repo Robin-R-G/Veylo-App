@@ -4,6 +4,7 @@ import './globals.css';
 import { AppShell } from '@/components/layout/AppShell';
 import { Toaster } from 'sonner';
 import { AdSenseScript } from '@/components/ads/GoogleAdSense';
+import { SkipNav } from '@/components/ui/SkipNav';
 
 const inter = Inter({ subsets: ['latin'], display: 'swap', variable: '--font-inter' });
 
@@ -70,6 +71,7 @@ export default function RootLayout({
             __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js').catch(()=>{})}`,
           }}
         />
+        <SkipNav />
         <AppShell>
           {children}
         </AppShell>

@@ -97,14 +97,14 @@ export const Navbar: React.FC = () => {
         {session ? (
           <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-surface-container border border-outline-variant">
             <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold ${
-              session.role === 'RIDER' ? 'bg-emerald-100 text-emerald-700' : 'bg-primary-container text-on-primary-container'
+              session.role === 'RIDER' ? 'bg-success-container text-on-success-container' : 'bg-primary-container text-on-primary-container'
             }`}>
               {session.name.charAt(0).toUpperCase()}
             </div>
             <span className="text-xs font-semibold text-on-surface">{session.name}</span>
             <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-              session.role === 'RIDER' ? 'bg-emerald-100 text-emerald-700' :
-              session.role === 'ADMIN' ? 'bg-amber-100 text-amber-700' :
+              session.role === 'RIDER' ? 'bg-success-container text-on-success-container' :
+              session.role === 'ADMIN' ? 'bg-warning-container text-on-warning-container' :
               'bg-primary-container text-on-primary-container'
             }`}>{session.role}</span>
           </div>
