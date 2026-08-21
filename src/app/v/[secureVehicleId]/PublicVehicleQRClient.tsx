@@ -16,8 +16,8 @@ export default function PublicVehicleQRClient({ secureVehicleId }: { secureVehic
   const [vehicle, setVehicle] = useState<Vehicle | null>(null);
   const [fuelPrice, setFuelPrice] = useState<FuelPrice | null>(null);
 
-  const [customerName, setCustomerName] = useState('Rahul Nair');
-  const [customerPhone, setCustomerPhone] = useState('+91 94000 11223');
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
   const [endOdometer, setEndOdometer] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);

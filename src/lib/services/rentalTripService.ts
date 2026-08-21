@@ -138,6 +138,10 @@ export class RentalTripService {
         ...point,
         distanceFromLastPointKm: filterResult.distanceDeltaKm,
       });
+      // ponytail: cap at 1000 points to bound memory — upgrade to rolling window if trips run long
+      if (updatedPoints.length > 1000) {
+        updatedPoints.splice(0, updatedPoints.length - 1000);
+      }
     }
 
     const startTs = new Date(trip.startTime).getTime();
@@ -345,7 +349,7 @@ export class RentalTripService {
         .from('vehicles')
         .update({
           current_odometer: trip.estimatedEndOdometer,
-          estimated_current_omdometer: trip.estimatedEndOdometer,
+          estimated_current_odometer: trip.estimatedEndOdometer,
           updated_at: new Date().toISOString(),
         })
         .eq('id', trip.vehicleId);

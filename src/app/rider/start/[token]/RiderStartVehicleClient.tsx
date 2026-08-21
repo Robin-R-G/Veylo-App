@@ -77,7 +77,7 @@ export default function RiderStartVehicleClient({ token }: { token: string }) {
           initialLng = pos.coords.longitude;
           setLocationGranted(true);
         } catch {
-          setLocationGranted(true);
+          setLocationGranted(false);
         }
       }
 

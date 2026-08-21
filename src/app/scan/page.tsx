@@ -99,7 +99,10 @@ export default function QRScanPage() {
     } catch {
       // Not a URL, use as-is
     }
-    router.push(`/v/${vehicleId}`);
+    // Sanitize: only allow alphanumeric, hyphens, underscores — block path traversal
+    const safeId = vehicleId.replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!safeId) return;
+    router.push(`/v/${encodeURIComponent(safeId)}`);
   };
 
   const stopCamera = () => {
@@ -115,8 +118,9 @@ export default function QRScanPage() {
     e.preventDefault();
     if (!manualInput.trim()) return;
     // Navigate to the vehicle entry page with the entered token
-    const token = manualInput.trim().replace(/\s+/g, '_');
-    router.push(`/v/${token}`);
+    const token = manualInput.trim().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+    if (!token) return;
+    router.push(`/v/${encodeURIComponent(token)}`);
   };
 
   return (
